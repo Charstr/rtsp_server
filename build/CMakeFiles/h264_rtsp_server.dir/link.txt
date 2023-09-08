@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/h264_rtsp_server.dir/example/rtsp_h264_server.cpp.o CMakeFiles/h264_rtsp_server.dir/src/net/rtp.cpp.o -o h264_rtsp_server  -lpthread -lrt 

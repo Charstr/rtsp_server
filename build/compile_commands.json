@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/more/proj/rtsp_server/build",
+  "command": "/usr/bin/g++  -I/home/more/proj/rtsp_server/src -g   -O0 -g -std=gnu++11 -o CMakeFiles/h264_rtsp_server.dir/example/rtsp_h264_server.cpp.o -c /home/more/proj/rtsp_server/example/rtsp_h264_server.cpp",
+  "file": "/home/more/proj/rtsp_server/example/rtsp_h264_server.cpp"
+},
+{
+  "directory": "/home/more/proj/rtsp_server/build",
+  "command": "/usr/bin/g++  -I/home/more/proj/rtsp_server/src -g   -O0 -g -std=gnu++11 -o CMakeFiles/h264_rtsp_server.dir/src/net/rtp.cpp.o -c /home/more/proj/rtsp_server/src/net/rtp.cpp",
+  "file": "/home/more/proj/rtsp_server/src/net/rtp.cpp"
+}
+]

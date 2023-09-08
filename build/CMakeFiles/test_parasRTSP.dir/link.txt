@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/test_parasRTSP.dir/test/parasRTSP.cpp.o -o test_parasRTSP  -lpthread -lrt 
