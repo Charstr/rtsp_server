@@ -43,5 +43,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/h264_rtsp_server.dir/DependInfo.cmake"
+  "CMakeFiles/p2pcli.dir/DependInfo.cmake"
+  "CMakeFiles/p2psrv.dir/DependInfo.cmake"
   )

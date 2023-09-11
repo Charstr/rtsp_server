@@ -117,65 +117,78 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named h264_rtsp_server
+# Target rules for targets named p2pcli
 
 # Build rule for target.
-h264_rtsp_server: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 h264_rtsp_server
-.PHONY : h264_rtsp_server
+p2pcli: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 p2pcli
+.PHONY : p2pcli
 
 # fast build rule for target.
-h264_rtsp_server/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/build
-.PHONY : h264_rtsp_server/fast
+p2pcli/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/p2pcli.dir/build.make CMakeFiles/p2pcli.dir/build
+.PHONY : p2pcli/fast
 
-example/rtsp_h264_server.o: example/rtsp_h264_server.cpp.o
-.PHONY : example/rtsp_h264_server.o
+#=============================================================================
+# Target rules for targets named p2psrv
 
-# target to build an object file
-example/rtsp_h264_server.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/example/rtsp_h264_server.cpp.o
-.PHONY : example/rtsp_h264_server.cpp.o
+# Build rule for target.
+p2psrv: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 p2psrv
+.PHONY : p2psrv
 
-example/rtsp_h264_server.i: example/rtsp_h264_server.cpp.i
-.PHONY : example/rtsp_h264_server.i
+# fast build rule for target.
+p2psrv/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/p2psrv.dir/build.make CMakeFiles/p2psrv.dir/build
+.PHONY : p2psrv/fast
 
-# target to preprocess a source file
-example/rtsp_h264_server.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/example/rtsp_h264_server.cpp.i
-.PHONY : example/rtsp_h264_server.cpp.i
-
-example/rtsp_h264_server.s: example/rtsp_h264_server.cpp.s
-.PHONY : example/rtsp_h264_server.s
-
-# target to generate assembly for a file
-example/rtsp_h264_server.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/example/rtsp_h264_server.cpp.s
-.PHONY : example/rtsp_h264_server.cpp.s
-
-src/net/rtp.o: src/net/rtp.cpp.o
-.PHONY : src/net/rtp.o
+networkExample/p2pcli.o: networkExample/p2pcli.cpp.o
+.PHONY : networkExample/p2pcli.o
 
 # target to build an object file
-src/net/rtp.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/net/rtp.cpp.o
-.PHONY : src/net/rtp.cpp.o
+networkExample/p2pcli.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/p2pcli.dir/build.make CMakeFiles/p2pcli.dir/networkExample/p2pcli.cpp.o
+.PHONY : networkExample/p2pcli.cpp.o
 
-src/net/rtp.i: src/net/rtp.cpp.i
-.PHONY : src/net/rtp.i
+networkExample/p2pcli.i: networkExample/p2pcli.cpp.i
+.PHONY : networkExample/p2pcli.i
 
 # target to preprocess a source file
-src/net/rtp.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/net/rtp.cpp.i
-.PHONY : src/net/rtp.cpp.i
+networkExample/p2pcli.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/p2pcli.dir/build.make CMakeFiles/p2pcli.dir/networkExample/p2pcli.cpp.i
+.PHONY : networkExample/p2pcli.cpp.i
 
-src/net/rtp.s: src/net/rtp.cpp.s
-.PHONY : src/net/rtp.s
+networkExample/p2pcli.s: networkExample/p2pcli.cpp.s
+.PHONY : networkExample/p2pcli.s
 
 # target to generate assembly for a file
-src/net/rtp.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/net/rtp.cpp.s
-.PHONY : src/net/rtp.cpp.s
+networkExample/p2pcli.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/p2pcli.dir/build.make CMakeFiles/p2pcli.dir/networkExample/p2pcli.cpp.s
+.PHONY : networkExample/p2pcli.cpp.s
+
+networkExample/p2psrv.o: networkExample/p2psrv.cpp.o
+.PHONY : networkExample/p2psrv.o
+
+# target to build an object file
+networkExample/p2psrv.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/p2psrv.dir/build.make CMakeFiles/p2psrv.dir/networkExample/p2psrv.cpp.o
+.PHONY : networkExample/p2psrv.cpp.o
+
+networkExample/p2psrv.i: networkExample/p2psrv.cpp.i
+.PHONY : networkExample/p2psrv.i
+
+# target to preprocess a source file
+networkExample/p2psrv.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/p2psrv.dir/build.make CMakeFiles/p2psrv.dir/networkExample/p2psrv.cpp.i
+.PHONY : networkExample/p2psrv.cpp.i
+
+networkExample/p2psrv.s: networkExample/p2psrv.cpp.s
+.PHONY : networkExample/p2psrv.s
+
+# target to generate assembly for a file
+networkExample/p2psrv.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/p2psrv.dir/build.make CMakeFiles/p2psrv.dir/networkExample/p2psrv.cpp.s
+.PHONY : networkExample/p2psrv.cpp.s
 
 # Help Target
 help:
@@ -185,13 +198,14 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... h264_rtsp_server"
-	@echo "... example/rtsp_h264_server.o"
-	@echo "... example/rtsp_h264_server.i"
-	@echo "... example/rtsp_h264_server.s"
-	@echo "... src/net/rtp.o"
-	@echo "... src/net/rtp.i"
-	@echo "... src/net/rtp.s"
+	@echo "... p2pcli"
+	@echo "... p2psrv"
+	@echo "... networkExample/p2pcli.o"
+	@echo "... networkExample/p2pcli.i"
+	@echo "... networkExample/p2pcli.s"
+	@echo "... networkExample/p2psrv.o"
+	@echo "... networkExample/p2psrv.i"
+	@echo "... networkExample/p2psrv.s"
 .PHONY : help
 
 

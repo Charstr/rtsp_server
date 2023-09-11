@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/p2pcli.dir/networkExample/p2pcli.cpp.o -o p2pcli  -lpthread -lrt 

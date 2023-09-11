@@ -8,7 +8,7 @@
 #include <string.h>
 #include <string>
 
-#include "net/rtp.h"
+#include "rtp/rtp.h"
 
 #define H264_FILE_NAME  "test.h264"
 #define CLIENT_IP       "127.0.0.1"
@@ -197,7 +197,7 @@ int main(int argc, char *argv[]){
         printf("allocate memory err\n");
         return -1;
     }
-    rtpHeaderInit(rtpPacket, 0, 0, 0, RTP_VESION, RTP_PAYLOAD_TYPE_H264, 0,
+    rtpHeaderInit(rtpPacket, 0, 0, 0, RTP_VERSION, RTP_PAYLOAD_TYPE_H264, 0,
                     0, 0, 0x88923423);
 
     while(1){

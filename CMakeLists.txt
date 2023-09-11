@@ -14,12 +14,24 @@ add_definitions(${CXX_FLAGS})
 
 set(LD_FLAGS -lpthread -lrt)
 
-file(GLOB_RECURSE SRC_NET ${SRC_DIR}/net/*.cpp)
+file(GLOB_RECURSE SRC_NET ${SRC_DIR}/rtp/*.cpp)
 
-# file(GLOB_RECURSE SRC_NET ${SRC_DIR}/net/*.cpp)
+file(GLOB_RECURSE SRC_NET_LEARNING ${TOR_DIR}/networkLearning/*.cpp)
 
+
+# RTSP ser
 # add_executable(parseRTSP test/parseRTSP.cpp ${SRC_BASE})
 # target_link_libraries(parseRTSP ${LD_FLAGS})
 
-add_executable(h264_rtsp_server example/rtsp_h264_server.cpp  ${SRC_NET})
-target_link_libraries(h264_rtsp_server ${LD_FLAGS})
+# add_executable(h264_rtsp_server rtspExample/rtsp_aac_server.cpp  ${SRC_NET})
+# target_link_libraries(h264_rtsp_server ${LD_FLAGS})
+
+# socket 
+add_executable(p2pcli networkExample/p2pcli.cpp)
+target_link_libraries(p2pcli ${LD_FLAGS})
+
+add_executable(p2psrv networkExample/p2psrv.cpp)
+target_link_libraries(p2psrv ${LD_FLAGS})
+
+# leetcode
+# add_executable(leetcode main.cpp)
