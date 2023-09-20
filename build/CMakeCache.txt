@@ -224,15 +224,6 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
 //Value Computed by CMake
-MyProject_BINARY_DIR:STATIC=/home/more/proj/rtsp_server/build
-
-//Value Computed by CMake
-MyProject_IS_TOP_LEVEL:STATIC=ON
-
-//Value Computed by CMake
-MyProject_SOURCE_DIR:STATIC=/home/more/proj/rtsp_server
-
-//Value Computed by CMake
 rtspServer_BINARY_DIR:STATIC=/home/more/proj/rtsp_server/build
 
 //Value Computed by CMake

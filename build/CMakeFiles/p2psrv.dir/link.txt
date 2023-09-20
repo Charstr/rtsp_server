@@ -1,1 +1,0 @@
-/usr/bin/g++ -g CMakeFiles/p2psrv.dir/networkExample/p2psrv.cpp.o -o p2psrv  -lpthread -lrt 

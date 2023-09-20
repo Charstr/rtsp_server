@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/home/more/proj/rtsp_server/src
 
-CXX_FLAGS = -g   -O0 -g -std=gnu++11
+CXX_FLAGS = -g   -O0 -g -std=gnu++17
 

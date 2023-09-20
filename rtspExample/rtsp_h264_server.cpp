@@ -11,7 +11,7 @@
 #include <string.h>
 #include <string>
 
-#include "rtp/rtp.h"
+#include "net/rtp.h"
 
 #define SERVER_PORT     8554
 #define SERVER_RTP_PORT  55532
@@ -19,8 +19,7 @@
 #define BUF_MAX_SIZE    (1024*1024)
 #define MAX_READ_SIZE 524288
 
-static int createTcpSocket()
-{
+static int createTcpSocket(){
     int sockfd;
     int on = 1;
     // TCP
@@ -33,8 +32,7 @@ static int createTcpSocket()
     return sockfd;
 }
 
-static int createUdpSocket()
-{
+static int createUdpSocket() {
     int sockfd;
     int on = 1;
     // udp
@@ -61,8 +59,7 @@ static int bindSocketAddr(int sockfd, const char* ip, int port)
     return 0;
 }
   
-static int acceptClient(int sockfd, char* ip, int* port)
-{
+static int acceptClient(int sockfd, char* ip, int* port){
     int clientfd;
     socklen_t len = 0;
     struct sockaddr_in addr;
@@ -88,24 +85,17 @@ static inline bool startCode4(char* buf) {
     return buf[0] == 0 && buf[1] == 0 && buf[2] == 0 && buf[3] == 1;
 }
 
-static char* findNextStartCode(char* buf, int len)
-{
+static char* findNextStartCode(char* buf, int len) {
     int i;
-
     if (len < 3)
         return nullptr;
     // 下一个开始标志位
-    for (i = 0; i < len - 3; ++i)
-    {
+    for (i = 0; i < len - 3; ++i){
         if (startCode3(buf) || startCode4(buf))
             return buf;
-
         ++buf;
     }
-
-    if (startCode3(buf))
-        return buf;
-
+    if (startCode3(buf)) return buf;
     return nullptr;
 }
 
@@ -466,7 +456,8 @@ static void doClient(int clientSockfd, const char* clientIP, int clientPort,
 
 int main(int argc, char *argv[]){
     // input file name
-    std::string filename = "/home/more/proj/myRTSP/test/test.h264";
+    
+    std::string filename = "/home/more/proj/rtsp_server/rtspExample/test.h264";
 
     int serverSockfd;
     int serverRtpSockfd, serverRtcpSockfd;
