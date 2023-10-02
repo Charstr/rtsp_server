@@ -20,11 +20,12 @@ protected:
     virtual void readFrame();
 
 private:
+    // 从H264文件中获取帧数据。
     int getFrameFromH264File(int fd, uint8_t* frame, int size);
 
 private:
-    std::string mFile;
-    int mFd;
+    std::string mFile; 
+    int mFd; // 于存储文件描述符
 };
 
 #endif //_H264FILE_MEDIA_SOURCE_H_

@@ -29,10 +29,10 @@ private:
     void handleEvent(); // 获取当前时间戳（毫秒级）
 
 private:
-    TimerEvent* mTimerEvent;// 定时器事件对象
+    TimerEvent* mTimerEvent;// 定时器事件
     Timestamp mTimestamp; // 定时器触发时间戳
     TimeInterval mTimeInterval; // 定时器触发时间间隔
-    bool mRepeat;// 是否重复触发
+    bool mRepeat;// 定时器是否重复
 };
 
 class TimerManager
@@ -57,13 +57,14 @@ private:
 private:
     Poller* mPoller;// 事件管理器
     int mTimerFd;// 定时器文件描述符
-    std::map<Timer::TimerId, Timer> mTimers;// 定时器集合
+    // map容器存储定时器的TimerId和Timer对象之间的映射关系
+    std::map<Timer::TimerId, Timer> mTimers;
     
     typedef std::pair<Timer::Timestamp, Timer::TimerId> TimerIndex;
      // 定时器事件队列,以按时间顺序管理定时器。根据最早触发的定时器来调整timerfd的触发时间。
     std::multimap<TimerIndex, Timer> mEvents;
-    uint32_t mLastTimerId;// 最后一个定时器的ID
-    IOEvent* mTimerIOEvent; // 定时器事件的IO事件对象
+    uint32_t mLastTimerId;// 最后一个定时器的ID,当前使用的最大的TimerId
+    IOEvent* mTimerIOEvent; // 定时器的IOEvent对象
 };
 
 #endif //_TIMER_H_

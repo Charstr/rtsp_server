@@ -14,6 +14,7 @@
 
 class RtspConnection;
 
+// 用于处理RTSP服务器的逻辑。其中包括添加媒体会话、查找媒体会话、处理新连接、处理断开连接等功能。
 class RtspServer : public TcpServer
 {
 public:
@@ -38,6 +39,7 @@ protected:
     static void disconnectionCallback(void* arg, int sockfd);
     
     void handleDisconnection(int sockfd);
+    // 触发事件回调,处理断开连接的
     static void triggerCallback(void*);
     // 处理断开连接列表
     void handleDisconnectionList();

@@ -10,6 +10,7 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
+// 过解析请求消息的不同字段（方法、URL、CSeq等），它能够执行不同的操作，如发送OPTIONS响应、解析SDP描述、建立RTP连接等
 static void getPeerIp(int sockfd, std::string& ip)
 {
     struct sockaddr_in addr;
@@ -24,8 +25,9 @@ RtspConnection* RtspConnection::createNew(RtspServer* rtspServer, int sockfd)
     return New<RtspConnection>::allocate(rtspServer, sockfd);
 }
 
+// 客户端连接
 RtspConnection::RtspConnection(RtspServer* rtspServer, int sockfd) :
-    TcpConnection(rtspServer->envir(), sockfd),
+    TcpConnection(rtspServer->envir(), sockfd), // mEnv->scheduler()->addIOEvent(mTcpConnIOEvent);
     mRtspServer(rtspServer),
     mMethod(NONE),
     mTrackId(MediaSession::TrackIdNone),
@@ -37,7 +39,7 @@ RtspConnection::RtspConnection(RtspServer* rtspServer, int sockfd) :
         mRtpInstances[i] = NULL;
         mRtcpInstances[i] = NULL;
     }
-
+    // 获取客户端的IP
     getPeerIp(sockfd, mPeerIp);
 }
 
@@ -374,6 +376,7 @@ bool RtspConnection::handleCmdOption()
 // 处理DESCRIBE命令
 bool RtspConnection::handleCmdDescribe()
 {
+    /* 找到会话 */
     MediaSession* session = mRtspServer->loopupMediaSession(mSuffix);
     if(!session)
     {
@@ -382,9 +385,11 @@ bool RtspConnection::handleCmdDescribe()
     }
 
     mSession = session;
+    /* 获取sdp信息 */
     std::string sdp = session->generateSDPDescription();
 
     memset((void*)mBuffer, 0, sizeof(mBuffer));
+    /* 返回结果 */
     snprintf((char*)mBuffer, sizeof(mBuffer),
             "RTSP/1.0 200 OK\r\n"
             "CSeq: %u\r\n"

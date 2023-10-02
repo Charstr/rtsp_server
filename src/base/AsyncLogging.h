@@ -8,6 +8,11 @@
 #include "schedule/threadPool/Mutex.h"
 #include "schedule/threadPool/Condition.h"
 
+/*
+
+日志记录系统的头文件，LogBuffer类用于缓冲日志数据，而AsyncLogging类是一个线程，用于异步记录日志。
+
+*/
 class LogBuffer
 {
 public:
@@ -46,17 +51,18 @@ private:
     const char* end() const { return mData + BUFFER_SIZE; }
 
 private:
-    char mData[BUFFER_SIZE];
+    char mData[BUFFER_SIZE]; // 存储日志数据。
     char* mCurPtr;
 };
 
+// 负责实际的日志记录工作
 class AsyncLogging : public Thread
 {
 public:
     virtual ~AsyncLogging();
-
+    // 只能有一个AsyncLogging实例
     static AsyncLogging* instance();
-
+    // 将日志数据追加到正在处理的缓冲区中。
     void append(const char* logline, int len);
  
 protected:
@@ -74,9 +80,10 @@ private:
     std::string mFile;
     FILE* mFp;
     bool mRun;
-
+    // 缓冲区
     LogBuffer mBuffer[BUFFER_NUM];
     LogBuffer* mCurBuffer;
+    //两个队列,当需要记录日志时，AsyncLogging类会从空闲缓冲区中获取一个缓冲区，并将日志数据写入其中。当缓冲区满时，它将缓冲区添加到需要写入文件的缓冲区队列中，并触发写入文件的操作。
     std::queue<LogBuffer*> mFreeBuffer;
     std::queue<LogBuffer*> mFlushBuffer;
 

@@ -40,7 +40,7 @@ public:
     static std::string getLogFile();
     static void setLogLevel(LogLevel level);
     static LogLevel getLogLevel();
-
+    // 将日志信息写入文件或标准输出
     void write(LogLevel level, const char* file, const char* func,
                                 int line, const char* format, ...);
 

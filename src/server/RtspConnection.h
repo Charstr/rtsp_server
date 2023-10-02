@@ -10,7 +10,8 @@
 class RtspServer;
 
 /*
-RtspConnection类继承自TcpConnection类，用于处理RTSP连接。它包括处理RTSP请求的方法、处理RTSP命令的方法、处理RTP流的方法等。
+RtspConnection类继承自TcpConnection类，用于处理处理与RTSP服务器的通信。它包括处理RTSP请求的方法、处理RTSP命令的方法、处理RTP流的方法等。负责创建和管理RTP和RTCP实例，以及处理RTP通过TCP的情况。
+
 
 */
 class RtspConnection : public TcpConnection

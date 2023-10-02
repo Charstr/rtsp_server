@@ -49,8 +49,7 @@ Timer::Timestamp Timer::getCurTime()
 
 void Timer::handleEvent()
 {
-    if(!mTimerEvent)
-        return;
+    if(!mTimerEvent) return;
 
     mTimerEvent->handleEvent();// 调用TimerEvent对象的事件处理函数
 }
@@ -81,23 +80,58 @@ TimerManager::TimerManager(int timerFd, Poller* poller) :
     mPoller(poller),
     mLastTimerId(0)
 {   
-    // 定时器文件描述
+
+    // 定时器IO文件描述
     mTimerIOEvent = IOEvent::createNew(mTimerFd, this);
-    // 并设置为回调并激活
-    mTimerIOEvent->setReadCallback(handleRead);
+
+    // 设置为回调并激活
+    mTimerIOEvent->setReadCallback(TimerManager::handleRead);
     mTimerIOEvent->enableReadHandling();
     modifyTimeout();
+    
     // 将定时器IO事件添加到事件循环中
     mPoller->addIOEvent(mTimerIOEvent);
 }
 
-TimerManager::~TimerManager()
+
+void TimerManager::handleRead(void* arg)
 {
-    mPoller->removeIOEvent(mTimerIOEvent);
-    //delete mTimerIOEvent;
-    // 释放定时器IO事件资源
-    Delete::release(mTimerIOEvent);
+    if(!arg) return;
+
+    TimerManager* timerManager = (TimerManager*)arg;
+    timerManager->handleTimerEvent();
 }
+
+// 发生定时事件
+void TimerManager::handleTimerEvent()
+{
+    if(!mTimers.empty())
+    {
+        int64_t timePoint = Timer::getCurTime();
+
+        while(!mTimers.empty() && mEvents.begin()->first.first <= timePoint)
+        {
+            Timer::TimerId timerId = mEvents.begin()->first.second;
+            Timer timer = mEvents.begin()->second;
+
+            timer.handleEvent();
+            mEvents.erase(mEvents.begin());
+            if(timer.mRepeat == true)
+            {
+                timer.mTimestamp = timePoint + timer.mTimeInterval;
+                mEvents.insert(std::make_pair(TimerIndex(timer.mTimestamp, timerId), timer));
+            }
+            else
+            {
+                mTimers.erase(timerId);
+            }
+        }
+    }
+
+    modifyTimeout();
+}
+
+
 
 Timer::TimerId TimerManager::addTimer(TimerEvent* event, Timer::Timestamp timestamp,
                             Timer::TimeInterval timeInterval)
@@ -144,39 +178,10 @@ void TimerManager::modifyTimeout()
     }
 }
 
-void TimerManager::handleRead(void* arg)
+TimerManager::~TimerManager()
 {
-    if(!arg)
-        return;
-
-    TimerManager* timerManager = (TimerManager*)arg;
-    timerManager->handleTimerEvent();
-}
-
-void TimerManager::handleTimerEvent()
-{
-    if(!mTimers.empty())
-    {
-        int64_t timePoint = Timer::getCurTime();
-
-        while(!mTimers.empty() && mEvents.begin()->first.first <= timePoint)
-        {
-            Timer::TimerId timerId = mEvents.begin()->first.second;
-            Timer timer = mEvents.begin()->second;
-
-            timer.handleEvent();
-            mEvents.erase(mEvents.begin());
-            if(timer.mRepeat == true)
-            {
-                timer.mTimestamp = timePoint + timer.mTimeInterval;
-                mEvents.insert(std::make_pair(TimerIndex(timer.mTimestamp, timerId), timer));
-            }
-            else
-            {
-                mTimers.erase(timerId);
-            }
-        }
-    }
-
-    modifyTimeout();
+    mPoller->removeIOEvent(mTimerIOEvent);
+    //delete mTimerIOEvent;
+    // 释放定时器IO事件资源
+    Delete::release(mTimerIOEvent);
 }

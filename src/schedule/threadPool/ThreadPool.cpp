@@ -2,6 +2,8 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
+// 包含了创建线程池、添加任务、处理任务、取消线程池等功能。
+// 创建一个新的线程池实例，并返回指针。
 ThreadPool* ThreadPool::createNew(int num)
 {
     //return new ThreadPool(num);
@@ -10,6 +12,7 @@ ThreadPool* ThreadPool::createNew(int num)
     return New<ThreadPool>::allocate(num);
 }
 
+// 初始化线程池的成员变量，并创建线程。
 ThreadPool::ThreadPool(int num) :
     mThreads(num),// 设置线程池中线程的数量
     mQuit(false)// 初始化终止标志为false
@@ -29,13 +32,14 @@ ThreadPool::~ThreadPool()
     Delete::release(mCondition);// 释放条件变量
 }
 
+// 添加一个任务到任务队列中，并唤醒等待中的线程去处理任务。
 void ThreadPool::addTask(ThreadPool::Task& task)
 {
     MutexLockGuard mutexLockGuard(mMutex);// 使用互斥锁保护任务队列
     mTaskQueue.push(task);// 将任务加入队列
     mCondition->signal();// 唤醒一个等待的线程
 }
-
+// 处理任务的函数，不断从任务队列中获取任务并执行。
 void ThreadPool::handleTask()
 {
     while(mQuit != true)// 线程池没有终止时循环执行
@@ -61,7 +65,7 @@ void ThreadPool::handleTask()
         task.handle();// 执行任务的回调函数
     }
 }
-
+// 创建线程的函数，遍历线程组，启动每一个线程。
 void ThreadPool::createThreads()
 {
     MutexLockGuard mutexLockGuard(mMutex);// 使用互斥锁保护线程池
@@ -69,7 +73,7 @@ void ThreadPool::createThreads()
     for(std::vector<MThread>::iterator it = mThreads.begin(); it != mThreads.end(); ++it)
         (*it).start(this);// 启动线程，每个线程执行handleTask方法
 }
-
+// 取消线程的函数，设置标志位使线程退出，并等待每一个线程结束。
 void ThreadPool::cancelThreads()
 {
     MutexLockGuard mutexLockGuard(mMutex);// 使用互斥锁保护线程池
@@ -81,7 +85,7 @@ void ThreadPool::cancelThreads()
 
     mThreads.clear();// 清空线程池中的线程
 }
-
+// 线程函数，调用线程池的处理任务函数。
 void ThreadPool::MThread::run(void* arg)
 {
     ThreadPool* threadPool = (ThreadPool*)arg;

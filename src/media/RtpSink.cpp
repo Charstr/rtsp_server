@@ -4,6 +4,7 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
+// 消费者，用于将音视频数据进行RTP打包，然后发送给客户端
 RtpSink::RtpSink(UsageEnvironment* env, MediaSource* mediaSource, int payloadType) :
     mMediaSource(mediaSource),
     mSendPacketCallback(NULL),
@@ -20,8 +21,9 @@ RtpSink::RtpSink(UsageEnvironment* env, MediaSource* mediaSource, int payloadTyp
     
 {
     mTimerEvent = TimerEvent::createNew(this);
-    // 设置超时回调
-    mTimerEvent->setTimeoutCallback(timeoutCallback);
+    // 设置超时回调函数RtpSink::timeoutCallback
+    // 发送数据
+    mTimerEvent->setTimeoutCallback(RtpSink::timeoutCallback);
 
     mSSRC = rand();
 }
@@ -33,6 +35,7 @@ RtpSink::~RtpSink()
     Delete::release(mTimerEvent);
 }
 
+// 设置发送数据包的回调函数。
 void RtpSink::setSendFrameCallback(SendPacketCallback cb, void* arg1, void* arg2)
 {
     mSendPacketCallback = cb;
@@ -40,6 +43,7 @@ void RtpSink::setSendFrameCallback(SendPacketCallback cb, void* arg1, void* arg2
     mArg2 = arg2;
 }
 
+// 发送RTP数据包的函数，会给数据包设置相应的头部信息，并调用发送数据包的回调函数。
 void RtpSink::sendRtpPacket(RtpPacket* packet)
 {
     RtpHeader* rtpHead = packet->mRtpHeadr;
@@ -54,10 +58,11 @@ void RtpSink::sendRtpPacket(RtpPacket* packet)
     rtpHead->ssrc = htonl(mSSRC);
     packet->mSize += RTP_HEADER_SIZE;
     
-    if(mSendPacketCallback)
-        mSendPacketCallback(mArg1, mArg2, packet);
+    if(RtpSink::mSendPacketCallback)
+        RtpSink::mSendPacketCallback(mArg1, mArg2, packet);
 }
 
+// 超时回调函数，用于处理帧数据并发送到目标位置。
 void RtpSink::timeoutCallback(void* arg)
 {
     RtpSink* rtpSink = (RtpSink*)arg;
@@ -73,6 +78,7 @@ void RtpSink::timeoutCallback(void* arg)
     rtpSink->mMediaSource->putFrame(frame);
 }
 
+// 启动定时事件，以指定的时间间隔调用timeoutCallback函数。
 void RtpSink::start(int ms)
 {
     mTimerId = mEnv->scheduler()->addTimedEventRunEvery(mTimerEvent, ms);

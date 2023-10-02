@@ -15,7 +15,6 @@
 #include "server/RtspServer.h"
 #include "server/InetAddress.h"
 
-
 // 基于Reactor的事件处理、非阻塞IO的应用，以及线程池的使用。
 int main(int argc, char* argv[])
 {
@@ -29,17 +28,9 @@ int main(int argc, char* argv[])
     std::string fileanme = "./test.h264";
 
     //Logger::setLogFile("xxx.log");
-    // 初始化日志
     Logger::setLogLevel(Logger::LogWarning);
 
-    /*--------------scheduler---------------------*/
-
     /*
-    1. createNew静态工厂方法，用于创建新的对象实例,将对象的创建抽象出来，允许客户端代码通过调用工厂方法来获取对象，而无需了解对象的具体创建细节。
-    2. 多线程编程：包括线程的创建和管理，互斥锁的使用，条件变量的使用等。为了实现并发执行任务的目的，以提高系统的性能和效率。
-    3. 资源管理：对资源（如内存和线程）的分配和释放。使用New工厂函数分配内存，并调用对应的构造函数进行构造;使用析构函数或Delete::release释放资源。这是为了确保资源在不再需要时得到释放，以防止内存泄漏和资源泄漏。
-    4. 封装：UsageEnvironment类封装了与事件调度器和线程池相关的环境信息，提供了对这些功能的抽象接口。
-
 
     实现步骤和详细流程：
     1. Mutex和Condition用于多线程同步的类。Mutex用于创建互斥锁，Condition用于线程间的条件变量通信。
@@ -51,7 +42,7 @@ int main(int argc, char* argv[])
     6. Poller类用于执行事件轮询，监测I/O事件（如套接字可读、可写）的发生，并通知事件调度器。与事件调度器协作，确保及时地通知事件调度器关于I/O事件的发生。
     */
 
-    // 创建一个新的事件调度器EventScheduler实例
+    // 创建任务调度器
     EventScheduler* scheduler = EventScheduler::createNew(EventScheduler::POLLER_EPOLL);
 
     // 创建一个线程池对象的实例,里边通过一个vector存储所有的线程
@@ -63,28 +54,34 @@ int main(int argc, char* argv[])
     // 上边通过申请内存并进行对象构造之后，在函数结束之后自动调用析构函数，中止对应的线程并调用析构释放内存
 
     /*--------------server---------------------*/
-    // 包装方便传递
+    // 传递的是服务器的listen fd
     Ipv4Address ipAddr("0.0.0.0", 8554);
 
-    // 是一个RTSP服务器的类，用于管理RTSP连接和媒体会话。
+
+    // 是一个RTSP服务器的类，用于管理RTSP连接和媒体会话,负责处理客户端连接
     RtspServer* server = RtspServer::createNew(env, ipAddr);
 
     /*--------------media---------------------*/
-
-    MediaSession* session = MediaSession::createNew("live");
     MediaSource* mediaSource = H264FileMediaSource::createNew(env, fileanme);
 
     //MediaSource* mediaSource = H264FileMediaSource::createNew(env, argv[1]);
+    
+    // rtpSink资源消费者,资源生产者是mediaSource
     RtpSink* rtpSink = H264RtpSink::createNew(env, mediaSource);
+    
+    MediaSession* session = MediaSession::createNew("live");
 
     session->addRtpSink(MediaSession::TrackId0, rtpSink);
     //session->startMulticast(); //多播
 
+    /* 向服务器添加会话 */
     server->addMeidaSession(session);
+    // 开始listen,将接受连接的IO事件mAcceptIOEvent添加到事件调度器的循环中
+    // mEnv->scheduler()->addIOEvent(mAcceptIOEvent);
     server->start();
 
     std::cout<<"Play the media using the URL \""<<server->getUrl(session)<<"\""<<std::endl;
-
+    /* 循环处理事件 */
     env->scheduler()->loop();
 
     return 0;

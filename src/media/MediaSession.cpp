@@ -123,10 +123,13 @@ bool MediaSession::addRtpSink(MediaSession::TrackId trackId, RtpSink* rtpSink)
     if(!track)
         return false;
 
+    // 多态,
     track->mRtpSink = rtpSink;
     track->mIsAlive = true;
-    // 设置RtpSink的发送帧回调函数
-    rtpSink->setSendFrameCallback(sendPacketCallback, this, track);
+
+    // 设置RtpSink的发送帧回调函数MediaSession::sendPacketCallback
+    // mediaSession->sendPacket 发送packet
+    rtpSink->setSendFrameCallback(MediaSession::sendPacketCallback, this, track);
 
     return true;
 }

@@ -27,6 +27,7 @@ H264RtpSink::~H264RtpSink()
 
 }
 
+// 根据给定的端口号和负载类型生成媒体描述。
 std::string H264RtpSink::getMediaDescription(uint16_t port)
 {
     char buf[100] = {0};
@@ -44,7 +45,7 @@ std::string H264RtpSink::getAttribute()
     return std::string(buf);
 }
 
-// 发送h264视频nalu
+// 根据帧的大小和类型发送RTP包。
 void H264RtpSink::handleFrame(AVFrame* frame)
 {
     RtpHeader* rtpHeader = mRtpPacket.mRtpHeadr;

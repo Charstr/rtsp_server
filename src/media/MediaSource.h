@@ -49,6 +49,7 @@ protected:
     void setFps(int fps) { mFps = fps; }
 
 private:
+    // 回调产生数据
     static void taskCallback(void*);
 
 protected:

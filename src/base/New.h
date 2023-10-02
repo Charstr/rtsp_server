@@ -8,6 +8,7 @@
 定义了New模板类和Delete类，用于在动态内存上构造和销毁对象。New类包括多个模板函数，允许分配内存并构造对象，可以处理不同数量的参数。Delete类包含一个模板函数，用于销毁对象并释放分配的内存。
 */
 
+// New类中定义了一些静态方法，用于分配内存和执行构造函数。allocate方法提供了多个重载，可以根据传入的参数个数来选择适当的构造函数。基本思想是使用Allocator类来分配内存，然后使用Construct类来执行构造函数。
 template <class T>
 class New
 {
@@ -65,7 +66,7 @@ public:
 class Delete
 {
 public:
-    // 先析构然后再释放内存
+    // 静态方法release，用于释放内存。它首先调用destroy函数销毁对象，然后使用Allocator类来释放内存。
     template <class T1>
     static void release(T1* p) {
         destroy(p);

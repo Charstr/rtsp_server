@@ -4,7 +4,7 @@
 
 #include "MediaSource.h"
 
-// 
+
 class AACFileMeidaSource : public MediaSource
 {
 public:

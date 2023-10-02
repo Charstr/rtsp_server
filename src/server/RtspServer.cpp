@@ -11,42 +11,48 @@ RtspServer* RtspServer::createNew(UsageEnvironment* env, Ipv4Address& addr)
     return New<RtspServer>::allocate(env, addr);
 }
 
-
 RtspServer::RtspServer(UsageEnvironment* env, const Ipv4Address& addr) :
     TcpServer(env, addr)
 {
-    // RtspServer->TcpServer->Acceptor
+
+    // TcpServer完成了连接
+
     /*
-    1. TcpServer是来了一个新的连接就构造一个新的Acceptor接收. 
-    1.1 TcpServer构造函数部分先是构造一个新的Acceptor. Acceptor构造函数创建一个rtsp socket mSocket, 创建接受连接的IO事件mAcceptIOEvent,将mSocket的描述符传递给新的IO事件mAcceptIOEvent,然后设置IO处理可读事件的回调函数readCallback,readCallback accept接收新的连接返回一个新的描述符connfd
-    1.2 TcpServer构造函数部分,接下来设置处理新连接的回调函数newConnectionCallback. 然后利用多态(RtspServer继承TcpServer),运行RtspServer的函数handleNewConnection. 创建一个RtspConnection实例处理新连接,设置断开连接回调函数RtspServer::disconnectionCallback.
+    // RtspServer->TcpServer->Acceptor(sockets::createTcpSock())
+
+    1. Acceptor创建rtsp server的TCP套接字，绑定好指定的端口，作为RTSP服务器的监听套接字,然后创建一个接收连接的IO事件mAcceptIOEvent，设置mAcceptIOEvent可读事件接受新连接的回调函数. 当有一个连接过来向rtsp server发起请求,触发可读事件进入Acceptor::readCallback回调函数进行处理。回调函数accept接收客户端连接返回一个新的套接字connfd进行服务端和客户端通信, 然后handleNewConnection
     
+    通过多态的回调函数回RtspServer::handleNewConnection处理新连接 
+    mEnv->scheduler()->addIOEvent(mTcpConnIOEvent);
+    
+    2. TcpServer是rtspServer父类，TcpServer::handleNewConnection是个纯虚函数,所以newConnectionCallback调用的处理连接的虚函数其实是RtspServer::handleNewConnection进行处理,根据服务器和客户端通信的connfd创建一个新的rtsp连接,设置断开连接的对回调函数RtspServer::disconnectionCallback. 把要取消的连接加入到队列mDisconnectionlist
+    
+    3. 添加触发事件mTriggerEvent，以便稍后处理断开连接
+    4. 创建互斥锁用于多线程同步
+
     */
 
-    // 创建触发事件，用于处理断开连接
+    // 触发事件,触发的回调函数取调用执行对应的删除操作的函数,遍历所有要关闭的连接，取出来描述符进行关闭
     mTriggerEvent = TriggerEvent::createNew(this);
-    mTriggerEvent->setTriggerCallback(triggerCallback);
+
+    mTriggerEvent->setTriggerCallback(RtspServer::triggerCallback);
 
     mMutex = Mutex::createNew();
 }
 
-RtspServer::~RtspServer()
-{
-    //delete mTriggerEvent;
-    //delete mMutex;
-
-    Delete::release(mTriggerEvent);
-    Delete::release(mMutex);
-}
-
+// 这里开始和RtspConnection建立联系的桥梁
 void RtspServer::handleNewConnection(int connfd)
 {
-    // 创建RtspConnection实例处理新连接
+    
+    // 客户连接,处理服务器创建的通信的fd新连接
+    // mEnv->scheduler()->addIOEvent(mTcpConnIOEvent);
     RtspConnection* conn = RtspConnection::createNew(this, connfd);
-    // 设置断开连接的回调函数，以触发关闭连接时的操作
-    conn->setDisconnectionCallback(disconnectionCallback, this);
-    // 添加新的RtspConnection到连接容器
-    // int, RtspConnection*
+
+    // 设置断开连接处理的回调函数，关闭连接时操作
+    conn->setDisconnectionCallback(RtspServer::disconnectionCallback, this);
+
+    // 添加新的RtspConnection到连接容器,进行遍历处理
+    // 根据服务端和客户端通信的fd（accept返回的）,通过与之对应的RtspConnection
     mConnections.insert(std::make_pair(connfd, conn));
 }
 
@@ -61,9 +67,34 @@ void RtspServer::handleDisconnection(int sockfd)
 {
     MutexLockGuard mutexLockGuard(mMutex);
     // 把要取消的连接加入到队列
-    mDisconnectionlist.push_back(sockfd);
-    // 添加触发事件，以便稍后处理断开连接
+    mDisconnectionlist.push_back(sockfd); 
+    // 添加触发事件，稍后处理断开连接
     mEnv->scheduler()->addTriggerEvent(mTriggerEvent);
+}
+
+void RtspServer::triggerCallback(void* arg)
+{
+    // 处理断开连接列表的回调函数
+    RtspServer* rtspServer = (RtspServer*)arg;
+    rtspServer->handleDisconnectionList();
+}
+
+void RtspServer::handleDisconnectionList()
+{
+    MutexLockGuard mutexLockGuard(mMutex);
+
+    // 遍历所有要关闭的连接，取出来描述符进行关闭
+    for(std::vector<int>::iterator it = mDisconnectionlist.begin(); it != mDisconnectionlist.end(); ++it)
+    {
+        int sockfd = *it;
+        std::map<int, RtspConnection*>::iterator _it = mConnections.find(sockfd);
+        assert(_it != mConnections.end());
+        //delete _it->second;
+        Delete::release(_it->second);// 释放资源，包括关闭连接
+        mConnections.erase(sockfd);
+    }
+
+    mDisconnectionlist.clear();
 }
 
 bool RtspServer::addMeidaSession(MediaSession* mediaSession)
@@ -98,27 +129,14 @@ std::string RtspServer::getUrl(MediaSession* session)
     return std::string(url);
 }
 
-void RtspServer::triggerCallback(void* arg)
+
+
+
+RtspServer::~RtspServer()
 {
-    // 处理断开连接列表的回调函数
-    RtspServer* rtspServer = (RtspServer*)arg;
-    rtspServer->handleDisconnectionList();
-}
+    //delete mTriggerEvent;
+    //delete mMutex;
 
-void RtspServer::handleDisconnectionList()
-{
-    MutexLockGuard mutexLockGuard(mMutex);
-
-    // 遍历所有要关闭的连接，取出来描述符进行关闭
-    for(std::vector<int>::iterator it = mDisconnectionlist.begin(); it != mDisconnectionlist.end(); ++it)
-    {
-        int sockfd = *it;
-        std::map<int, RtspConnection*>::iterator _it = mConnections.find(sockfd);
-        assert(_it != mConnections.end());
-        //delete _it->second;
-        Delete::release(_it->second);// 释放资源，包括关闭连接
-        mConnections.erase(sockfd);
-    }
-
-    mDisconnectionlist.clear();
+    Delete::release(mTriggerEvent);
+    Delete::release(mMutex);
 }

@@ -10,6 +10,7 @@
 #include "base/New.h"
 
 
+// 发送RTP数据包，可以通过UDP或TCP发送
 class RtpInstance
 {
 public:
@@ -104,6 +105,7 @@ private:
     uint8_t mRtpChannel; //for tcp
 };
 
+// 发送RTCP数据包。
 class RtcpInstance
 {
 public:

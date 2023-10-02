@@ -72,7 +72,7 @@ private:
     char* mStartFree;
     char* mEndFree;
     uint32_t mHeapSize;
-
+    // 使用一个链表数据结构来管理空闲内存块，并根据请求的大小选择适当的内存块来分配内存。如果请求的内存大小超过了最大分配内存大小，则直接使用malloc和free函数进行分配和释放。
     Obj* mFreeList[NFREELISTS]; //自由链表数组
 
 };

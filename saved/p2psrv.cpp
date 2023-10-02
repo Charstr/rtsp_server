@@ -89,7 +89,7 @@ int main(int argc, char *argv[]){
             memset(sendbuf, 0, sizeof(sendbuf));
         }
         printf("child close\n");
-        close(srvSendToClientSockfd);
+        close(srvSendToClientSockfd);     
         close(srvListenSocketfd);
         
         exit(EXIT_SUCCESS);

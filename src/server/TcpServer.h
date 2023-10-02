@@ -15,7 +15,7 @@ class TcpServer
 public:
     virtual ~TcpServer();
 
-    void start();
+    void start(); // 启动服务器
 
 protected:
     // 处理新连接

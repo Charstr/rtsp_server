@@ -6,6 +6,7 @@
 #include <assert.h>
 
 
+// 类表示一个缓冲区，其中包含了一些用于操作缓冲区的方法和成员变量。
 
 class Buffer
 {
@@ -24,7 +25,7 @@ public:
     {
         free(mBuffer);
     }
-
+    // 获取缓冲区中可读、可写和可插入数据的字节数。
     int readableBytes() const
     { return mWriteIndex - mReadIndex; }
 
@@ -36,7 +37,7 @@ public:
 
     char* peek()
     { return begin() + mReadIndex; }
-
+    // 查看缓冲区中的数据。
     const char* peek() const
     { return begin() + mReadIndex; }
 
@@ -60,6 +61,7 @@ public:
         return crlf == beginWrite() ? NULL : crlf;
     }
 
+    // 用于读取并移除缓冲区中的数据。
     void retrieve(int len)
     {
         assert(len <= readableBytes());
@@ -85,7 +87,7 @@ public:
         mReadIndex = 0;
         mWriteIndex = 0;
     }
-
+    // 用于获取可写位置和更新写位置。
     char* beginWrite()
     { return begin() + mWriteIndex; }
 
@@ -134,7 +136,7 @@ public:
             assert(readable == readableBytes());
         }
     }
-
+    // 向缓冲区中添加数据。
     void append(const char* data, int len)
     {
         ensureWritableBytes(len); //调整空间
@@ -158,12 +160,12 @@ private:
     { return mBuffer; }
 
 private:
-    char* mBuffer;
-    int mBufferSize;
-    int mReadIndex;
-    int mWriteIndex;
+    char* mBuffer; // 指向缓冲区的指针
+    int mBufferSize; // 缓冲区的大小
+    int mReadIndex; // 读位置
+    int mWriteIndex; // 写位置
 
-    static const char* kCRLF;
+    static const char* kCRLF; // 表示回车换行符。
 };
 
 #endif //_BUFFER_H_

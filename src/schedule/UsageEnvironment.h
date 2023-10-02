@@ -3,6 +3,7 @@
 #include "EventScheduler.h"
 #include "threadPool/ThreadPool.h"
 
+// 提供了处理事件调度和线程池的功能。
 class UsageEnvironment
 {
 public:

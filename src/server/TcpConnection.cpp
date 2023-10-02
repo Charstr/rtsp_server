@@ -6,17 +6,23 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+
+// TCP连接的实现，包含了TCP连接的读写处理、错误处理以及断开连接的回调处理等功能。
 TcpConnection::TcpConnection(UsageEnvironment* env, int sockfd) :
     mEnv(env),
     mSocket(sockfd),
     mDisconnectionCallback(NULL),
     mArg(NULL)
 {
+    // 创建了一个IOEvent对象，并设置了读写和错误的回调函数，
     mTcpConnIOEvent = IOEvent::createNew(sockfd, this);
-    mTcpConnIOEvent->setReadCallback(readCallback);
-    mTcpConnIOEvent->setWriteCallback(writeCallback);
-    mTcpConnIOEvent->setErrorCallback(errorCallback);
-    mTcpConnIOEvent->enableReadHandling(); //默认只开启读
+    mTcpConnIOEvent->setReadCallback(TcpConnection::readCallback);
+    mTcpConnIOEvent->setWriteCallback(TcpConnection::writeCallback);
+    mTcpConnIOEvent->setErrorCallback(TcpConnection::errorCallback);
+    //默认只开启读
+    mTcpConnIOEvent->enableReadHandling(); 
+
+    // 处理连接的IO事件加入到事件调度器
     mEnv->scheduler()->addIOEvent(mTcpConnIOEvent);
 }
 
@@ -147,6 +153,6 @@ void TcpConnection::errorCallback(void* arg)
 
 void TcpConnection::handleDisconnection()
 {
-    if(mDisconnectionCallback)
-        mDisconnectionCallback(mArg, mSocket.fd());
+    if(TcpConnection::mDisconnectionCallback)
+        TcpConnection::mDisconnectionCallback(mArg, mSocket.fd());
 }

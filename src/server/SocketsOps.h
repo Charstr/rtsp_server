@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <sys/uio.h>
 
+// 用于创建、绑定、监听、接受连接、读取和写入数据等操作，
 namespace sockets
 {
 int createTcpSock();

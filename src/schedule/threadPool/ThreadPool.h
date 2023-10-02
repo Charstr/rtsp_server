@@ -37,8 +37,8 @@ public:
         }
         // 执行任务回调函数
         void handle() { 
-            if(mTaskCallback) 
-                mTaskCallback(mArg); 
+            if(Task::mTaskCallback) 
+                Task::mTaskCallback(mArg); 
         }
         // 拷贝赋值函数
         Task& operator=(const Task& task) {

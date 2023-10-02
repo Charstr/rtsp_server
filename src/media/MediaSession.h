@@ -32,7 +32,8 @@ public:
     std::string generateSDPDescription();
     // 添加RtpSink用于发送媒体数据
     bool addRtpSink(MediaSession::TrackId trackId, RtpSink* rtpSink);
-    // 添加RtpInstance，用于接收媒体数据
+
+    // `RtpInstance`列表中添加移除`RtpInstance`。
     bool addRtpInstance(MediaSession::TrackId trackId, RtpInstance* rtpInstance);
     bool removeRtpInstance(RtpInstance* rtpInstance);
     // 多播
@@ -46,16 +47,16 @@ private:
     class Track
     {
     public:
-        RtpSink* mRtpSink;// 用于发送媒体数据的RtpSink
+        RtpSink* mRtpSink;// 指向`RtpSink`的指针。
         int mTrackId;// 轨道ID
         bool mIsAlive; // 是否活动
         std::list<RtpInstance*> mRtpInstances;// 用于接收媒体数据的RtpInstance列表
     };
     // 获取指定轨道
     Track* getTrack(MediaSession::TrackId trackId);
-    // 发送媒体数据的回调函数
+    // 发送数据包的回调函数。
     static void sendPacketCallback(void* arg1, void* arg2, RtpPacket* rtpPacket);
-    // 发送媒体数据
+    // 发送数据包。
     void sendPacket(MediaSession::Track* tarck, RtpPacket* rtpPacket);
 
 private:

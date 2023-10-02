@@ -8,8 +8,9 @@ MediaSource::MediaSource(UsageEnvironment* env) :
     mMutex = Mutex::createNew();
     for(int i = 0; i < DEFAULT_FRAME_NUM; ++i)
         mAVFrameInputQueue.push(&mAVFrames[i]);// 初始化视频帧缓冲池
-    // 设置回调
-    mTask.setTaskCallback(taskCallback, this);
+    // 设置回调MediaSource::taskCallback
+    // 调用source->readFrame()产生数据
+    mTask.setTaskCallback(MediaSource::taskCallback, this);
 }
 
 MediaSource::~MediaSource()
@@ -34,6 +35,7 @@ AVFrame* MediaSource::getFrame()
     return frame;
 }
 
+// 将一个AVFrame对象放入输入队列，然后将一个任务添加到线程池。
 void MediaSource::putFrame(AVFrame* frame)
 {
     MutexLockGuard mutexLockGuard(mMutex);
@@ -43,7 +45,7 @@ void MediaSource::putFrame(AVFrame* frame)
     mEnv->threadPool()->addTask(mTask);// 添加任务到线程池
 }
 
-
+// 执行任务回调函数，其中任务回调函数会调用类的成员函数readFrame()
 void MediaSource::taskCallback(void* arg)
 {
     MediaSource* source = (MediaSource*)arg;

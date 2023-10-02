@@ -6,6 +6,10 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
+/*
+日志记录系统的头文件
+
+*/
 AsyncLogging* AsyncLogging::mAsyncLogging = NULL;
 
 AsyncLogging::AsyncLogging(std::string file) :

@@ -76,7 +76,7 @@ IOEvent* IOEvent::createNew(int fd)
 
 IOEvent::IOEvent(int fd, void* arg) :
     mFd(fd),
-    mArg(arg),
+    mArg(arg), 
     mEvent(EVENT_NONE),
     mREvent(EVENT_NONE),
     mReadCallback(NULL),

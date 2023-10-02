@@ -46,6 +46,7 @@ bool EPollPoller::updateIOEvent(IOEvent* event)
         epollEvt.events |= EPOLLERR;
 
     IOEventMap::iterator it = mEventMap.find(fd);
+    
     if(it != mEventMap.end())
     {
         epoll_ctl(mEPollFd, EPOLL_CTL_MOD, fd, &epollEvt);
@@ -78,7 +79,7 @@ void EPollPoller::handleEvent()
 {
     int nums, fd, event, revent;
     IOEventMap::iterator it;
-
+    // 当前需要处理的事件个数
     nums = epoll_wait(mEPollFd, &*mEPollEventList.begin(), mEPollEventList.size(), epollTimeout);
     if(nums < 0)
     {

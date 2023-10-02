@@ -456,7 +456,8 @@ static void doClient(int clientSockfd, const char* clientIP, int clientPort,
 
 int main(int argc, char *argv[]){
     // input file name
-    std::string filename = "/home/more/proj/myRTSP/test/test.h264";
+    
+    std::string filename = "/home/more/proj/rtsp_server/rtspExample/test.h264";
 
     int serverSockfd;
     int serverRtpSockfd, serverRtcpSockfd;
