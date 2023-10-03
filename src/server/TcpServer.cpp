@@ -12,10 +12,7 @@ TcpServer::TcpServer(UsageEnvironment* env, const Ipv4Address& addr) :
     mAcceptor = Acceptor::createNew(env, addr);
     assert(mAcceptor);
 
-    // Acceptor完成了和客户端的连接
-    // 这里因为是建立连接之前的过程,还没有连接过来之前进行的设置，相当于是个环
-    // Acceptor里边完成了连接handleRead要处理读，使用的回调函数mNewConnectionCallback在TcpServer
-    // 也就是这里设置
+    // 当有新用户连接时,会执行下面这个回调Tcp::newConnection
     mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback, this);
 
     // newConnectionCallback是设置的处理新连接的回调函数，调用处理函数handleNewConnection进行处理

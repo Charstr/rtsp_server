@@ -1,5 +1,5 @@
 CMakeFiles/h264_rtsp_server.dir/src/base/Allocator.cpp.o: \
- /home/more/proj/rtsp_server/src/base/Allocator.cpp \
+ /home/lcp/myProj/rtsp_server/src/base/Allocator.cpp \
  /usr/include/stdc-predef.h /usr/include/c++/11/stdlib.h \
  /usr/include/c++/11/cstdlib \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
@@ -148,6 +148,6 @@ CMakeFiles/h264_rtsp_server.dir/src/base/Allocator.cpp.o: \
  /usr/include/c++/11/bits/basic_ios.tcc \
  /usr/include/c++/11/bits/ostream.tcc /usr/include/c++/11/istream \
  /usr/include/c++/11/bits/istream.tcc \
- /home/more/proj/rtsp_server/src/base/Allocator.h /usr/include/string.h \
+ /home/lcp/myProj/rtsp_server/src/base/Allocator.h /usr/include/string.h \
  /usr/include/strings.h \
- /home/more/proj/rtsp_server/src/schedule/threadPool/Mutex.h
+ /home/lcp/myProj/rtsp_server/src/schedule/threadPool/Mutex.h

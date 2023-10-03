@@ -57,6 +57,7 @@ private:
     EventCallback mTimeoutCallback;
 };
 
+// 这个IOEvent对应于muduo的channel
 class IOEvent
 {
 public:
@@ -72,11 +73,12 @@ public:
     static IOEvent* createNew(int fd);
 
     IOEvent(int fd, void* arg);
-    ~IOEvent() { }
+    ~IOEvent() {}
 
+    // 获取fd和events的值
     int getFd() const { return mFd; }
     int getEvent() const { return mEvent; }
-    void setREvent(int event) { mREvent = event; }
+    void setREvent(int event) { mREvent = event; }// used by poller
     void setArg(void* arg) { mArg = arg; }
 
     void setReadCallback(EventCallback cb) { mReadCallback = cb; };
@@ -98,11 +100,12 @@ public:
     void handleEvent();
 
 private:
-    int mFd; //当前事件对应的描述符
+    int mFd; //fd,poller监听的对象，当前事件对应的描述符
     void* mArg;
     // 在事件处理过程中比较当前事件和触发事件，以确定事件的状态和类型。
-    int mEvent; // 当前事件类型,通常设置为希望监听的事件类型，如可读（EPOLLIN）、可写（EPOLLOUT）等。
-    int mREvent;// 触发事件类型,由底层的事件处理机制设置
+    int mEvent; // 当前事件类型，通常设置为希望监听的事件类型，如可读（EPOLLIN）、可写（EPOLLOUT）等。
+    int mREvent;// poller返回的具体发生的事件
+
     EventCallback mReadCallback;// 可读事件回调函数
     EventCallback mWriteCallback;// 可写事件回调函数
     EventCallback mErrorCallback;// 错误事件回调函数

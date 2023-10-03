@@ -14,8 +14,10 @@ TcpConnection::TcpConnection(UsageEnvironment* env, int sockfd) :
     mDisconnectionCallback(NULL),
     mArg(NULL)
 {
+    // 每个mTcpConnIOEvent都是一个channel
     // 创建了一个IOEvent对象，并设置了读写和错误的回调函数，
     mTcpConnIOEvent = IOEvent::createNew(sockfd, this);
+
     mTcpConnIOEvent->setReadCallback(TcpConnection::readCallback);
     mTcpConnIOEvent->setWriteCallback(TcpConnection::writeCallback);
     mTcpConnIOEvent->setErrorCallback(TcpConnection::errorCallback);

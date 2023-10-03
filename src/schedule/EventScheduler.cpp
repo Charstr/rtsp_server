@@ -22,17 +22,17 @@ static int createEventFd()
 
     return evtFd;
 }
-// 创建一个新的事件调度器EventScheduler实例
+
+
+// 工厂方法，创建一个新的事件调度器EventScheduler实例
 EventScheduler* EventScheduler::createNew(PollerType type){
     if(type != POLLER_SELECT && type != POLLER_POLL && type != POLLER_EPOLL)
         return NULL;
 
-    int evtFd = createEventFd();// 事件的fd
+    int evtFd = createEventFd();// mWakeupFd，每个EventLoop对象都有自己的eventfd
     if (evtFd < 0)
         return NULL;
 
-    //return new EventScheduler(type, evtFd);
-    // 通过工厂方法创建一个EventScheduler实例
     // 使用I/O多路复用来监听文件描述符的状态,当RTSP服务器需要同时处理多个描述符时，可以，并在有事件发生时进行相应的处理
     // 通过单例模式申请内存并强转类型然后在这块内存构造对象
     return New<EventScheduler>::allocate(type, evtFd);
@@ -62,25 +62,22 @@ EventScheduler::EventScheduler(PollerType type, int fd) :
         break;
     }
     
-    // Poller* mPoller 是事件轮询器,在事件循环中被用来等待和检测事件的发生,负责监听多个文件描述符上的事件，并将就绪的事件通知给相应的事件处理器
+    // mPoller 是事件轮询器，负责监听多个文件描述符上的事件，并将就绪的事件通知给相应的事件处理器
 
     // 定时器管理器，负责管理定时事件的触发和处理,维护了一个定时器队列，用于存储各种定时任务，如定时发送数据、定时任务执行等。当定时事件到达时，TimerManager 调用注册的回调函数，执行相应的操作。
-    // 创建mTimerIOEvent,设置定时触发的回调函数handleRead,timerManager->handleTimerEvent()处理定时事件
 
     // 执行mPoller->addIOEvent(mTimerIOEvent);
     mTimerManager = TimerManager::createNew(mPoller);
 
-    // IOEvent事件处理器，负责监控和处理各种文件描述符上的事件，包括读、写、定时器事件等。与不同的文件描述符（如套接字、定时器描述符等）关联，并注册回调函数，以便在事件发生时执行相应的操作。通常会包含一个状态机，用于处理不同的事件类型。
-
-    // 唤醒事件fd
+    // 某个IO唤醒后的事件，要进行处理的事件
     mWakeIOEvent = IOEvent::createNew(mWakeupFd, this);
 
-    // 可读事件回调EventScheduler::handleReadCallback并激活
-    // EventScheduler::handleRead()激活处理唤醒事件
+    // 设置mWakeupFd的事件类型和回调函数的函数指针，
     mWakeIOEvent->setReadCallback(EventScheduler::handleReadCallback);
-    mWakeIOEvent->enableReadHandling();
+    mWakeIOEvent->enableReadHandling(); // 设置事件类型
 
-    // 把唤醒事件添加到调度管理器
+    // 把唤醒事件添加到调度管理器，对应于muduo的Channel::update实现
+    // Poller这里通过多态，调用的是epoll的addIOEvent函数
     mPoller->addIOEvent(mWakeIOEvent);
     // 创建一个互斥锁
     mMutex = Mutex::createNew();
@@ -134,13 +131,14 @@ bool EventScheduler::updateIOEvent(IOEvent* event)
 {
     return mPoller->updateIOEvent(event);
 }
+
 // 移除I/O事件
 bool EventScheduler::removeIOEvent(IOEvent* event)
 {
     return mPoller->removeIOEvent(event);
 }
 
-// 在循环中处理触发事件、处理IO事件和处理其他事件。
+// 循环处理触发事件、处理IO事件和处理其他事件。
 void EventScheduler::loop()
 {
     while(mQuit != true)
@@ -154,12 +152,23 @@ void EventScheduler::loop()
     }
 }
 
-// 唤醒事件调度器，用于处理其他事件
+
+/*
+向想要唤醒的线程所绑定的EventScheduler对象的mWakeupFd随便写一个8字节数据
+
+mWakeupFd已经注册到这个EventScheduler的事件监听器上,此时事件监听器监听到文件描述符的事件发生，epoll_Wait阻塞结束并返回,就相当于起了唤醒线程的作用
+
+// EventScheduler既然阻塞在事件监听上,就通过mWakeupFd给EventScheduler对象一个事件,结束阻塞
+
+*/
 void EventScheduler::wakeup()
 {
     uint64_t one = 1;
-    int ret;
-    ret = ::write(mWakeupFd, &one, sizeof(one));
+    ssize_t ret = ::write(mWakeupFd, &one, sizeof(one));
+    if(ret!=sizeof(one)){
+		LOG_ERROR("EventScheduler::wakeup() writes %d bytes instead of 8 \n",ret);   
+    }
+    
 }
 
 // 处理触发事件
@@ -185,7 +194,7 @@ void EventScheduler::handleReadCallback(void* arg)
     scheduler->handleRead();
 }
 
-// 处理唤醒事件
+// mWakeupFd的回调函数
 void EventScheduler::handleRead()
 {
     uint64_t one;

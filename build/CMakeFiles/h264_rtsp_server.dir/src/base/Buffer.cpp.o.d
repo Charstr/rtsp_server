@@ -1,6 +1,7 @@
 CMakeFiles/h264_rtsp_server.dir/src/base/Buffer.cpp.o: \
- /home/more/proj/rtsp_server/src/base/Buffer.cpp \
- /usr/include/stdc-predef.h /home/more/proj/rtsp_server/src/base/Buffer.h \
+ /home/lcp/myProj/rtsp_server/src/base/Buffer.cpp \
+ /usr/include/stdc-predef.h \
+ /home/lcp/myProj/rtsp_server/src/base/Buffer.h \
  /usr/include/c++/11/stdlib.h /usr/include/c++/11/cstdlib \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
@@ -101,7 +102,7 @@ CMakeFiles/h264_rtsp_server.dir/src/base/Buffer.cpp.o: \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdint.h /usr/include/stdint.h \
  /usr/include/x86_64-linux-gnu/bits/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h /usr/include/assert.h \
- /home/more/proj/rtsp_server/src/server/SocketsOps.h \
+ /home/lcp/myProj/rtsp_server/src/server/SocketsOps.h \
  /usr/include/c++/11/string /usr/include/c++/11/bits/stringfwd.h \
  /usr/include/c++/11/bits/char_traits.h \
  /usr/include/c++/11/bits/postypes.h /usr/include/c++/11/cwchar \

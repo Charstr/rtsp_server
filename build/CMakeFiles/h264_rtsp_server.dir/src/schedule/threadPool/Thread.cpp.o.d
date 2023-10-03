@@ -1,7 +1,7 @@
 CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/Thread.cpp.o: \
- /home/more/proj/rtsp_server/src/schedule/threadPool/Thread.cpp \
+ /home/lcp/myProj/rtsp_server/src/schedule/threadPool/Thread.cpp \
  /usr/include/stdc-predef.h \
- /home/more/proj/rtsp_server/src/schedule/threadPool/Thread.h \
+ /home/lcp/myProj/rtsp_server/src/schedule/threadPool/Thread.h \
  /usr/include/pthread.h /usr/include/features.h \
  /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \

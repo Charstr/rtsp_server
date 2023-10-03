@@ -6,7 +6,9 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
+// 初始化events_的大小
 static const int InitEventListSize = 16;
+// 默认的Poller 超时时间,单位是毫秒
 static const int epollTimeout = 10000;
 
 EPollPoller* EPollPoller::createNew()
@@ -31,22 +33,28 @@ bool EPollPoller::addIOEvent(IOEvent* event)
     return updateIOEvent(event);
 }
 
+// epoll_ctl具体操作
 bool EPollPoller::updateIOEvent(IOEvent* event)
 {
+    // 创建一个epoll事件，这些函数要学习一下
     struct epoll_event epollEvt;
+    // 获取事件对应的文件描述符
     int fd = event->getFd();
 
     memset(&epollEvt, 0, sizeof(epollEvt));
     epollEvt.data.fd = fd;
+    
+    // 根据唤醒的事件类型处理
     if(event->isReadHandling())
         epollEvt.events |= EPOLLIN;
     if(event->isWriteHandling())
         epollEvt.events |= EPOLLOUT;
     if(event->isErrorHandling())
         epollEvt.events |= EPOLLERR;
-
+        
     IOEventMap::iterator it = mEventMap.find(fd);
     
+    // 事件已经注册过了，就epoll_ctl具体操作
     if(it != mEventMap.end())
     {
         epoll_ctl(mEPollFd, EPOLL_CTL_MOD, fd, &epollEvt);
@@ -62,8 +70,7 @@ bool EPollPoller::updateIOEvent(IOEvent* event)
     return true;
 }
 
-bool EPollPoller::removeIOEvent(IOEvent* event)
-{
+bool EPollPoller::removeIOEvent(IOEvent* event) {
     int fd = event->getFd();
     IOEventMap::iterator it = mEventMap.find(fd);
     if(it == mEventMap.end())
@@ -75,6 +82,7 @@ bool EPollPoller::removeIOEvent(IOEvent* event)
     return true;
 }
 
+// 处理事件，对应于muduo的EPollPoller::poll函数
 void EPollPoller::handleEvent()
 {
     int nums, fd, event, revent;
@@ -106,6 +114,7 @@ void EPollPoller::handleEvent()
         mEvents.push_back(it->second);
     }
 
+    // 通过不同的回调函数处理不同的事件
     for(std::vector<IOEvent*>::iterator it = mEvents.begin(); it != mEvents.end(); ++it)
         (*it)->handleEvent();
     

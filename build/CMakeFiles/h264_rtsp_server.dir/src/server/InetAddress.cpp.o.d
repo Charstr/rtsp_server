@@ -1,7 +1,7 @@
 CMakeFiles/h264_rtsp_server.dir/src/server/InetAddress.cpp.o: \
- /home/more/proj/rtsp_server/src/server/InetAddress.cpp \
+ /home/lcp/myProj/rtsp_server/src/server/InetAddress.cpp \
  /usr/include/stdc-predef.h \
- /home/more/proj/rtsp_server/src/server/InetAddress.h \
+ /home/lcp/myProj/rtsp_server/src/server/InetAddress.h \
  /usr/include/c++/11/string \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \

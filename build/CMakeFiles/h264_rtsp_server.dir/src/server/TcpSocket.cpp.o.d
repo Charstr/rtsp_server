@@ -1,5 +1,5 @@
 CMakeFiles/h264_rtsp_server.dir/src/server/TcpSocket.cpp.o: \
- /home/more/proj/rtsp_server/src/server/TcpSocket.cpp \
+ /home/lcp/myProj/rtsp_server/src/server/TcpSocket.cpp \
  /usr/include/stdc-predef.h /usr/include/unistd.h /usr/include/features.h \
  /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -19,7 +19,7 @@ CMakeFiles/h264_rtsp_server.dir/src/server/TcpSocket.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
  /usr/include/linux/close_range.h \
- /home/more/proj/rtsp_server/src/server/TcpSocket.h \
+ /home/lcp/myProj/rtsp_server/src/server/TcpSocket.h \
  /usr/include/c++/11/string \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
@@ -137,7 +137,7 @@ CMakeFiles/h264_rtsp_server.dir/src/server/TcpSocket.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
  /usr/include/c++/11/bits/charconv.h \
  /usr/include/c++/11/bits/basic_string.tcc \
- /home/more/proj/rtsp_server/src/server/InetAddress.h \
+ /home/lcp/myProj/rtsp_server/src/server/InetAddress.h \
  /usr/include/x86_64-linux-gnu/sys/socket.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
  /usr/include/x86_64-linux-gnu/bits/socket.h \
@@ -156,7 +156,7 @@ CMakeFiles/h264_rtsp_server.dir/src/server/TcpSocket.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
  /usr/include/netinet/in.h /usr/include/x86_64-linux-gnu/bits/in.h \
  /usr/include/arpa/inet.h \
- /home/more/proj/rtsp_server/src/server/SocketsOps.h \
+ /home/lcp/myProj/rtsp_server/src/server/SocketsOps.h \
  /usr/include/x86_64-linux-gnu/sys/uio.h \
  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
  /usr/include/x86_64-linux-gnu/bits/uio-ext.h

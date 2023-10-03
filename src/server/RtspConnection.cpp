@@ -26,8 +26,9 @@ RtspConnection* RtspConnection::createNew(RtspServer* rtspServer, int sockfd)
 }
 
 // 客户端连接
+// 对应于tcpserver的连接
 RtspConnection::RtspConnection(RtspServer* rtspServer, int sockfd) :
-    TcpConnection(rtspServer->envir(), sockfd), // mEnv->scheduler()->addIOEvent(mTcpConnIOEvent);
+    TcpConnection(rtspServer->envir(), sockfd), 
     mRtspServer(rtspServer),
     mMethod(NONE),
     mTrackId(MediaSession::TrackIdNone),
@@ -566,6 +567,7 @@ int RtspConnection::sendMessage()
 
     return ret;
 }
+
 // 创建RTP和RTCP的UDP连接
 bool RtspConnection::createRtpRtcpOverUdp(MediaSession::TrackId trackId, std::string peerIp, uint16_t peerRtpPort, uint16_t peerRtcpPort)
 {

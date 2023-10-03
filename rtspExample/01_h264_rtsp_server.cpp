@@ -18,13 +18,7 @@
 // 基于Reactor的事件处理、非阻塞IO的应用，以及线程池的使用。
 int main(int argc, char* argv[])
 {
-    // if(argc !=  2)
-    // {
-    //     std::cout<<"Usage: "<<argv[0]<<" <h264 file>"<<std::endl;
-    //     return -1;
-    // }
 
-    // std::string fileanme = "/home/more/proj/rtsp_server/rtspExample/test.h264";
     std::string fileanme = "./test.h264";
 
     //Logger::setLogFile("xxx.log");
@@ -45,13 +39,11 @@ int main(int argc, char* argv[])
     // 创建任务调度器
     EventScheduler* scheduler = EventScheduler::createNew(EventScheduler::POLLER_EPOLL);
 
-    // 创建一个线程池对象的实例,里边通过一个vector存储所有的线程
-    // 读取文件在子线程完成
+    // 创建一个线程池对象的实例,里边通过一个vector存储所有的线程，读取文件在子线程完成
     ThreadPool* threadPool = ThreadPool::createNew(2);
 
     // UsageEnvironment封装了EventScheduler和ThreadPool方便对调度和线程池的调用
     UsageEnvironment* env = UsageEnvironment::createNew(scheduler, threadPool);
-    // 上边通过申请内存并进行对象构造之后，在函数结束之后自动调用析构函数，中止对应的线程并调用析构释放内存
 
     /*--------------server---------------------*/
     // 传递的是服务器的listen fd
@@ -64,8 +56,6 @@ int main(int argc, char* argv[])
     /*--------------media---------------------*/
     MediaSource* mediaSource = H264FileMediaSource::createNew(env, fileanme);
 
-    //MediaSource* mediaSource = H264FileMediaSource::createNew(env, argv[1]);
-    
     // rtpSink资源消费者,资源生产者是mediaSource
     RtpSink* rtpSink = H264RtpSink::createNew(env, mediaSource);
     

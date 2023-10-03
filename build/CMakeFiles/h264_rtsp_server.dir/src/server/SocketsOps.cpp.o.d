@@ -1,5 +1,5 @@
 CMakeFiles/h264_rtsp_server.dir/src/server/SocketsOps.cpp.o: \
- /home/more/proj/rtsp_server/src/server/SocketsOps.cpp \
+ /home/lcp/myProj/rtsp_server/src/server/SocketsOps.cpp \
  /usr/include/stdc-predef.h /usr/include/unistd.h /usr/include/features.h \
  /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -88,7 +88,7 @@ CMakeFiles/h264_rtsp_server.dir/src/server/SocketsOps.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /usr/include/strings.h \
- /home/more/proj/rtsp_server/src/server/SocketsOps.h \
+ /home/lcp/myProj/rtsp_server/src/server/SocketsOps.h \
  /usr/include/c++/11/string \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \

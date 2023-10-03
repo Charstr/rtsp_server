@@ -10,14 +10,15 @@ Thread::Thread() :
 
 Thread::~Thread()
 {
+    // // 开始运行and不是工作线程
     if(mIsStart == true && mIsDetach == false)
-        detach();
+        detach(); // 线程分离
 }
     
 bool Thread::start(void *arg)
 {
     mArg = arg;
-
+    // 创建这个线程的时候设置的回调函数
     if(pthread_create(&mThreadId, NULL, threadRun, this))
         return false;
 
@@ -32,7 +33,7 @@ bool Thread::detach()
 
     if(mIsDetach == true)
         return true;
-
+    // 线程分离
     if(pthread_detach(mThreadId))
         return false;
 
@@ -41,6 +42,7 @@ bool Thread::detach()
     return true;
 }
 
+// 把该线程join到当前线程上
 bool Thread::join()
 {
     if(mIsStart != true || mIsDetach == true)

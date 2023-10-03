@@ -21,19 +21,19 @@ Acceptor::Acceptor(UsageEnvironment* env, const Ipv4Address& addr) :
     // 绑定套接字到指定server地址
     mSocket.bind(mAddr);
 
+    // mAcceptIOEvent对应muduo的Acceptor::acceptChannel_
+
     // 创建接受连接的IO事件,传递rtsp server的描述符
     // 将socket描述符传递给新的IO事件
     mAcceptIOEvent = IOEvent::createNew(mSocket.fd(), this);
     
-    // 设置处理可读事件的回调函数Acceptor::readCallback
-    // 回调函数调用函数handleRead进行处理, accept函数接受连接返回一个server和客户端通信的fd
+    // 把Acceptor::readCallback注册到mAcceptIOEvent
+    // Acceptor::readCallback调用函数handleRead进行处理, accept函数接受连接返回一个server和客户端通信的fd
     
-    // 调用处理新连接的回调函数mNewConnectionCallback
-    // 这里只是设置了回调函数，什么时候调用要通过IO事件来驱动
-    // 有个客户端连接向rtsp server发起请求，触发可读事件
-    // 这里只是设置相关的函数，还没有触发真正的调用
     mAcceptIOEvent->setReadCallback(Acceptor::readCallback);
+
     // 设置当前IO事件为可读事件
+    // muduo中在Acceptor::listen函数中设置为何独
     mAcceptIOEvent->enableReadHandling();
 }
 
@@ -63,8 +63,10 @@ void Acceptor::setNewConnectionCallback(NewConnectionCallback cb, void* arg)
     mArg = arg;
 }
 
-void Acceptor::listen()
-{
+// 调用listen(),开启对mSocket的监听,同时让mAcceptIOEvent注册到main EventScheduler的事件监听器上.
+
+void Acceptor::listen() {
+
     // 开始监听连接请求
     mListenning = true;
     mSocket.listen(1024);

@@ -51,8 +51,13 @@ protected:
     // 回调函数和参数
     DisconnectionCallback mDisconnectionCallback;
     void* mArg;
-    Buffer mInputBuffer;
+    Buffer mInputBuffer;  // 用户接受缓冲区
     Buffer mOutBuffer;
+		// 也是个缓冲区,不过是暂存那些发不出去的待发送数据
+		// 因为Tcp发送缓冲区是有大小限制的,加入到了高水位线,
+		// 就没办法把数据都通过send直接拷贝去tcp发送缓冲区,
+		// 而是暂存一些在这个outputBuffer_中,等待Tcp发送缓冲区有了空间
+		// 出发了写事件,再把outputBuffer_拷贝到Tcp发送缓冲区
     char mBuffer[2048];
 };
 

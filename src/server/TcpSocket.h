@@ -5,7 +5,7 @@
 
 #include "InetAddress.h"
 
-class  TcpSocket
+class TcpSocket
 {
 public:
     explicit TcpSocket(int sockfd) :

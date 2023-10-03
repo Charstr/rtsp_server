@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/g++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/more/proj/rtsp_server/src
+CXX_INCLUDES = -I/home/lcp/myProj/rtsp_server/src
 
 CXX_FLAGS = -g   -O0 -g -std=gnu++17
 

@@ -20,7 +20,7 @@ class RtspServer : public TcpServer
 public:
     // 创建一个新的RtspServer实例
     static RtspServer* createNew(UsageEnvironment* env, Ipv4Address& addr);
-
+    
     RtspServer(UsageEnvironment* env, const Ipv4Address& addr);
     virtual ~RtspServer();
     // 获取UsageEnvironment实例

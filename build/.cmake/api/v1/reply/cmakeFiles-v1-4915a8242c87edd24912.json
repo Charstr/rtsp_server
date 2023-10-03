@@ -125,8 +125,8 @@
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "/home/more/proj/rtsp_server/build",
-		"source" : "/home/more/proj/rtsp_server"
+		"build" : "/home/lcp/myProj/rtsp_server/build",
+		"source" : "/home/lcp/myProj/rtsp_server"
 	},
 	"version" : 
 	{
