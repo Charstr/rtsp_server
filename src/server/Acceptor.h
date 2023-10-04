@@ -1,7 +1,7 @@
 #ifndef _ACCEPTOR_H_
 #define _ACCEPTOR_H_
-#include "UsageEnvironment.h" 
-#include "Event.h"
+#include "schedule/UsageEnvironment.h"
+#include "schedule/Event.h"
 #include "server/InetAddress.h"
 #include "server/TcpSocket.h"
 
@@ -26,7 +26,7 @@ public:
     // 检查是否正在监听
     bool listenning() const { return mListenning; }
     void listen();// 开始监听连接
-    // 设置新连接回调函数
+    // 设置处理新连接的回调函数
     void setNewConnectionCallback(NewConnectionCallback cb, void* arg);
 
 private:

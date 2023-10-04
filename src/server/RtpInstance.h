@@ -19,6 +19,7 @@ public:
         RTP_OVER_UDP,
         RTP_OVER_TCP
     };
+
     // 创建一个处理UDP RTP数据流的实例
     static RtpInstance* createNewOverUdp(int localSockfd, uint16_t localPort,
                                     std::string destIp, uint16_t destPort)
@@ -33,10 +34,23 @@ public:
         return New<RtpInstance>::allocate(clientSockfd, rtpChannel);
     }
 
-    ~RtpInstance()
-    { 
+
+    // 多态设计，通过两个不同的构造函数来创建UDP和TCP类型的实例。适应不同的数据传输方式。
+
+    // 构造函数，用于处理UDP RTP数据流
+    RtpInstance(int localSockfd, uint16_t localPort, const std::string& destIp, uint16_t destPort) :
+        mRtpType(RTP_OVER_UDP), mSockfd(localSockfd), mLocalPort(localPort),
+        mDestAddr(destIp, destPort), mIsAlive(false), mSessionId(0) {}
+
+    // 构造函数，用于处理TCP RTP数据流
+    RtpInstance(int clientSockfd, uint8_t rtpChannel) :
+        mRtpType(RTP_OVER_TCP), mSockfd(clientSockfd), 
+        mIsAlive(false), mSessionId(0), mRtpChannel(rtpChannel){}
+
+    ~RtpInstance() { 
         sockets::close(mSockfd);
     }
+    
     // 获取本地端口号
     uint16_t getLocalPort() const { return mLocalPort; }
     // 获取远程端口号
@@ -45,12 +59,10 @@ public:
     // 发送RTP数据包
     int send(RtpPacket* rtpPacket)
     {
-        if(mRtpType == RTP_OVER_UDP)
-        {
+        if(mRtpType == RTP_OVER_UDP) {
             return sendOverUdp(rtpPacket->mBuffer, rtpPacket->mSize);
-        }
-        else
-        {
+        }else{
+            // tcp要加4字节
             uint8_t* rtpPktPtr = rtpPacket->_mBuffer;
             rtpPktPtr[0] = '$';
             rtpPktPtr[1] = (uint8_t)mRtpChannel;
@@ -77,25 +89,6 @@ private:
         return sockets::write(mSockfd, buf, size);
     }
 
-public:
-    // 多态设计，通过两个不同的构造函数来创建UDP和TCP类型的实例。适应不同的数据传输方式。
-
-    // 构造函数，用于处理UDP RTP数据流
-    RtpInstance(int localSockfd, uint16_t localPort, const std::string& destIp, uint16_t destPort) :
-        mRtpType(RTP_OVER_UDP), mSockfd(localSockfd), mLocalPort(localPort),
-        mDestAddr(destIp, destPort), mIsAlive(false), mSessionId(0)
-    {
-        
-    }
-    // 构造函数，用于处理TCP RTP数据流
-    RtpInstance(int clientSockfd, uint8_t rtpChannel) :
-        mRtpType(RTP_OVER_TCP), mSockfd(clientSockfd), 
-        mIsAlive(false), mSessionId(0), mRtpChannel(rtpChannel)
-    {
-        
-    }
-
-private:
     RtpType mRtpType;
     int mSockfd;
     uint16_t mLocalPort; //for udp
@@ -106,8 +99,7 @@ private:
 };
 
 // 发送RTCP数据包。
-class RtcpInstance
-{
+class RtcpInstance {
 public:
     static RtcpInstance* createNew(int localSockfd, uint16_t localPort,
                                     std::string destIp, uint16_t destPort)
@@ -121,8 +113,7 @@ public:
         sockets::close(mLocalSockfd);
     }
 
-    int send(void* buf, int size)
-    {
+    int send(void* buf, int size){
         return sockets::sendto(mLocalSockfd, buf, size, mDestAddr.getAddr());
     }
 
@@ -142,8 +133,7 @@ public:
     RtcpInstance(int localSockfd, uint16_t localPort,
                     std::string destIp, uint16_t destPort) :
         mLocalSockfd(localSockfd), mLocalPort(localPort), mDestAddr(destIp, destPort),
-        mIsAlive(false), mSessionId(0)
-    {   }
+        mIsAlive(false), mSessionId(0){}
 
 private:
     int mLocalSockfd;

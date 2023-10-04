@@ -6,6 +6,7 @@
 #include <assert.h>
 
 
+
 // 类表示一个缓冲区，其中包含了一些用于操作缓冲区的方法和成员变量。
 
 class Buffer
@@ -26,73 +27,60 @@ public:
         free(mBuffer);
     }
     // 获取缓冲区中可读、可写和可插入数据的字节数。
-    int readableBytes() const
-    { return mWriteIndex - mReadIndex; }
+    int readableBytes() const { return mWriteIndex - mReadIndex; }
+    // 缓冲区中可写区域free区域的长度
+    int writableBytes() const { return mBufferSize - mWriteIndex; }
 
-    int writableBytes() const
-    { return mBufferSize - mWriteIndex; }
+    int prependableBytes() const { return mReadIndex; }
+    // peek 窥视 返回可读数据的起始地址
+    char* peek() { return begin() + mReadIndex; }
 
-    int prependableBytes() const
-    { return mReadIndex; }
-
-    char* peek()
-    { return begin() + mReadIndex; }
     // 查看缓冲区中的数据。
-    const char* peek() const
-    { return begin() + mReadIndex; }
+    const char* peek() const { return begin() + mReadIndex; }
 
-    const char* findCRLF() const
-    {
+    const char* findCRLF() const {
         const char* crlf = std::search(peek(), beginWrite(), kCRLF, kCRLF+2);
         return crlf == beginWrite() ? NULL : crlf;
     }
 
-    const char* findCRLF(const char* start) const
-    {
+    const char* findCRLF(const char* start) const {
         assert(peek() <= start);
         assert(start <= beginWrite());
         const char* crlf = std::search(start, beginWrite(), kCRLF, kCRLF+2);
         return crlf == beginWrite() ? NULL : crlf;
     }
 
-    const char* findLastCrlf() const
-    {    
+    const char* findLastCrlf() const {    
         const char* crlf = std::find_end(peek(), beginWrite(), kCRLF, kCRLF+2);
         return crlf == beginWrite() ? NULL : crlf;
     }
 
     // 用于读取并移除缓冲区中的数据。
-    void retrieve(int len)
-    {
+    void retrieve(int len) {
         assert(len <= readableBytes());
-        if (len < readableBytes())
-        {
+        if (len < readableBytes()) {
             mReadIndex += len;
-        }
-        else
-        {
+        } else{
+            // 所有数据都读了,把readerIndex_和writerIndex_复位
             retrieveAll();
         }
     }
 
-    void retrieveUntil(const char* end)
-    {
+    void retrieveUntil(const char* end) {
         assert(peek() <= end);
         assert(end <= beginWrite());
         retrieve(end - peek());
     }
 
-    void retrieveAll()
-    {
+    // 复位
+    void retrieveAll() {
         mReadIndex = 0;
         mWriteIndex = 0;
     }
     // 用于获取可写位置和更新写位置。
-    char* beginWrite()
-    { return begin() + mWriteIndex; }
+    char* beginWrite() { return begin() + mWriteIndex; }
 
-    const char* beginWrite() const
-    { return begin() + mWriteIndex; }
+    const char* beginWrite() const { return begin() + mWriteIndex; }
 
     void hasWritten(int len)
     {
@@ -115,18 +103,15 @@ public:
         }
         assert(writableBytes() >= len);
     }
-
-    void makeSpace(int len)
-    {
+    // 给缓冲区扩容 or 移位
+    void makeSpace(int len) {
+        // 长度不够,说明要扩容
         if (writableBytes() + prependableBytes() < len) //如果剩余空间不足
         {
             /* 扩大空间 */            
             mBufferSize = mWriteIndex+len;
             mBuffer = (char*)realloc(mBuffer, mBufferSize);
-        }
-        else //剩余空间足够
-        {
-            /* 移动内容 */
+        } else {//剩余空间足够,移动内容
             int readable = readableBytes();
             std::copy(begin()+mReadIndex,
                     begin()+mWriteIndex,
@@ -137,15 +122,13 @@ public:
         }
     }
     // 向缓冲区中添加数据。
-    void append(const char* data, int len)
-    {
+    void append(const char* data, int len) {
         ensureWritableBytes(len); //调整空间
         std::copy(data, data+len, beginWrite()); //拷贝数据
         hasWritten(len); //重新调节写位置
     }
 
-    void append(const void* data, int len)
-    {
+    void append(const void* data, int len){
         append((const char*)(data), len);
     }
 
@@ -153,11 +136,9 @@ public:
     int write(int fd);
 
 private:
-    char* begin()
-    { return mBuffer; }
+    char* begin() { return mBuffer; }
 
-    const char* begin() const
-    { return mBuffer; }
+    const char* begin() const { return mBuffer; }
 
 private:
     char* mBuffer; // 指向缓冲区的指针

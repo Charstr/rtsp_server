@@ -12,47 +12,45 @@ RtspServer* RtspServer::createNew(UsageEnvironment* env, Ipv4Address& addr)
 }
 
 RtspServer::RtspServer(UsageEnvironment* env, const Ipv4Address& addr) :
-    TcpServer(env, addr)
-{
-
-    // TcpServer完成了连接
+    TcpServer(env, addr) {
 
     /*
-    // RtspServer->TcpServer->Acceptor(sockets::createTcpSock())
-
-    1. Acceptor创建rtsp server的TCP套接字，绑定好指定的端口，作为RTSP服务器的监听套接字,然后创建一个接收连接的IO事件mAcceptIOEvent，设置mAcceptIOEvent可读事件接受新连接的回调函数. 当有一个连接过来向rtsp server发起请求,触发可读事件进入Acceptor::readCallback回调函数进行处理。回调函数accept接收客户端连接返回一个新的套接字connfd进行服务端和客户端通信, 然后handleNewConnection
-    
-    通过多态的回调函数回RtspServer::handleNewConnection处理新连接 
-    mEnv->scheduler()->addIOEvent(mTcpConnIOEvent);
-    
-    2. TcpServer是rtspServer父类，TcpServer::handleNewConnection是个纯虚函数,所以newConnectionCallback调用的处理连接的虚函数其实是RtspServer::handleNewConnection进行处理,根据服务器和客户端通信的connfd创建一个新的rtsp连接,设置断开连接的对回调函数RtspServer::disconnectionCallback. 把要取消的连接加入到队列mDisconnectionlist
-    
-    3. 添加触发事件mTriggerEvent，以便稍后处理断开连接
+    1. Acceptor接受了连接交给TcpServer进行处理，实际进行处理的是通过多态调用的RtspServer。
+    2. 创建连接socket并绑定地址和端口后会有一个mAcceptIOEvent事件，这个事件会在listen监听时候加入到调度的epoll中。
+    3. 接下里当rtspserver->start启动后，回accept接受连接，返回进行通信的connfd，当轮询到该事件触发的时候用设置的回调函数Acceptor::mNewConnectionCallback进行处理，该回调函数是在tcpserver中设置的 TcpServer::newConnectionCallback，调用tcpServer->handleNewConnection，实际是通过多态调用的 RtspServer::handleNewConnection进行处理。
+  
+    3. 添加触发事件mTriggerEvent，触发的回调函数取调用执行对应的删除操作的函数,遍历所有要关闭的连接，取出来描述符进行关闭
     4. 创建互斥锁用于多线程同步
 
     */
 
-    // 触发事件,触发的回调函数取调用执行对应的删除操作的函数,遍历所有要关闭的连接，取出来描述符进行关闭
+    // 创建断开连接的触发事件
     mTriggerEvent = TriggerEvent::createNew(this);
-
+    // 触发事件，遍历所有的mConnections
     mTriggerEvent->setTriggerCallback(RtspServer::triggerCallback);
 
     mMutex = Mutex::createNew();
 }
 
+// mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback, this);
+// TcpServer::newConnectionCallback，调用tcpServer->handleNewConnection，实际是通过多态调用的 RtspServer::handleNewConnection进行处理。
+
+// 也就是说，accept接受了连接之后，通过tcpserver传递给了RtspServer进行新连接进来的处理
+
 // 这里开始和RtspConnection建立联系的桥梁
-void RtspServer::handleNewConnection(int connfd)
-{
-    
-    // 客户连接,处理服务器创建的通信的fd新连接
-    // mEnv->scheduler()->addIOEvent(mTcpConnIOEvent);
+void RtspServer::handleNewConnection(int connfd) {
+
+    /*
+    connfd也就是listen之后得到的socketfd也就是已经建立的连接，用来和客户端进行通信的fd，所有的rtsp数据的发送都是通过这个connfd进行的。
+
+    1. 创建一个TcpConnection，构造函数中创建了IOEvent事件mTcpConnIOEvent，设置可读的回调函数并add到EventScheduler，mTcpConnIOEvent就是用来进行数据传输的？
+    */
     RtspConnection* conn = RtspConnection::createNew(this, connfd);
 
-    // 设置断开连接处理的回调函数，关闭连接时操作
+    // 这里设置了断开连接处理的回调函数，关闭连接时操作
     conn->setDisconnectionCallback(RtspServer::disconnectionCallback, this);
 
-    // 添加新的RtspConnection到连接容器,进行遍历处理
-    // 根据服务端和客户端通信的fd（accept返回的）,通过与之对应的RtspConnection
+    // 服务端和客户端通信的connfd（accept返回的）以及对应的RtspConnection
     mConnections.insert(std::make_pair(connfd, conn));
 }
 

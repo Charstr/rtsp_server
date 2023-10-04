@@ -11,8 +11,7 @@
 #define RTP_HEADER_SIZE         12
 #define RTP_MAX_PKT_SIZE        1400
 
-struct RtpHeader
-{
+struct RtpHeader {
     /* byte 0 */
     uint8_t csrcLen:4;
     uint8_t extension:1;

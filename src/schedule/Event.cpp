@@ -22,7 +22,7 @@ TriggerEvent::TriggerEvent(void* arg) :
 {
 
 }
-
+// 处理触发事件，这里是断开连接
 void TriggerEvent::handleEvent()
 {
     if(mTriggerCallback)

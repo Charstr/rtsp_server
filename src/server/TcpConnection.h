@@ -5,11 +5,16 @@
 #include "TcpSocket.h"
 #include "base/Buffer.h"
 
-/*
-封装了与TCP连接相关的功能，包括创建、处理读写事件、处理错误以及处理断开连接等。
 
-TcpConnection类使用回调函数来处理套接字的读、写和错误事件。这些回调函数会在事件发生时被调用，从而允许处理特定的事件。
+/*
+
+1. 封装了已建立的TCP连接,以及控制该TCP连接的一些方法,还有连接发生后的各种事件的处理函数,以及这个连接的服务端客户端信息。使用回调函数会在事件发生时来处理套接字的读、写和错误事件。
+
+2. Acceptor和TcpConnection应该是兄弟关系,Acceptor对服务器监听套接字mSocket.fd()及其相关方法进行封装(监听,接受连接,分发连接等),而TcpConnection对连接套接字connfd及其相关方法进行封装(读消息事件,发送消息事件,连接关闭事件,错误时间等)
+ 
 使用Buffer类来管理输入和输出数据的缓冲区。可以将数据从套接字读入缓冲区，或者将数据从缓冲区写入套接字。
+
+
 */
 class TcpConnection
 {
@@ -30,7 +35,8 @@ protected:
     void disableWriteHandling();
     void disableErrorHandling();
 
-    // 处理读事件
+    // 负责处理TCP连接的可读事件,把客户端发来的数据拷贝到用户缓冲区
+    // 也就是mInputBuffer,接着调用connectionCallback_[连接建立后的处理函数]
     void handleRead();
     virtual void handleReadBytes();// 处理读字节
     virtual void handleWrite();
@@ -46,18 +52,22 @@ private:
 
 protected:
     UsageEnvironment* mEnv;
-    TcpSocket mSocket;
-    IOEvent* mTcpConnIOEvent;
+    TcpSocket mSocket;  // 用于保存已建立连接的客户端fd
+    
+    IOEvent* mTcpConnIOEvent; // 上边fd对应的IO事件，在构造函数中创建并注册到事件调度中
+
     // 回调函数和参数
     DisconnectionCallback mDisconnectionCallback;
+
     void* mArg;
+    // 缓冲区
     Buffer mInputBuffer;  // 用户接受缓冲区
     Buffer mOutBuffer;
-		// 也是个缓冲区,不过是暂存那些发不出去的待发送数据
-		// 因为Tcp发送缓冲区是有大小限制的,加入到了高水位线,
-		// 就没办法把数据都通过send直接拷贝去tcp发送缓冲区,
-		// 而是暂存一些在这个outputBuffer_中,等待Tcp发送缓冲区有了空间
-		// 出发了写事件,再把outputBuffer_拷贝到Tcp发送缓冲区
+    // 也是个缓冲区,不过是暂存那些发不出去的待发送数据
+    // 因为Tcp发送缓冲区是有大小限制的,加入到了高水位线,
+    // 就没办法把数据都通过send直接拷贝去tcp发送缓冲区,
+    // 而是暂存一些在这个outputBuffer_中,等待Tcp发送缓冲区有了空间
+    // 出发了写事件,再把outputBuffer_拷贝到Tcp发送缓冲区
     char mBuffer[2048];
 };
 

@@ -6,19 +6,18 @@
 
 TcpServer::TcpServer(UsageEnvironment* env, const Ipv4Address& addr) :
     mEnv(env),
-    mAddr(addr)
+    mAddr(addr) 
 {
     // 创建Acceptor，用于监听新连接
     mAcceptor = Acceptor::createNew(env, addr);
     assert(mAcceptor);
 
-    // 当有新用户连接时,会执行下面这个回调Tcp::newConnection
-    mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback, this);
+    // 到这里Acceptor创建了新的socket套接字、绑定的端口和IP但是没有进行监听listen和接受连接accept
+    // 监听在server->start()时候进行;accept在进行事件调度的时候，当有新的连接过来了进行。
+    // 设置的回调函数当mAcceptIOEvent事件触发的时候调用TcpServer::newConnectionCallback进行处理。
+    // 这个回调的前置函数调用tcpServer->handleNewConnection，实际是通过多态调用的 RtspServer::handleNewConnection进行处理，也就是进入到了RtspServer相关处理过程中
 
-    // newConnectionCallback是设置的处理新连接的回调函数，调用处理函数handleNewConnection进行处理
-    // TcpServer是rtspServer父类，TcpServer::handleNewConnection是个纯虚函数,所以
-    // newConnectionCallback调用的处理连接的虚函数其实是RtspServer::handleNewConnection进行处理的
-    // 同样的，这里也是在真正建立连接之前设置的,当触发可读事件的时候，会进行的一系列的调用
+    mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback, this);
 }
 
 
@@ -31,9 +30,8 @@ void TcpServer::newConnectionCallback(void* arg, int connfd)
 }
 
 
-void TcpServer::start()
-{
-    // 启动服务器开始监听新连接
+// rtspServer->start实际调用这个父类的函数，开始监听新连接
+void TcpServer::start() {
     mAcceptor->listen();
 }
 

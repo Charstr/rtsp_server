@@ -11,32 +11,28 @@
 #include "base/New.h"
 
 // 过解析请求消息的不同字段（方法、URL、CSeq等），它能够执行不同的操作，如发送OPTIONS响应、解析SDP描述、建立RTP连接等
-static void getPeerIp(int sockfd, std::string& ip)
-{
+static void getPeerIp(int sockfd, std::string& ip) {
     struct sockaddr_in addr;
     socklen_t addrlen = sizeof(struct sockaddr_in);
     getpeername(sockfd, (struct sockaddr*)&addr, &addrlen);
     ip = inet_ntoa(addr.sin_addr);
 }
 
-RtspConnection* RtspConnection::createNew(RtspServer* rtspServer, int sockfd)
-{
+RtspConnection* RtspConnection::createNew(RtspServer* rtspServer, int sockfd) {
     //return new RtspConnection(rtspServer, sockfd);
     return New<RtspConnection>::allocate(rtspServer, sockfd);
 }
 
-// 客户端连接
-// 对应于tcpserver的连接
 RtspConnection::RtspConnection(RtspServer* rtspServer, int sockfd) :
-    TcpConnection(rtspServer->envir(), sockfd), 
+    TcpConnection(rtspServer->envir(), sockfd), // sockf也就是connfd
     mRtspServer(rtspServer),
     mMethod(NONE),
     mTrackId(MediaSession::TrackIdNone),
     mSessionId(rand()),
-    mIsRtpOverTcp(false)
-{
-    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i)
-    {
+    mIsRtpOverTcp(false) {
+
+    // 初始化rtp和rtsp示例
+    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i){
         mRtpInstances[i] = NULL;
         mRtcpInstances[i] = NULL;
     }
@@ -44,15 +40,13 @@ RtspConnection::RtspConnection(RtspServer* rtspServer, int sockfd) :
     getPeerIp(sockfd, mPeerIp);
 }
 
-RtspConnection::~RtspConnection()
-{
-    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i)
-    {
+RtspConnection::~RtspConnection() {
+
+    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i) {
         if(mRtpInstances[i])
         {
             if(mSession)
                 mSession->removeRtpInstance(mRtpInstances[i]);
-            //delete mRtpInstances[i];
             Delete::release(mRtpInstances[i]);
         }
 

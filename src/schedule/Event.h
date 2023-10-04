@@ -27,7 +27,7 @@ public:
     static TriggerEvent* createNew();
 
     TriggerEvent(void* arg);
-    ~TriggerEvent() {  };
+    ~TriggerEvent() {};
     // `void*`类型的参数和一个回调函数指针，可以自定义事件的处理逻辑。
     void setArg(void* arg) { mArg = arg; }
     void setTriggerCallback(EventCallback cb) { mTriggerCallback = cb; }

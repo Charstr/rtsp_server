@@ -17,9 +17,14 @@ RtspConnection类继承自TcpConnection类，用于处理处理与RTSP服务器�
 class RtspConnection : public TcpConnection
 {
 public:
-    enum Method
-    {
-        OPTIONS, DESCRIBE, SETUP, PLAY, TEARDOWN, GET_PARAMETER, RTCP,
+    enum Method{
+        OPTIONS=0, 
+        DESCRIBE, 
+        SETUP, 
+        PLAY, 
+        TEARDOWN, 
+        GET_PARAMETER, 
+        RTCP,
         NONE,
     };
 
@@ -30,6 +35,7 @@ public:
 
 protected:
     // 处理接收到的字节流的主要入口，根据RTSP请求的不同类型（OPTIONS、DESCRIBE、SETUP、PLAY、TEARDOWN、GET_PARAMETER）分派到不同的处理方法。
+    // 重载的tcpConnecion的函数
     virtual void handleReadBytes();
 
 private:

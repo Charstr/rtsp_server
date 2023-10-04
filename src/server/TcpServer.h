@@ -2,7 +2,7 @@
 #define _TCP_SERVER_H_
 #include <map>
 
-#include "schedule/Acceptor.h"
+#include "Acceptor.h"
 #include "schedule/UsageEnvironment.h"
 #include "InetAddress.h"
 #include "TcpConnection.h"

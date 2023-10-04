@@ -10,10 +10,10 @@
 // TCP连接的实现，包含了TCP连接的读写处理、错误处理以及断开连接的回调处理等功能。
 TcpConnection::TcpConnection(UsageEnvironment* env, int sockfd) :
     mEnv(env),
-    mSocket(sockfd),
+    mSocket(sockfd), // 这里是accept后返回的已建立连接的connfd
     mDisconnectionCallback(NULL),
-    mArg(NULL)
-{
+    mArg(NULL) {
+
     // 每个mTcpConnIOEvent都是一个channel
     // 创建了一个IOEvent对象，并设置了读写和错误的回调函数，
     mTcpConnIOEvent = IOEvent::createNew(sockfd, this);
@@ -21,7 +21,8 @@ TcpConnection::TcpConnection(UsageEnvironment* env, int sockfd) :
     mTcpConnIOEvent->setReadCallback(TcpConnection::readCallback);
     mTcpConnIOEvent->setWriteCallback(TcpConnection::writeCallback);
     mTcpConnIOEvent->setErrorCallback(TcpConnection::errorCallback);
-    //默认只开启读
+
+    //默认只开启读事件，因为rtsp服务器一般只分发数据给客户端
     mTcpConnIOEvent->enableReadHandling(); 
 
     // 处理连接的IO事件加入到事件调度器
@@ -95,26 +96,21 @@ void TcpConnection::disableErrorHandling()
     mEnv->scheduler()->updateIOEvent(mTcpConnIOEvent);
 }
 
-void TcpConnection::handleRead()
-{
+void TcpConnection::handleRead() {
+    // 负责处理TCP连接的可读事件,从 connfd 中读取数据，并将其放入 inputbuffer 中
     int ret = mInputBuffer.read(mSocket.fd());
 
-    if(ret == 0)
-    {
+    if(ret == 0) {
         LOG_DEBUG("client disconnect\n");
-        handleDisconnection();
+        handleDisconnection(); // 客户端断开连接
         return;
-    }
-    else if(ret < 0)
-    {
+    }else if(ret < 0){
         LOG_ERROR("read err\n");
-        handleDisconnection();
+        handleDisconnection(); //读取失败
         return;
     }
 
-    /* 先取消读 */
-    //this->disableReadeHandling();
-    // 调用rtspconnection对象的函数实现
+    // 多态调用rtspconnection对象的函数
     handleReadBytes();
 }
 
@@ -153,8 +149,8 @@ void TcpConnection::errorCallback(void* arg)
     tcpConnection->handleError();
 }
 
-void TcpConnection::handleDisconnection()
-{
+// 处理断开连接也是rtsp进行的操作
+void TcpConnection::handleDisconnection() {
     if(TcpConnection::mDisconnectionCallback)
         TcpConnection::mDisconnectionCallback(mArg, mSocket.fd());
 }
