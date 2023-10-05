@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
     // 传递的是服务器的listen fd
     Ipv4Address ipAddr("0.0.0.0", 8554);
 
-
+    // 测试代理是否成功
     // 是一个RTSP服务器的类，用于管理RTSP连接和媒体会话,负责处理客户端连接
     RtspServer* server = RtspServer::createNew(env, ipAddr);
 
