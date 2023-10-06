@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     // test proxy
     // 创建一个线程池对象的实例,里边通过一个vector存储所有的线程，读取文件在子线程完成
     ThreadPool* threadPool = ThreadPool::createNew(2);
-
+    // test代理
     // UsageEnvironment封装了EventScheduler和ThreadPool方便对调度和线程池的调用
     UsageEnvironment* env = UsageEnvironment::createNew(scheduler, threadPool);
 
