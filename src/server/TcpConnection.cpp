@@ -15,6 +15,7 @@ TcpConnection::TcpConnection(UsageEnvironment* env, int sockfd) :
     mArg(NULL) {
 
     // 创建mTcpConnIOEvent传输数据的事件，并设置了读写和错误的回调函数，对应muduo的TcpConnection::channel_
+
     mTcpConnIOEvent = IOEvent::createNew(sockfd, this);
     mTcpConnIOEvent->setReadCallback(TcpConnection::readCallback);
     mTcpConnIOEvent->setWriteCallback(TcpConnection::writeCallback);
@@ -98,7 +99,10 @@ void TcpConnection::handleRead() {
 
     if(ret == 0) {
         LOG_DEBUG("client disconnect\n");
-        handleDisconnection(); // 客户端断开连接
+        // 客户端断开连接，多态调用断开连接的函数是RtspServer::disconnectionCallback
+        // 把要取消的连接加入到队列,添加触发事件mTriggerEvent，稍后处理断开连接
+        // 当mTriggerEvent触发的时候，调用handleDisconnectionList函数遍历所有要关闭的连接描述符，取出来描述符进行关闭
+        handleDisconnection(); 
         return;
     }else if(ret < 0){
         LOG_ERROR("read err\n");
@@ -106,7 +110,7 @@ void TcpConnection::handleRead() {
         return;
     }
 
-    // 多态调用rtspconnection对象的函数
+    // 读取到数据，就多态调用RtspConnection::handleReadBytes进行字节的解析
     handleReadBytes();
 }
 
@@ -145,7 +149,7 @@ void TcpConnection::errorCallback(void* arg)
     tcpConnection->handleError();
 }
 
-// 处理断开连接也是rtsp进行的操作
+// 处理断开连接也是rtsp进行的操作RtspServer::disconnectionCallback
 void TcpConnection::handleDisconnection() {
     if(TcpConnection::mDisconnectionCallback)
         TcpConnection::mDisconnectionCallback(mArg, mSocket.fd());

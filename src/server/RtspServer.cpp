@@ -19,21 +19,24 @@ RtspServer::RtspServer(UsageEnvironment* env, const Ipv4Address& addr) :
 
     1. Acceptor接受了连接交给TcpServer进行处理，实际进行处理的是通过多态调用的RtspServer。
     2. 创建连接socket并绑定地址和端口后会有一个mAcceptIOEvent事件，这个事件会在listen监听时候加入到调度的epoll中。
+
     3. 接下里当rtspserver->start启动后，回accept接受连接，返回进行通信的connfd，当轮询到该事件触发的时候用设置的回调函数Acceptor::mNewConnectionCallback进行处理，该回调函数是在tcpserver中设置的 TcpServer::newConnectionCallback，调用tcpServer->handleNewConnection，实际是通过多态调用的 RtspServer::handleNewConnection进行处理。到这里上边的TcpServer函数完成了。
+
     4. handleNewConnection会根据已经建立连接的connfd,创建RtspConnection对象，并设置处理断开连接时候的回调函数RtspServer::disconnectionCallback把该connfd加入到要断开连接的队列中，并向调度器添加触发事件，稍后处理断开连接，接下来把<connfd, RtspConnection>的对应映射加入到mConnections。
-    4.1 创建RtspConnection对象时候，其中创建一个TcpConnection，构造函数中创建了IOEvent事件mTcpConnIOEvent，设置读写异常回调函数，默认启用只读事件，add到EventScheduler，获取客户端IPmPeerIp。mTcpConnIOEvent是数据传输的事件
-    tst
+
+    4.1 创建RtspConnection对象时候，其中创建一个TcpConnection，构造函数中创建了IOEvent事件mTcpConnIOEvent，设置读（TcpConnection::readCallback）写异常回调函数，默认启用只读事件，然后把mTcpConnIOEvent添加到EventScheduler，获取客户端IPmPeerIp。当事件mTcpConnIOEvent发生的时候，会调用回调函数TcpConnection::readCallback进行数据的处理
+    
     */
     
-    // 5. 上边4创建了 connfd和RtspConnection的对应映射加入到了mConnections，并且设置了RtspConnection断开连接的回调函数，回调函数把connfd加入到了需要断开连接的队列中，并把断开连接的触发事件mTriggerEvent加入到调度器中。
-    
-    // 6. 创建触发事件mTriggerEvent，触发的回调函数triggerCallback遍历所有要关闭的连接描述符，取出来描述符进行关闭。疑问：单个连接为什么RtspConnection
- 
-    mTriggerEvent = TriggerEvent::createNew(this);
+    // 5. 上边4创建了 connfd和RtspConnection的对应映射加入到了mConnections，并且设置了RtspConnection断开连接的回调函数disconnectionCallback，回调函数把connfd加入到了需要断开连接的队列mDisconnectionlist中，并把断开连接的触发事件mTriggerEvent加入到调度器中，通过回调的触发事件mTriggerEvent进行触发删除。
+    // 疑问：单个连接为什么RtspConnection
 
+    // 6. 接下来创建触发事件，并设置触发事件的回调函数triggerCallback，回调函数遍历所有要关闭的连接描述符，从mConnections找到对应的RtspConnection释放内存关闭资源，然后从mConnections中删除对应的connfd的值。最后把map清空。
+
+    mTriggerEvent = TriggerEvent::createNew(this);
     mTriggerEvent->setTriggerCallback(RtspServer::triggerCallback);
 
-    // 4. 创建互斥锁用于多线程同步
+    // 7. 创建互斥锁用于多线程同步
     mMutex = Mutex::createNew();
 }
 
@@ -46,7 +49,7 @@ void RtspServer::handleNewConnection(int connfd) {
     // connfd也就是listen之后得到的socketfd也就是已经建立的连接，用来和客户端进行通信的fd，所有的rtsp数据的发送都是通过这个connfd进行的。
 
     // 1. 根据已经建立连接的connfd,创建RtspConnection对象。其中创建一个TcpConnection，构造函数中创建了IOEvent事件mTcpConnIOEvent，设置读写异常回调函数，默认启用只读事件，add到EventScheduler，获取客户端IPmPeerIp。mTcpConnIOEvent是数据传输的事件
-
+    // 设置了是否mIsRtpOverTcp
     RtspConnection* conn = RtspConnection::createNew(this, connfd);
 
     // 2. 设置RtspConnection关闭单个连接的回调函数，把当前连接的fd加入到要断开连接的队列中，并
@@ -117,8 +120,7 @@ MediaSession* RtspServer::loopupMediaSession(std::string name){
 }
 
 // 获取媒体会话的URL
-std::string RtspServer::getUrl(MediaSession* session)
-{
+std::string RtspServer::getUrl(MediaSession* session) {
     char url[200];
 
     snprintf(url, sizeof(url), "rtsp://%s:%d/%s", sockets::getLocalIp().c_str(),

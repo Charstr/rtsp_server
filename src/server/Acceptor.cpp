@@ -57,7 +57,7 @@ void Acceptor::listen() {
     mListenning = true;
     mSocket.listen(1024);
 
-    // 将接受连接的IO事件添加到事件调度器的循环中，这个为什么是add而不是update
+    // 将接受连接的IO事件mAcceptIOEvent添加到事件调度器的循环中，这个为什么是add而不是update
     mEnv->scheduler()->addIOEvent(mAcceptIOEvent);
 }
 

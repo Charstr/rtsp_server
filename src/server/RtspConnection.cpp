@@ -29,10 +29,10 @@ RtspConnection::RtspConnection(RtspServer* rtspServer, int sockfd) :
     mMethod(NONE),
     mTrackId(MediaSession::TrackIdNone),
     mSessionId(rand()),
-    mIsRtpOverTcp(false) {
+    mIsRtpOverTcp(false) { // udp/tcp传输
     // 1. TcpConnection创建了用于处理读的mTcpConnIOEvent，并设置读写异常回调函数，默认启用只读事件并加入到事件调度中
     
-    // 初始化rtp和rtsp示例
+    // 初始化rtp和rtsp示例，这个在setup的时候才有
     for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i){
         mRtpInstances[i] = NULL;
         mRtcpInstances[i] = NULL;
@@ -57,9 +57,10 @@ RtspConnection::~RtspConnection() {
     }
 }
 
+// 处理正常读取到的比特
 void RtspConnection::handleReadBytes() {
     bool ret;
-
+    // 根据tcp/udp进行分开处理
     if(mIsRtpOverTcp) {
         if(mInputBuffer.peek()[0] == '$') {
             handleRtpOverTcp();

@@ -57,6 +57,18 @@ int main(int argc, char* argv[]) {
     // 管理RTSP连接和媒体会话,负责处理客户端连接
     RtspServer* server = RtspServer::createNew(env, ipAddr);
 
+    /*
+    一些事件的添加：
+    1. Acceptor::listen()：
+    mEnv->scheduler()->addIOEvent(mAcceptIOEvent);
+    
+    2. RtspServer::handleDisconnection
+    mEnv->scheduler()->addTriggerEvent(mTriggerEvent);
+
+    3. 
+    */
+
+
     /*--------------media---------------------*/
     MediaSource* mediaSource = H264FileMediaSource::createNew(env, fileanme);
 

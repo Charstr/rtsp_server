@@ -55,12 +55,9 @@ bool EPollPoller::updateIOEvent(IOEvent* event)
     IOEventMap::iterator it = mEventMap.find(fd);
     
     // 事件已经注册过了，就epoll_ctl具体操作
-    if(it != mEventMap.end())
-    {
+    if(it != mEventMap.end()) {
         epoll_ctl(mEPollFd, EPOLL_CTL_MOD, fd, &epollEvt);
-    }
-    else
-    {
+    }else{
         epoll_ctl(mEPollFd, EPOLL_CTL_ADD, fd, &epollEvt);
         mEventMap.insert(std::make_pair(fd, event));
         if(mEventMap.size() >= mEPollEventList.size())
