@@ -17,23 +17,19 @@ Acceptor::Acceptor(UsageEnvironment* env, const Ipv4Address& addr) :
     mSocket(sockets::createTcpSock()), // 创建监听的socket套接字mSocket.fd();
     mNewConnectionCallback(NULL)
 {
-    // 允许地址重用，一个服务突然关掉，然后再重启，短时间内端口可能还没有释放，这样端口能重复利用
+    // 1. 允许地址重用，一个服务突然关掉，然后再重启，短时间内端口可能还没有释放，这样端口能重复利用
     mSocket.setReuseAddr(1);
-    // 绑定套接字到server地址和端口
+    // 2. 绑定套接字到server地址和端口
     mSocket.bind(mAddr);
 
-    // mAcceptIOEvent对应muduo的Acceptor::acceptChannel_
-    // 创建接受连接的IO事件，将socket描述符传递给新的IO事件
+    // 3. 创建接受连接的IO事件，将socket描述符传递给新的IO事件。对应muduo的Acceptor::acceptChannel_
     mAcceptIOEvent = IOEvent::createNew(mSocket.fd(), this);
     
-    // 把Acceptor::readCallback注册到mAcceptIOEvent，也就是设置处理事件的回调函数
-    // 接受连接（accept函数）返回一个server和客户端通信的fd
-    // 当有新连接过来，调用readCallback回调函数，回调函数使用处理函数handleRead accpet连接，
-    // 返回connfd进行通信，然后调用处理这个新连接的回调函数Acceptor::mNewConnectionCallback
-    // 这个回调函数设置的是TcpServer::newConnectionCallback，通过多态，调用rtspServer的处理函数。
+    /*
+    4. 把回调函数Acceptor::readCallback注册到mAcceptIOEvent也就是这个接受连接的事件。当事件调度器检测到有新的可读事件（新的连接）过来，回调函数accept用函数接受连接返回一个server和客户端通信的fd，然后调用Acceptor::mNewConnectionCallback函数处理新连接。这个函数设置的是TcpServer::newConnectionCallback，通过多态，调用rtspServer::newConnectionCallback进行处理。
+
+    */ 
     mAcceptIOEvent->setReadCallback(Acceptor::readCallback);
-    // 设置当前IO事件为可读事件
-    // muduo中在Acceptor::listen函数中设置为可读事件
     mAcceptIOEvent->enableReadHandling();
 }
 

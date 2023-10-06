@@ -14,10 +14,8 @@ TcpConnection::TcpConnection(UsageEnvironment* env, int sockfd) :
     mDisconnectionCallback(NULL),
     mArg(NULL) {
 
-    // 每个mTcpConnIOEvent都是一个channel
-    // 创建了一个IOEvent对象，并设置了读写和错误的回调函数，
+    // 创建mTcpConnIOEvent传输数据的事件，并设置了读写和错误的回调函数，对应muduo的TcpConnection::channel_
     mTcpConnIOEvent = IOEvent::createNew(sockfd, this);
-
     mTcpConnIOEvent->setReadCallback(TcpConnection::readCallback);
     mTcpConnIOEvent->setWriteCallback(TcpConnection::writeCallback);
     mTcpConnIOEvent->setErrorCallback(TcpConnection::errorCallback);
@@ -29,10 +27,9 @@ TcpConnection::TcpConnection(UsageEnvironment* env, int sockfd) :
     mEnv->scheduler()->addIOEvent(mTcpConnIOEvent);
 }
 
-TcpConnection::~TcpConnection()
-{
+TcpConnection::~TcpConnection() {
+
     mEnv->scheduler()->removeIOEvent(mTcpConnIOEvent);
-    //delete mTcpConnIOEvent;
     Delete::release(mTcpConnIOEvent);
 }
 
@@ -87,8 +84,7 @@ void TcpConnection::disableWriteHandling()
     mEnv->scheduler()->updateIOEvent(mTcpConnIOEvent);
 }
 
-void TcpConnection::disableErrorHandling()
-{
+void TcpConnection::disableErrorHandling() {
     if(!mTcpConnIOEvent->isErrorHandling())
         return;
 

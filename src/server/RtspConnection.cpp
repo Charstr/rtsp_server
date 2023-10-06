@@ -30,7 +30,8 @@ RtspConnection::RtspConnection(RtspServer* rtspServer, int sockfd) :
     mTrackId(MediaSession::TrackIdNone),
     mSessionId(rand()),
     mIsRtpOverTcp(false) {
-
+    // 1. TcpConnection创建了用于处理读的mTcpConnIOEvent，并设置读写异常回调函数，默认启用只读事件并加入到事件调度中
+    
     // 初始化rtp和rtsp示例
     for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i){
         mRtpInstances[i] = NULL;
@@ -43,29 +44,24 @@ RtspConnection::RtspConnection(RtspServer* rtspServer, int sockfd) :
 RtspConnection::~RtspConnection() {
 
     for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i) {
-        if(mRtpInstances[i])
-        {
+        if(mRtpInstances[i]){
             if(mSession)
                 mSession->removeRtpInstance(mRtpInstances[i]);
             Delete::release(mRtpInstances[i]);
         }
 
-        if(mRtcpInstances[i])
-        {
+        if(mRtcpInstances[i]){
             //delete mRtcpInstances[i];
             Delete::release(mRtcpInstances[i]);
         }
     }
 }
 
-void RtspConnection::handleReadBytes()
-{
+void RtspConnection::handleReadBytes() {
     bool ret;
 
-    if(mIsRtpOverTcp)
-    {
-        if(mInputBuffer.peek()[0] == '$')
-        {
+    if(mIsRtpOverTcp) {
+        if(mInputBuffer.peek()[0] == '$') {
             handleRtpOverTcp();
             return;
         }
@@ -108,9 +104,10 @@ void RtspConnection::handleReadBytes()
         goto err;
         break;
     }
-
     return;
+    
 err:
+    // 实际是通过多态调用的rtsp的实现
     handleDisconnection();
 }
 
@@ -552,8 +549,7 @@ int RtspConnection::sendMessage(void* buf, int size)
 }
 
 // 发送已有的数据给客户端
-int RtspConnection::sendMessage()
-{
+int RtspConnection::sendMessage() {
     int ret;
 
     ret = mOutBuffer.write(mSocket.fd());
