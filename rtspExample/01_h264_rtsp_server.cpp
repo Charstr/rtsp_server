@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 
     // 创建任务调度器
     EventScheduler* scheduler = EventScheduler::createNew(EventScheduler::POLLER_EPOLL);
-
+    // test proxy
     // 创建一个线程池对象的实例,里边通过一个vector存储所有的线程，读取文件在子线程完成
     ThreadPool* threadPool = ThreadPool::createNew(2);
 
