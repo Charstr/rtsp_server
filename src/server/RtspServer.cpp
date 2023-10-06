@@ -22,8 +22,9 @@ RtspServer::RtspServer(UsageEnvironment* env, const Ipv4Address& addr) :
     3. 接下里当rtspserver->start启动后，回accept接受连接，返回进行通信的connfd，当轮询到该事件触发的时候用设置的回调函数Acceptor::mNewConnectionCallback进行处理，该回调函数是在tcpserver中设置的 TcpServer::newConnectionCallback，调用tcpServer->handleNewConnection，实际是通过多态调用的 RtspServer::handleNewConnection进行处理。到这里上边的TcpServer函数完成了。
     4. handleNewConnection会根据已经建立连接的connfd,创建RtspConnection对象，并设置处理断开连接时候的回调函数RtspServer::disconnectionCallback把该connfd加入到要断开连接的队列中，并向调度器添加触发事件，稍后处理断开连接，接下来把<connfd, RtspConnection>的对应映射加入到mConnections。
     4.1 创建RtspConnection对象时候，其中创建一个TcpConnection，构造函数中创建了IOEvent事件mTcpConnIOEvent，设置读写异常回调函数，默认启用只读事件，add到EventScheduler，获取客户端IPmPeerIp。mTcpConnIOEvent是数据传输的事件
+    tst
     */
-
+    
     // 5. 上边4创建了 connfd和RtspConnection的对应映射加入到了mConnections，并且设置了RtspConnection断开连接的回调函数，回调函数把connfd加入到了需要断开连接的队列中，并把断开连接的触发事件mTriggerEvent加入到调度器中。
     
     // 6. 创建触发事件mTriggerEvent，触发的回调函数triggerCallback遍历所有要关闭的连接描述符，取出来描述符进行关闭。疑问：单个连接为什么RtspConnection
