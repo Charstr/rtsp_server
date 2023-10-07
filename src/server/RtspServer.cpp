@@ -73,7 +73,7 @@ void RtspServer::handleDisconnection(int sockfd){
     MutexLockGuard mutexLockGuard(mMutex);
     // 把要取消的连接加入到队列
     mDisconnectionlist.push_back(sockfd); 
-    // 添加触发事件，稍后处理断开连接
+    // 添加触发事件mTriggerEvent到std::vector<TriggerEvent*> mTriggerEvents，稍后处理断开连接
     mEnv->scheduler()->addTriggerEvent(mTriggerEvent);
 }
 

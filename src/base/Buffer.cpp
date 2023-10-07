@@ -7,8 +7,8 @@ const int Buffer::initialSize = 1024;
 const char* Buffer::kCRLF = "\r\n";
 
 // 从fd上读取数据 LT模式
-int Buffer::read(int fd)
-{
+int Buffer::read(int fd) {
+
     // saved an ioctl()/FIONREAD call to tell how much to read
     char extrabuf[65536]; // 栈上开辟的内存空间 64K
     struct iovec vec[2];
@@ -21,24 +21,19 @@ int Buffer::read(int fd)
     // when extrabuf is used, we read 128k-1 bytes at most.
     const int iovcnt = (writable < sizeof(extrabuf)) ? 2 : 1;
     const int n = sockets::readv(fd, vec, iovcnt);
-    if (n < 0)
-    {
+    if (n < 0){
         return -1; // 出错了
-    }
-    else if (n <= writable)// 说明buffer空间够用
-    {
-        mWriteIndex += n;
-    }
-    else// buffer空间不够,extrabuf上也有数据,用append把这部分数据拷贝过来
-    {
-        mWriteIndex = mBufferSize;
+    }else if (n <= writable){
+        mWriteIndex += n;// 说明buffer空间够用
+    } else {
+        // buffer空间不够,extrabuf上也有数据,用append把这部分数据拷贝过来
+        mWriteIndex = mBufferSize; 
         append(extrabuf, n - writable);
     }
-
     return n;
 }
 
-int Buffer::write(int fd)
-{
+int Buffer::write(int fd) {
+    
     return sockets::write(fd, peek(), readableBytes());
 }

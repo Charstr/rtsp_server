@@ -65,9 +65,12 @@ int main(int argc, char* argv[]) {
     2. RtspServer::handleDisconnection
     mEnv->scheduler()->addTriggerEvent(mTriggerEvent);
 
-    3. 
-    */
+    3. TimerManager::TimerManager
+    mPoller->addIOEvent(mTimerIOEvent);
 
+    4. EventScheduler::EventScheduler
+    mPoller->addIOEvent(mWakeIOEvent);
+    */
 
     /*--------------media---------------------*/
     MediaSource* mediaSource = H264FileMediaSource::createNew(env, fileanme);

@@ -22,8 +22,7 @@ public:
         mBuffer = (char*)malloc(mBufferSize);
     }
 
-    ~Buffer()
-    {
+    ~Buffer(){
         free(mBuffer);
     }
     // 获取缓冲区中可读、可写和可插入数据的字节数。
@@ -95,10 +94,8 @@ public:
     }
 
     /* 确保有足够的空间 */
-    void ensureWritableBytes(int len)
-    {
-        if (writableBytes() < len)
-        {
+    void ensureWritableBytes(int len) {
+        if (writableBytes() < len) {
             makeSpace(len);
         }
         assert(writableBytes() >= len);

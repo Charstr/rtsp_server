@@ -83,9 +83,8 @@ EventScheduler::EventScheduler(PollerType type, int fd) :
     mMutex = Mutex::createNew();
 }
 
-// 添加触发事件
-bool EventScheduler::addTriggerEvent(TriggerEvent* event)
-{
+// 添加触发事件mTriggerEvent到
+bool EventScheduler::addTriggerEvent(TriggerEvent* event) {
     mTriggerEvents.push_back(event);
 
     return true;
