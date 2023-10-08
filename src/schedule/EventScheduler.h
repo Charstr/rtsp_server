@@ -63,7 +63,8 @@ public:
 
     // 唤醒EventScheduler事件调度器所在的线程
     void wakeup();
-    // 在本地线程中运行回调函数
+
+    // 设置在本地线程中运行回调函数
     void runInLocalThread(Callback callBack, void* arg);
 
     // 处理其他事件，如本地线程中添加的回调函数

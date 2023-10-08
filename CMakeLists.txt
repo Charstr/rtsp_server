@@ -13,10 +13,6 @@ add_definitions(${CXX_FLAGS})
 set(LD_FLAGS -lpthread -lrt)
 
 include_directories(${SRC_DIR})
-# set(CXX_FLAGS -O0 -g)
-# add_definitions(${CXX_FLAGS})
-
-# set(LD_FLAGS -lpthread -lrt)
 
 file(GLOB_RECURSE SRC_BASE ${SRC_DIR}/base/*.cpp)
 
@@ -48,4 +44,4 @@ target_link_libraries(h264_rtsp_server ${LD_FLAGS})
 # target_link_libraries(server1 ${LD_FLAGS})
 
 #leetcode
-# add_executable(leetcode main.cpp)
+add_executable(leetcode main.cpp)

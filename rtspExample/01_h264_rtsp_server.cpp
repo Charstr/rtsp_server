@@ -70,6 +70,12 @@ int main(int argc, char* argv[]) {
 
     4. EventScheduler::EventScheduler
     mPoller->addIOEvent(mWakeIOEvent);
+
+    5. TcpConnection::TcpConnection
+    
+    mEnv->scheduler()->addIOEvent(mTcpConnIOEvent);
+
+
     */
 
     /*--------------media---------------------*/

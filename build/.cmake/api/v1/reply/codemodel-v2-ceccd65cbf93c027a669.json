@@ -15,7 +15,8 @@
 					"source" : ".",
 					"targetIndexes" : 
 					[
-						0
+						0,
+						1
 					]
 				}
 			],
@@ -30,7 +31,8 @@
 					"name" : "rtspServer",
 					"targetIndexes" : 
 					[
-						0
+						0,
+						1
 					]
 				}
 			],
@@ -39,8 +41,15 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "h264_rtsp_server::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-h264_rtsp_server-Debug-6e3e891f67b4f7d27ebd.json",
+					"jsonFile" : "target-h264_rtsp_server-Debug-06d7dceae6f0433a5754.json",
 					"name" : "h264_rtsp_server",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leetcode::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leetcode-Debug-e8f5b57b62aa7558bd9c.json",
+					"name" : "leetcode",
 					"projectIndex" : 0
 				}
 			]

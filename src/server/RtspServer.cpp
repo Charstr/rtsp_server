@@ -40,7 +40,6 @@ RtspServer::RtspServer(UsageEnvironment* env, const Ipv4Address& addr) :
     mMutex = Mutex::createNew();
 }
 
-
 // 有新连接进来的时候调用，处理连接的回调函数在TcpServer中设置回调函数，mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback, this);调用tcpServer->handleNewConnection，实际是通过多态调用的 RtspServer::handleNewConnection进行处理。也就是说，accept接受了连接之后，通过tcpserver传递给了RtspServer处理新连接，创建与之对应的RtspConnection进行数据的传输工作
 
 // 对应于muduo的TcpServer::newConnection

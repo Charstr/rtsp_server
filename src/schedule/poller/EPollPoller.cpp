@@ -80,38 +80,46 @@ bool EPollPoller::removeIOEvent(IOEvent* event) {
 }
 
 // 处理事件，对应于muduo的EPollPoller::poll函数
-void EPollPoller::handleEvent()
-{
+void EPollPoller::handleEvent() {
+    
     int nums, fd, event, revent;
-    IOEventMap::iterator it;
-    // 当前需要处理的事件个数
+
+    // 当前需要处理的事件个数，mEPollEventList是epoll上所有的事件
     nums = epoll_wait(mEPollFd, &*mEPollEventList.begin(), mEPollEventList.size(), epollTimeout);
-    if(nums < 0)
-    {
+    if(nums < 0){
         LOG_DEBUG("epoll wait err\n");
         return;
     }
 
-    for(int i = 0; i < nums; ++i)
-    {
+    for(int i = 0; i < nums; ++i){
+
         revent = 0;
-        fd = mEPollEventList.at(i).data.fd;
-        event = mEPollEventList.at(i).events;
+
+        fd = (mEPollEventList.begin()+i)->data.fd;
+        event = (mEPollEventList.begin()+i)->events;
+
+        //fd = (&mEPollEventList.front()+i)->data.fd;
+        // fd = mEPollEventList.at(i).data.fd;
+        // event = mEPollEventList.at(i).events;
+        
+        // epoll返回的具体事件
         if(event & EPOLLIN || event & EPOLLPRI || event & EPOLLRDHUP)
             revent |= IOEvent::EVENT_READ;
         if(event & EPOLLOUT)
             revent |= IOEvent::EVENT_WRITE;
         if(event & EPOLLERR)
             revent |= IOEvent::EVENT_ERROR;
-
-        it = mEventMap.find(fd);
+            
+        // 在Poller::map<int, IOEvent*> mEventMap中根据文件描述符查找该事件 
+  
+        IOEventMap::iterator it = mEventMap.find(fd);
         assert(it != mEventMap.end());
 
-        it->second->setREvent(revent);
-        mEvents.push_back(it->second);
+        it->second->setREvent(revent); // 设置epoll返回的具体发生的事件类型
+        mEvents.push_back(it->second);// 将发生的事件添加到集合
     }
 
-    // 通过不同的回调函数处理不同的事件
+    // 遍历所有的事件，通过不同的回调函数处理进行处理
     for(std::vector<IOEvent*>::iterator it = mEvents.begin(); it != mEvents.end(); ++it)
         (*it)->handleEvent();
     

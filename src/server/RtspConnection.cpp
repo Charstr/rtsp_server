@@ -69,14 +69,12 @@ void RtspConnection::handleReadBytes() {
     }
 
     ret = parseRequest();
-    if(ret != true)
-    {
+    if(ret != true){
         LOG_WARNING("failed to parse request\n");
         goto err;
     }
 
-    switch (mMethod)
-    {
+    switch (mMethod){
     case OPTIONS:
         if(handleCmdOption() != true)
             goto err;

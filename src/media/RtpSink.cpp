@@ -21,8 +21,7 @@ RtpSink::RtpSink(UsageEnvironment* env, MediaSource* mediaSource, int payloadTyp
     
 {
     mTimerEvent = TimerEvent::createNew(this);
-    // 设置超时回调函数RtpSink::timeoutCallback
-    // 发送数据
+    // 设置超时回调函数RtpSink::timeoutCallback，定时器触发的操作，发送数据包
     mTimerEvent->setTimeoutCallback(RtpSink::timeoutCallback);
 
     mSSRC = rand();
@@ -67,20 +66,17 @@ void RtpSink::timeoutCallback(void* arg)
 {
     RtpSink* rtpSink = (RtpSink*)arg;
     AVFrame* frame = rtpSink->mMediaSource->getFrame();
-    if(!frame)
-    {
-        return;
-    }
+    if(!frame) return;
 
-    // 处理输出
+    // 发送一个frame
     rtpSink->handleFrame(frame);
     // 循环队列，重复利用
     rtpSink->mMediaSource->putFrame(frame);
 }
 
-// 启动定时事件，以指定的时间间隔调用timeoutCallback函数。
-void RtpSink::start(int ms)
-{
+// 启动定时事件，以指定的时间间隔ms调用timeoutCallback函数。
+void RtpSink::start(int ms){
+    
     mTimerId = mEnv->scheduler()->addTimedEventRunEvery(mTimerEvent, ms);
 }
 

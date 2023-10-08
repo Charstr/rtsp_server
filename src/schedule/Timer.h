@@ -12,7 +12,8 @@
 3. 定时器触发通过Linux提供的timerfd实现，使用timerFdSetTime函数来设置定时器的触发时间和时间间隔。一旦定时器超时，将调用handleTimerEvent函数来处理定时器事件。
 4. TimerManager类通过TimerEvent的指针来允许不同类型的定时事件。这允许用户创建多个不同类型的定时器事件。
 */
-class Timer
+
+class Timer // 单个定时器
 {
 public:
     typedef uint32_t TimerId;// 定时器ID
@@ -26,17 +27,19 @@ public:
 private:
     friend class TimerManager;
     Timer(TimerEvent* event, Timestamp timestamp, TimeInterval timeInterval);
-    void handleEvent(); // 获取当前时间戳（毫秒级）
+    void handleEvent(); // 处理超时回调定时器事件
 
 private:
-    TimerEvent* mTimerEvent;// 定时器事件
+
+    // 定时器事件，handleEvent时候执行的是设置的mTimerEvent的回调处理函数mTimeoutCallback
+    TimerEvent* mTimerEvent;
     Timestamp mTimestamp; // 定时器触发时间戳
     TimeInterval mTimeInterval; // 定时器触发时间间隔
-    bool mRepeat;// 定时器是否重复
+    bool mRepeat;// 定时器是否重复触发
 };
 
-class TimerManager
-{
+// 管理多个定时器
+class TimerManager {
 public:
     // 创建TimerManager实例，传入一个Poller实例用于事件管理
     static TimerManager* createNew(Poller* poller);
@@ -51,7 +54,7 @@ public:
 
 private:
     void modifyTimeout();// 修改定时器超时时间
-    static void handleRead(void*);// 定时器事件的读回调函数
+    static void handleRead(void*);// 定时器事件的读回调函数，处理多个定时器事件
     void handleTimerEvent();// 处理定时器事件
 
 private:
@@ -63,6 +66,7 @@ private:
     typedef std::pair<Timer::Timestamp, Timer::TimerId> TimerIndex;
      // 定时器事件队列,以按时间顺序管理定时器。根据最早触发的定时器来调整timerfd的触发时间。
     std::multimap<TimerIndex, Timer> mEvents;
+
     uint32_t mLastTimerId;// 最后一个定时器的ID,当前使用的最大的TimerId
     IOEvent* mTimerIOEvent; // 定时器的IOEvent对象
 };

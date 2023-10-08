@@ -23,10 +23,7 @@ AACRtpSink::AACRtpSink(UsageEnvironment* env, MediaSource* mediaSource, int payl
     start(1000/mFps);
 }
 
-AACRtpSink::~AACRtpSink()
-{
-
-}
+AACRtpSink::~AACRtpSink(){}
 
 std::string AACRtpSink::getMediaDescription(uint16_t port)
 {

@@ -129,6 +129,43 @@ h264_rtsp_server/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/build
 .PHONY : h264_rtsp_server/fast
 
+#=============================================================================
+# Target rules for targets named leetcode
+
+# Build rule for target.
+leetcode: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 leetcode
+.PHONY : leetcode
+
+# fast build rule for target.
+leetcode/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/leetcode.dir/build.make CMakeFiles/leetcode.dir/build
+.PHONY : leetcode/fast
+
+main.o: main.cpp.o
+.PHONY : main.o
+
+# target to build an object file
+main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/leetcode.dir/build.make CMakeFiles/leetcode.dir/main.cpp.o
+.PHONY : main.cpp.o
+
+main.i: main.cpp.i
+.PHONY : main.i
+
+# target to preprocess a source file
+main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/leetcode.dir/build.make CMakeFiles/leetcode.dir/main.cpp.i
+.PHONY : main.cpp.i
+
+main.s: main.cpp.s
+.PHONY : main.s
+
+# target to generate assembly for a file
+main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/leetcode.dir/build.make CMakeFiles/leetcode.dir/main.cpp.s
+.PHONY : main.cpp.s
+
 rtspExample/01_h264_rtsp_server.o: rtspExample/01_h264_rtsp_server.cpp.o
 .PHONY : rtspExample/01_h264_rtsp_server.o
 
@@ -416,30 +453,6 @@ src/media/RtpSink.s: src/media/RtpSink.cpp.s
 src/media/RtpSink.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/media/RtpSink.cpp.s
 .PHONY : src/media/RtpSink.cpp.s
-
-src/schedule/Acceptor.o: src/schedule/Acceptor.cpp.o
-.PHONY : src/schedule/Acceptor.o
-
-# target to build an object file
-src/schedule/Acceptor.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/schedule/Acceptor.cpp.o
-.PHONY : src/schedule/Acceptor.cpp.o
-
-src/schedule/Acceptor.i: src/schedule/Acceptor.cpp.i
-.PHONY : src/schedule/Acceptor.i
-
-# target to preprocess a source file
-src/schedule/Acceptor.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/schedule/Acceptor.cpp.i
-.PHONY : src/schedule/Acceptor.cpp.i
-
-src/schedule/Acceptor.s: src/schedule/Acceptor.cpp.s
-.PHONY : src/schedule/Acceptor.s
-
-# target to generate assembly for a file
-src/schedule/Acceptor.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/schedule/Acceptor.cpp.s
-.PHONY : src/schedule/Acceptor.cpp.s
 
 src/schedule/Event.o: src/schedule/Event.cpp.o
 .PHONY : src/schedule/Event.o
@@ -729,6 +742,30 @@ src/schedule/threadPool/ThreadPool.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/ThreadPool.cpp.s
 .PHONY : src/schedule/threadPool/ThreadPool.cpp.s
 
+src/server/Acceptor.o: src/server/Acceptor.cpp.o
+.PHONY : src/server/Acceptor.o
+
+# target to build an object file
+src/server/Acceptor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/server/Acceptor.cpp.o
+.PHONY : src/server/Acceptor.cpp.o
+
+src/server/Acceptor.i: src/server/Acceptor.cpp.i
+.PHONY : src/server/Acceptor.i
+
+# target to preprocess a source file
+src/server/Acceptor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/server/Acceptor.cpp.i
+.PHONY : src/server/Acceptor.cpp.i
+
+src/server/Acceptor.s: src/server/Acceptor.cpp.s
+.PHONY : src/server/Acceptor.s
+
+# target to generate assembly for a file
+src/server/Acceptor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/src/server/Acceptor.cpp.s
+.PHONY : src/server/Acceptor.cpp.s
+
 src/server/InetAddress.o: src/server/InetAddress.cpp.o
 .PHONY : src/server/InetAddress.o
 
@@ -906,6 +943,10 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... h264_rtsp_server"
+	@echo "... leetcode"
+	@echo "... main.o"
+	@echo "... main.i"
+	@echo "... main.s"
 	@echo "... rtspExample/01_h264_rtsp_server.o"
 	@echo "... rtspExample/01_h264_rtsp_server.i"
 	@echo "... rtspExample/01_h264_rtsp_server.s"
@@ -942,9 +983,6 @@ help:
 	@echo "... src/media/RtpSink.o"
 	@echo "... src/media/RtpSink.i"
 	@echo "... src/media/RtpSink.s"
-	@echo "... src/schedule/Acceptor.o"
-	@echo "... src/schedule/Acceptor.i"
-	@echo "... src/schedule/Acceptor.s"
 	@echo "... src/schedule/Event.o"
 	@echo "... src/schedule/Event.i"
 	@echo "... src/schedule/Event.s"
@@ -981,6 +1019,9 @@ help:
 	@echo "... src/schedule/threadPool/ThreadPool.o"
 	@echo "... src/schedule/threadPool/ThreadPool.i"
 	@echo "... src/schedule/threadPool/ThreadPool.s"
+	@echo "... src/server/Acceptor.o"
+	@echo "... src/server/Acceptor.i"
+	@echo "... src/server/Acceptor.s"
 	@echo "... src/server/InetAddress.o"
 	@echo "... src/server/InetAddress.i"
 	@echo "... src/server/InetAddress.s"

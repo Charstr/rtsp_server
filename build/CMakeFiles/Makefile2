@@ -64,6 +64,7 @@ CMAKE_BINARY_DIR = /home/lcp/myProj/rtsp_server/build
 
 # The main recursive "all" target.
 all: CMakeFiles/h264_rtsp_server.dir/all
+all: CMakeFiles/leetcode.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -72,6 +73,7 @@ preinstall:
 
 # The main recursive "clean" target.
 clean: CMakeFiles/h264_rtsp_server.dir/clean
+clean: CMakeFiles/leetcode.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -99,6 +101,32 @@ h264_rtsp_server: CMakeFiles/h264_rtsp_server.dir/rule
 CMakeFiles/h264_rtsp_server.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/h264_rtsp_server.dir/build.make CMakeFiles/h264_rtsp_server.dir/clean
 .PHONY : CMakeFiles/h264_rtsp_server.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/leetcode.dir
+
+# All Build rule for target.
+CMakeFiles/leetcode.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/leetcode.dir/build.make CMakeFiles/leetcode.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/leetcode.dir/build.make CMakeFiles/leetcode.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lcp/myProj/rtsp_server/build/CMakeFiles --progress-num=34,35 "Built target leetcode"
+.PHONY : CMakeFiles/leetcode.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/leetcode.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/lcp/myProj/rtsp_server/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/leetcode.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/lcp/myProj/rtsp_server/build/CMakeFiles 0
+.PHONY : CMakeFiles/leetcode.dir/rule
+
+# Convenience name for target.
+leetcode: CMakeFiles/leetcode.dir/rule
+.PHONY : leetcode
+
+# clean rule for target.
+CMakeFiles/leetcode.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/leetcode.dir/build.make CMakeFiles/leetcode.dir/clean
+.PHONY : CMakeFiles/leetcode.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

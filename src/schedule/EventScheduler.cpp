@@ -11,11 +11,9 @@
 
 //EventScheduler类是一个事件调度器，用于管理和触发各种事件。用不同的轮询器(Poller)来处理IO事件和定时事件。一些辅助函数和回调函数，用于处理触发事件和其他事件的逻辑。
 
-static int createEventFd()
-{
+static int createEventFd() {
     int evtFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-    if (evtFd < 0)
-    {
+    if (evtFd < 0) {
         LOG_ERROR("failed to create event fd\n");
         return -1;
     }
@@ -43,8 +41,7 @@ EventScheduler::EventScheduler(PollerType type, int fd) :
     mQuit(false),
     mWakeupFd(fd)
 {
-    switch (type)
-    {
+    switch (type){
     case POLLER_SELECT:
         mPoller = SelectPoller::createNew();
         break;
@@ -67,6 +64,7 @@ EventScheduler::EventScheduler(PollerType type, int fd) :
     // 定时器管理器，负责管理定时事件的触发和处理,维护了一个定时器队列，用于存储各种定时任务，如定时发送数据、定时任务执行等。当定时事件到达时，TimerManager 调用注册的回调函数，执行相应的操作。
 
     // 执行mPoller->addIOEvent(mTimerIOEvent);
+    // mTimerManager管理多个定时器Timer
     mTimerManager = TimerManager::createNew(mPoller);
 
     // 某个IO唤醒后的事件，要进行处理的事件
@@ -90,6 +88,7 @@ bool EventScheduler::addTriggerEvent(TriggerEvent* event) {
     return true;
 }
 
+
 // 添加定时事件，在一定时间后执行
 Timer::TimerId EventScheduler::addTimedEventRunAfater(TimerEvent* event, Timer::TimeInterval delay)
 {
@@ -98,15 +97,15 @@ Timer::TimerId EventScheduler::addTimedEventRunAfater(TimerEvent* event, Timer::
     
     return mTimerManager->addTimer(event, when, 0);
 }
+
 // 添加定时事件，指定执行时间点
 Timer::TimerId EventScheduler::addTimedEventRunAt(TimerEvent* event, Timer::Timestamp when)
 {
     return mTimerManager->addTimer(event, when, 0);
 }
 
-// 添加定时事件，定期执行
-Timer::TimerId EventScheduler::addTimedEventRunEvery(TimerEvent* event, Timer::TimeInterval interval)
-{
+// 添加定时事件，定期执行, 到when的时候触发，触发的间隔为interval
+Timer::TimerId EventScheduler::addTimedEventRunEvery(TimerEvent* event, Timer::TimeInterval interval){
     Timer::Timestamp when = Timer::getCurTime();
     when += interval;
 
@@ -114,8 +113,7 @@ Timer::TimerId EventScheduler::addTimedEventRunEvery(TimerEvent* event, Timer::T
 }
 
 // 移除定时事件
-bool EventScheduler::removeTimedEvent(Timer::TimerId timerId)
-{
+bool EventScheduler::removeTimedEvent(Timer::TimerId timerId){
     return mTimerManager->removeTimer(timerId);
 }
 
@@ -126,25 +124,23 @@ bool EventScheduler::addIOEvent(IOEvent* event)
 }
 
 // 更新I/O事件
-bool EventScheduler::updateIOEvent(IOEvent* event)
-{
+bool EventScheduler::updateIOEvent(IOEvent* event){
     return mPoller->updateIOEvent(event);
 }
 
 // 移除I/O事件
-bool EventScheduler::removeIOEvent(IOEvent* event)
-{
+bool EventScheduler::removeIOEvent(IOEvent* event){
     return mPoller->removeIOEvent(event);
 }
 
 // 循环处理触发事件、处理IO事件和处理其他事件。
-void EventScheduler::loop()
-{
-    while(mQuit != true)
-    {
-        // 处理触发事件
+void EventScheduler::loop(){
+    while(mQuit != true){
+        // 处理触发事件，调用RtspServer::triggerCallback函数，遍历需要断开连接的mDisconnectionlist，根据映射关系从mConnections取出要断开的连接对应的RtspConnection，释放内存并从mConnections移除对应的连接描述符
         this->handleTriggerEvents();
-         // 处理IO事件
+        // 处理IO事件，epoll_wait把发生的事件赋值到事件数组中（vector<epoll_event> mEPollEventList，并返回数目nums，然后遍历事件数组的前nums个，根据epoll返回的具体事件类型，把发生的事件添加到mEvents，然后遍历整个数组分别调用各个事件的回调函数进行处理。
+        // mTcpConnIOEvent是传输数据的事件，mAcceptIOEvent是用来接受连接的
+        // mTimerIOEvent定时事件和mWakeIOEvent唤醒事件干什么？
         mPoller->handleEvent();
         // 处理其他事件
         this->handleOtherEvent();
@@ -170,11 +166,9 @@ void EventScheduler::wakeup()
     
 }
 
-// 处理触发事件
-void EventScheduler::handleTriggerEvents()
-{
-    if(!mTriggerEvents.empty())
-    {
+// 处理断开连接的触发事件
+void EventScheduler::handleTriggerEvents(){
+    if(!mTriggerEvents.empty()){
         for(std::vector<TriggerEvent*>::iterator it = mTriggerEvents.begin();
             it != mTriggerEvents.end(); ++it)
         {
@@ -184,34 +178,34 @@ void EventScheduler::handleTriggerEvents()
         mTriggerEvents.clear();
     }
 }
-// 用于IO事件的回调函数，用于处理唤醒事件
-void EventScheduler::handleReadCallback(void* arg)
-{
-    if(!arg) return;
 
+// 用于处理唤醒事件的回调函数
+void EventScheduler::handleReadCallback(void* arg){
+    if(!arg) return;
     EventScheduler* scheduler = (EventScheduler*)arg;
     scheduler->handleRead();
 }
 
 // mWakeupFd的回调函数
-void EventScheduler::handleRead()
-{
+void EventScheduler::handleRead(){
+
     uint64_t one;
     // 读取所有的唤醒事件
     while(::read(mWakeupFd, &one, sizeof(one)) > 0);
 }
-// 在本地线程中运行回调函数
+
+// 设置在本地线程处理的回调回调函数
 void EventScheduler::runInLocalThread(Callback callBack, void* arg)
 {
     MutexLockGuard mutexLockGuard(mMutex);
     mCallBackQueue.push(std::make_pair(callBack, arg));
 }
+
 // 处理其他事件，如本地线程中添加的回调函数
 void EventScheduler::handleOtherEvent()
 {
     MutexLockGuard mutexLockGuard(mMutex);
-    while(!mCallBackQueue.empty())
-    {
+    while(!mCallBackQueue.empty()){
         std::pair<Callback, void*> event = mCallBackQueue.front();
         event.first(event.second);
     }

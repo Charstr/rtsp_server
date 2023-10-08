@@ -48,27 +48,22 @@ TimerEvent::TimerEvent(void* arg) :
     
 }
 
-void TimerEvent::handleEvent()
-{
+void TimerEvent::handleEvent(){
     // 超时回调
     if(mTimeoutCallback)
         mTimeoutCallback(mArg);
 }
 
-IOEvent* IOEvent::createNew(int fd, void* arg)
-{
+IOEvent* IOEvent::createNew(int fd, void* arg){
     //fd当前事件对应的描述符
-    if(fd < 0)
-        return NULL;
+    if(fd < 0) return nullptr;
     // 使用New分配内存，创建IOEvent对象
     //return new IOEvent(fd, arg);
     return New<IOEvent>::allocate(fd, arg);
 }
 
-IOEvent* IOEvent::createNew(int fd)
-{
-    if(fd < 0)
-        return NULL;
+IOEvent* IOEvent::createNew(int fd){
+    if(fd < 0) return nullptr;
     // 使用New分配内存，创建IOEvent对象
     //return new IOEvent(fd, NULL);
     return New<IOEvent>::allocate(fd, (void*)0);
@@ -89,18 +84,15 @@ IOEvent::IOEvent(int fd, void* arg) :
 // 处理IO事件回调
 void IOEvent::handleEvent()
 {
-    if (mReadCallback && (mREvent & EVENT_READ))
-    {
+    if (mReadCallback && (mREvent & EVENT_READ)){
         mReadCallback(mArg);
     }
 
-    if (mWriteCallback && (mREvent & EVENT_WRITE))
-    {
+    if (mWriteCallback && (mREvent & EVENT_WRITE)){
         mWriteCallback(mArg);
     }
     
-    if (mErrorCallback && (mREvent & EVENT_ERROR))
-    {
+    if (mErrorCallback && (mREvent & EVENT_ERROR)){
         mErrorCallback(mArg);
     }
 };

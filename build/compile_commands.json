@@ -61,11 +61,6 @@
 },
 {
   "directory": "/home/lcp/myProj/rtsp_server/build",
-  "command": "/usr/bin/g++  -I/home/lcp/myProj/rtsp_server/src -g   -O0 -g -std=gnu++17 -o CMakeFiles/h264_rtsp_server.dir/src/schedule/Acceptor.cpp.o -c /home/lcp/myProj/rtsp_server/src/schedule/Acceptor.cpp",
-  "file": "/home/lcp/myProj/rtsp_server/src/schedule/Acceptor.cpp"
-},
-{
-  "directory": "/home/lcp/myProj/rtsp_server/build",
   "command": "/usr/bin/g++  -I/home/lcp/myProj/rtsp_server/src -g   -O0 -g -std=gnu++17 -o CMakeFiles/h264_rtsp_server.dir/src/schedule/Event.cpp.o -c /home/lcp/myProj/rtsp_server/src/schedule/Event.cpp",
   "file": "/home/lcp/myProj/rtsp_server/src/schedule/Event.cpp"
 },
@@ -126,6 +121,11 @@
 },
 {
   "directory": "/home/lcp/myProj/rtsp_server/build",
+  "command": "/usr/bin/g++  -I/home/lcp/myProj/rtsp_server/src -g   -O0 -g -std=gnu++17 -o CMakeFiles/h264_rtsp_server.dir/src/server/Acceptor.cpp.o -c /home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp",
+  "file": "/home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp"
+},
+{
+  "directory": "/home/lcp/myProj/rtsp_server/build",
   "command": "/usr/bin/g++  -I/home/lcp/myProj/rtsp_server/src -g   -O0 -g -std=gnu++17 -o CMakeFiles/h264_rtsp_server.dir/src/server/InetAddress.cpp.o -c /home/lcp/myProj/rtsp_server/src/server/InetAddress.cpp",
   "file": "/home/lcp/myProj/rtsp_server/src/server/InetAddress.cpp"
 },
@@ -158,5 +158,10 @@
   "directory": "/home/lcp/myProj/rtsp_server/build",
   "command": "/usr/bin/g++  -I/home/lcp/myProj/rtsp_server/src -g   -O0 -g -std=gnu++17 -o CMakeFiles/h264_rtsp_server.dir/src/server/TcpSocket.cpp.o -c /home/lcp/myProj/rtsp_server/src/server/TcpSocket.cpp",
   "file": "/home/lcp/myProj/rtsp_server/src/server/TcpSocket.cpp"
+},
+{
+  "directory": "/home/lcp/myProj/rtsp_server/build",
+  "command": "/usr/bin/g++  -I/home/lcp/myProj/rtsp_server/src -g   -O0 -g -std=gnu++17 -o CMakeFiles/leetcode.dir/main.cpp.o -c /home/lcp/myProj/rtsp_server/main.cpp",
+  "file": "/home/lcp/myProj/rtsp_server/main.cpp"
 }
 ]

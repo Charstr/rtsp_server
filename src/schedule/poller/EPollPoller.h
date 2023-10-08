@@ -31,7 +31,7 @@ private:
 
     EPollEventList mEPollEventList; // epoll_event集合
 
-    std::vector<IOEvent*> mEvents; // 对应事件的集合？
+    std::vector<IOEvent*> mEvents; // 发生事件的集合
 };
 
 #endif //_EPOLLPOLLER_H_

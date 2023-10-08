@@ -19,13 +19,11 @@ H264RtpSink::H264RtpSink(UsageEnvironment* env, MediaSource* mediaSource) :
     mClockRate(90000),
     mFps(mediaSource->getFps())
 {
+    // 1秒/帧率得到多少ms触发一次
     start(1000/mFps);
 }
 
-H264RtpSink::~H264RtpSink()
-{
-
-}
+H264RtpSink::~H264RtpSink(){}
 
 // 根据给定的端口号和负载类型生成媒体描述。
 std::string H264RtpSink::getMediaDescription(uint16_t port)

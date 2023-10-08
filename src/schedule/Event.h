@@ -39,8 +39,7 @@ private:
 };
 
 // 定时事件的处理
-class TimerEvent
-{
+class TimerEvent{
 public:
     static TimerEvent* createNew(void* arg);
     static TimerEvent* createNew();
@@ -49,6 +48,7 @@ public:
     ~TimerEvent() { }
 
     void setArg(void* arg) { mArg = arg; }
+    
     void setTimeoutCallback(EventCallback cb) { mTimeoutCallback = cb; }
     void handleEvent();
 
