@@ -120,6 +120,7 @@ void TcpConnection::handleReadBytes()
     mInputBuffer.retrieveAll();
 }
 
+// mOutBuffer没数据时候不需要向socket 中写入数据，但是此时 socket 一直是处于可写状态的， 这将会导致 TcpConnection::handleWrite() 一直被触发。
 void TcpConnection::handleWrite()
 {
     LOG_DEBUG("default wirte handle\n");

@@ -70,12 +70,13 @@ EventScheduler::EventScheduler(PollerType type, int fd) :
     // 某个IO唤醒后的事件，要进行处理的事件
     mWakeIOEvent = IOEvent::createNew(mWakeupFd, this);
 
-    // 设置mWakeupFd的事件类型和回调函数的函数指针，
+    // 设置mWakeupFd的事件类型和回调函数的函数指针，唤醒mWakeupFd
     mWakeIOEvent->setReadCallback(EventScheduler::handleReadCallback);
     mWakeIOEvent->enableReadHandling(); // 设置事件类型
 
     // 把唤醒事件添加到调度管理器，对应于muduo的Channel::update实现
     // Poller这里通过多态，调用的是epoll的addIOEvent函数
+    // 
     mPoller->addIOEvent(mWakeIOEvent);
     // 创建一个互斥锁
     mMutex = Mutex::createNew();
@@ -136,7 +137,8 @@ bool EventScheduler::removeIOEvent(IOEvent* event){
 // 循环处理触发事件、处理IO事件和处理其他事件。
 void EventScheduler::loop(){
     while(mQuit != true){
-        // 处理触发事件，调用RtspServer::triggerCallback函数，遍历需要断开连接的mDisconnectionlist，根据映射关系从mConnections取出要断开的连接对应的RtspConnection，释放内存并从mConnections移除对应的连接描述符
+
+        // 处理触发事件，调用的回调函数指针mTriggerCallback设置的是RtspServer::triggerCallback函数，遍历需要断开连接的mDisconnectionlist，根据映射关系从mConnections取出要断开的连接对应的RtspConnection，释放内存并从mConnections移除对应的连接描述符
         this->handleTriggerEvents();
         // 处理IO事件，epoll_wait把发生的事件赋值到事件数组中（vector<epoll_event> mEPollEventList，并返回数目nums，然后遍历事件数组的前nums个，根据epoll返回的具体事件类型，把发生的事件添加到mEvents，然后遍历整个数组分别调用各个事件的回调函数进行处理。
         // mTcpConnIOEvent是传输数据的事件，mAcceptIOEvent是用来接受连接的
@@ -156,6 +158,7 @@ mWakeupFd已经注册到这个EventScheduler的事件监听器上,此时事件�
 // EventScheduler既然阻塞在事件监听上,就通过mWakeupFd给EventScheduler对象一个事件,结束阻塞
 
 */
+// 唤醒在哪里使用？
 void EventScheduler::wakeup()
 {
     uint64_t one = 1;

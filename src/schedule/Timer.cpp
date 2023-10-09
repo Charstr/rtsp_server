@@ -4,20 +4,18 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
-static int timerFdCreate(int clockid, int flags)
-{
+static int timerFdCreate(int clockid, int flags){
     return timerfd_create(clockid, flags);
 }
 
-static bool timerFdSetTime(int fd, Timer::Timestamp when, Timer::TimeInterval period)
-{
+static bool timerFdSetTime(int fd, Timer::Timestamp when, Timer::TimeInterval period){
     struct itimerspec newVal;
 
     newVal.it_value.tv_sec = when / 1000;  // ms转换为s
     newVal.it_value.tv_nsec = when % 1000 * 1000 * 1000; //ms->ns
     newVal.it_interval.tv_sec = period / 1000;// ms转换为s
     newVal.it_interval.tv_nsec = period % 1000 * 1000 * 1000; // ms转换为ns
-
+    // 系统调用设置定时器的超时时间和间隔时间。
     if (timerfd_settime(fd, TFD_TIMER_ABSTIME, &newVal, NULL) < 0)
         return false;
 
@@ -72,7 +70,9 @@ TimerManager::TimerManager(int timerFd, Poller* poller) :
     mLastTimerId(0)
 {   
 
-    // 根据定时器fd创建 定时器IO事件
+    // 根据定时器fd创建定时器IO事件
+    // 是多路复用机制中监听定时器事件的一类事件，监听到mTimerIOEvent发生的时候说明定时器事件发生
+    // 就会使用具体的mTimerFd文件描述符执行相应的处理逻辑
     mTimerIOEvent = IOEvent::createNew(mTimerFd, this);
 
     // 设置处理定时任务的回调函数
@@ -96,24 +96,27 @@ void TimerManager::handleRead(void* arg){
 // 处理定时事件
 void TimerManager::handleTimerEvent(){
 
-    if(!mTimers.empty()){ // 存储的添加的定时器触发事件
+    if(!mTimers.empty()){ // 是否有定时器要处理
 
-        int64_t timePoint = Timer::getCurTime(); // 当前时间
+        int64_t timePoint = Timer::getCurTime(); // 当前时间戳以毫秒为单位
+
         // TimerId定时器ID，Timer单个定时器，Timestamp时间戳
         // map<TimerId, Timer> mTimers; 定时器ID和定时器映射
         // multimap<pair<Timestamp, TimerId>, Timer> mEvents; 与定时器事件对应的事件
-
-        // mEvents是按照时间顺序排列的，所以可以直接取出来第一个处理
-        // 遍历定时器中定时少于当前时间的进行处理，到了定时事件，就发送rtp包
+        // map和multimap都会进行自动排序，mTimers会按照TimerId排序，mEvents先按照Timestamp再TimerId
+        // 如果有定时事件要处理且有定时器事件需要触发即定时器事件的时间戳小于等于当前时间点
+        // 就处理所有满足触发条件的定时器事件。设置重复的定时事件就发送rtp包
         while(!mTimers.empty() && mEvents.begin()->first.first <= timePoint){
 
             Timer::TimerId timerId = mEvents.begin()->first.second; // 定时器ID
-            Timer timer = mEvents.begin()->second; // 单个定时器
+            Timer timer = mEvents.begin()->second; // 定时器
             // 通过设置的定时事件回调函数处理事件
             timer.handleEvent(); 
-            mEvents.erase(mEvents.begin()); // 执行完之后删除该事件
-            // 如果事件要重复执行就更新下次执行的事件戳加入到存储事件的mEvents中。
-            if(timer.mRepeat == true) {
+            mEvents.erase(mEvents.begin()); // 执行完之后从事件队列删除该事件
+
+            // 如果定时器事件需要重复执行，则计算下一次触发的时间戳，并将该事件重新加入到事件队列mEvents中以便下次触发
+            if(timer.mRepeat) {
+                // 那就不需要删除定时器
                 timer.mTimestamp = timePoint + timer.mTimeInterval; // 下次执行的时间戳
                 // 按照时间戳排序的事件
                 mEvents.insert(std::make_pair(TimerIndex(timer.mTimestamp, timerId), timer));
@@ -123,6 +126,8 @@ void TimerManager::handleTimerEvent(){
         }
     }
 
+    // 要么mTimers为空，要么是事件发生的时间戳都比当前的时间大，也就是定时器事件可能已经被处理完
+    // 根据定时器队列中的剩下事件的最早触发时间，更新定时器文件描述符mTimerFd的超时时间。
     modifyTimeout();
 }
 
@@ -134,9 +139,9 @@ Timer::TimerId TimerManager::addTimer(TimerEvent* event, Timer::Timestamp timest
     Timer timer(event, timestamp, timeInterval); // 创建定时器
 
     ++mLastTimerId; // 新添加的定时器索引
-    // 存储要触发的定时器，按照时间顺序加入的
+    // 存储要触发的定时器，实际上不一定是按照时间顺序，后边可能有要重复的
     mTimers.insert(std::make_pair(mLastTimerId, timer));
-    // 与上边定时器相关的事件，按照时间顺序加入的
+    // 与上边定时器相关的定时器事件队列，按照时间顺序加入到队列
     mEvents.insert(std::make_pair(TimerIndex(timestamp, mLastTimerId), timer));
 
     modifyTimeout();
@@ -144,8 +149,7 @@ Timer::TimerId TimerManager::addTimer(TimerEvent* event, Timer::Timestamp timest
     return mLastTimerId;
 }   
 
-bool TimerManager::removeTimer(Timer::TimerId timerId)
-{
+bool TimerManager::removeTimer(Timer::TimerId timerId){
     std::map<Timer::TimerId, Timer>::iterator it = mTimers.find(timerId);
     if(it != mTimers.end()){
         Timer::Timestamp timestamp = it->second.mTimestamp;
@@ -159,15 +163,19 @@ bool TimerManager::removeTimer(Timer::TimerId timerId)
     return true;
 }
 
-void TimerManager::modifyTimeout()
-{
-    // 定时器队列采用multimap管理超时时间
+// 将mTimerFd的超时时间设置为下一个最早触发的事件的触发时间，确保了在事件队列中最早的事件发生时，mTimerFd会被触发，通知程序执行相应的处理逻辑。
+void TimerManager::modifyTimeout(){
+
+    // 定时器队列采用multimap管理超时时间，会自动根据时间戳排序
     std::multimap<TimerIndex, Timer>::iterator it = mEvents.begin();
     if(it != mEvents.end()){
-        Timer timer = it->second;
-        timerFdSetTime(mTimerFd, timer.mTimestamp, timer.mTimeInterval);        
-    } else timerFdSetTime(mTimerFd, 0, 0);
+        // 事件队列中还有待触发的事件，取出最早触发的事件，将定时器文件描述符的超时时间设置为该事件的时间戳和间隔时间
+        // 这样，定时器将在该时间点触发，并执行相应的操作。
+        Timer timer = it->second; // 定时器
 
+        // timer.mTimestamp是下一个最早触发的事件的触发时间，将mTimerFd的超时时间设置为该时间戳，确保了在事件队列中最早的事件发生时，mTimerFd会被触发，通知程序执行相应的处理逻辑。
+        timerFdSetTime(mTimerFd, timer.mTimestamp, timer.mTimeInterval);        
+    } else timerFdSetTime(mTimerFd, 0, 0); // 定时器队列为空，取消定时器，将超时时间设置为0
 }
 
 TimerManager::~TimerManager(){
