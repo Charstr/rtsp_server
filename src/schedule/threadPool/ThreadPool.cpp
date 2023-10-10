@@ -22,9 +22,9 @@ ThreadPool::ThreadPool(int num) :
 // 创建线程的函数，遍历线程组，启动每一个线程，分配工作线程
 void ThreadPool::createThreads(){
     MutexLockGuard mutexLockGuard(mMutex);// 互斥锁保护线程池
-    // 遍历线程池 pthread_create创建线程并设置mIsStart=true
-    // 设置某个线程执行的回调函数Thread::threadRun，通过单个工作线程的函数ThreadPool::MThread::run
-    // 运行
+    // 遍历线程池的大小，pthread_create创建线程MThread并设置线程执行的回调函数Thread::threadRun
+    // 通过单个工作线程的函数ThreadPool::MThread::run调用threadPool->handleTask，从任务队列取出
+    // 一个任务执行
     for(std::vector<MThread>::iterator it = mThreads.begin(); it != mThreads.end(); ++it)
         (*it).start(this);
 }

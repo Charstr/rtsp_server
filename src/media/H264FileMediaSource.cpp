@@ -31,10 +31,10 @@ H264FileMediaSource::H264FileMediaSource(UsageEnvironment* env, const std::strin
     // 添加任务mTask到线程池的任务队列mTaskQueue，
     for(int i = 0; i < DEFAULT_FRAME_NUM; ++i)
         mEnv->threadPool()->addTask(mTask);
+    
 }
 
-H264FileMediaSource::~H264FileMediaSource()
-{
+H264FileMediaSource::~H264FileMediaSource(){
     ::close(mFd);
 }
 

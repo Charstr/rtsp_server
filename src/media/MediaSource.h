@@ -54,6 +54,13 @@ private:
 
 protected:
     UsageEnvironment* mEnv;
+    /*
+    这里设计了一个环形队列，环形队列的大小是缓冲区的大小。入队列和出队列都维护指向缓冲区的指针
+    生产数据的时候，从h264文件读取一个AVFrame到入队列，然后入队列取出一个AVFrame插入到出队列
+
+    消费数据的时候，getFrame从出队列取出一个AVFrame然后插入到入队列
+    */ 
+
     AVFrame mAVFrames[DEFAULT_FRAME_NUM];// 视频帧缓冲区数组
     std::queue<AVFrame*> mAVFrameInputQueue;// 视频帧输入队列
     std::queue<AVFrame*> mAVFrameOutputQueue;// 视频帧输出队列
