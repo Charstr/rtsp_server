@@ -63,6 +63,7 @@ EventScheduler::EventScheduler(PollerType type, int fd) :
 
     // 定时器管理器，负责管理定时事件的触发和处理,维护了一个定时器队列，用于存储各种定时任务，如定时发送数据、定时任务执行等。当定时事件到达时，TimerManager 调用注册的回调函数，执行相应的操作。
 
+    // 传进去mPoller是为了把事件注册到多路复用上
     // 执行mPoller->addIOEvent(mTimerIOEvent);
     // mTimerManager管理多个定时器Timer
     mTimerManager = TimerManager::createNew(mPoller);

@@ -19,7 +19,7 @@ public:
 
 protected:
     Thread();
-    // 是一个纯虚函数，需要子类实现，用于执行线程的具体逻辑。
+    // 纯虚函数，需要子类实现，用于执行线程的具体逻辑。
     virtual void run(void *arg) = 0;
 
 private:
@@ -31,7 +31,7 @@ private:
     void *mArg;
     bool mIsStart;
     bool mIsDetach;
-    pthread_t mThreadId;
+    pthread_t mThreadId; // 每一个线程一个ID
 };
 
 #endif //_THREAD_H_

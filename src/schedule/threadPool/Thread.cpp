@@ -8,15 +8,13 @@ Thread::Thread() :
 
 }
 
-Thread::~Thread()
-{
-    // // 开始运行and不是工作线程
+Thread::~Thread(){
+    // 开始运行且不是工作线程
     if(mIsStart == true && mIsDetach == false)
         detach(); // 线程分离
 }
     
-bool Thread::start(void *arg)
-{
+bool Thread::start(void *arg){
     mArg = arg;
     // 创建这个线程的时候设置的回调函数
     if(pthread_create(&mThreadId, NULL, threadRun, this))
@@ -26,8 +24,7 @@ bool Thread::start(void *arg)
     return true;
 }
 
-bool Thread::detach()
-{
+bool Thread::detach(){
     if(mIsStart != true)
         return false;
 
@@ -43,8 +40,7 @@ bool Thread::detach()
 }
 
 // 把该线程join到当前线程上
-bool Thread::join()
-{
+bool Thread::join(){
     if(mIsStart != true || mIsDetach == true)
         return false;
 
@@ -54,27 +50,20 @@ bool Thread::join()
     return true;
 }
 
-bool Thread::cancel()
-{
-    if(mIsStart != true)
-        return false;
-
-    if(pthread_cancel(mThreadId))
-        return false;
-    
+bool Thread::cancel(){
+    if(mIsStart != true) return false;
+    if(pthread_cancel(mThreadId)) return false;
     mIsStart = false;
 
     return true;
 }
 
-pthread_t Thread::getThreadId() const
-{
+pthread_t Thread::getThreadId() const{
     return mThreadId;
 }
 
-void *Thread::threadRun(void *arg)
-{
+void *Thread::threadRun(void *arg){
     Thread* thread = (Thread*)arg;
     thread->run(thread->mArg);
-    return NULL;
+    return nullptr;
 }

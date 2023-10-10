@@ -20,6 +20,7 @@ EPollPoller* EPollPoller::createNew()
 EPollPoller::EPollPoller() :
     mEPollEventList(InitEventListSize)
 {
+    // 创建多路复用文件描述符fd
     mEPollFd = ::epoll_create1(EPOLL_CLOEXEC);
 }
 
@@ -51,7 +52,8 @@ bool EPollPoller::updateIOEvent(IOEvent* event)
         epollEvt.events |= EPOLLOUT;
     if(event->isErrorHandling())
         epollEvt.events |= EPOLLERR;
-        
+    
+    
     IOEventMap::iterator it = mEventMap.find(fd);
     
     // 事件已经注册过了，就epoll_ctl具体操作
@@ -98,7 +100,6 @@ void EPollPoller::handleEvent() {
         fd = (mEPollEventList.begin()+i)->data.fd;
         event = (mEPollEventList.begin()+i)->events;
 
-        //fd = (&mEPollEventList.front()+i)->data.fd;
         // fd = mEPollEventList.at(i).data.fd;
         // event = mEPollEventList.at(i).events;
         

@@ -1,6 +1,8 @@
 #ifndef _CONDITION_H_
 #define _CONDITION_H_
+#include <condition_variable>
 #include <pthread.h>
+#include <thread>
 
 #include "Mutex.h"
 
@@ -23,6 +25,7 @@ public:
     void broadcast();// 唤醒所有等待的线程
 
 private:
+
     pthread_cond_t mCond;// 条件变量对象
 };
 

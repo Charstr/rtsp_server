@@ -27,9 +27,7 @@ public:
 private:
     int mEPollFd;
 
-    typedef std::vector<struct epoll_event> EPollEventList;
-
-    EPollEventList mEPollEventList; // epoll_event集合
+    std::vector<epoll_event> mEPollEventList; // epoll_event集合
 
     std::vector<IOEvent*> mEvents; // 发生事件的集合
 };

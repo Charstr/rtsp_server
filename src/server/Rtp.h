@@ -9,7 +9,8 @@
 #define RTP_PAYLOAD_TYPE_AAC    97
 
 #define RTP_HEADER_SIZE         12
-#define RTP_MAX_PKT_SIZE        1400
+// 设置多少？
+#define RTP_MAX_PKT_SIZE        1440 //1400
 
 struct RtpHeader {
     /* byte 0 */

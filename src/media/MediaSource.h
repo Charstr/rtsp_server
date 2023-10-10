@@ -31,7 +31,7 @@ public:
 
     uint8_t* mBuffer;// 视频帧数据缓冲区
     uint8_t* mFrame;// 视频帧数据指针
-    int mFrameSize; // 视频帧大小
+    int mFrameSize; // AVFrame大小
 };
 
 class MediaSource

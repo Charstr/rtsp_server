@@ -32,8 +32,7 @@ int main(int argc, char* argv[]) {
     /*
 
     实现步骤和详细流程：
-    1. Mutex和Condition用于多线程同步的类。Mutex用于创建互斥锁，Condition用于线程间的条件变量通信。
-    2. threadPool类用于创建和管理线程池，其中包括线程的创建和管理，以及添加任务到任务队列等功能。
+
     3. EventScheduler类用于事件调度，其中包括定时器和事件循环的实现。
     4. UsageEnvironment类用于封装与事件调度器和线程池相关的环境信息,构造函数接受EventScheduler*和ThreadPool*作为参数，并将它们保存在成员变量中。将事件调度器和线程池与其他部分隔离开来，并提供访问它们的接口。
     5. TimerManager类用于管理定时器任务,负责跟踪定时器的触发时间和相应的回调函数,在某个时间点或以固定时间间隔触发回调函数,核心功能包括创建、管理和取消定时器任务，以及确保精确的时间控制。与事件调度器集成，以在事件循环中触发定时器。TimerManager,在上下文中，它可能使用操作系统提供的高分辨率时钟来确保定时器的准确触发。
@@ -43,10 +42,11 @@ int main(int argc, char* argv[]) {
 
     // 创建任务调度器
     EventScheduler* scheduler = EventScheduler::createNew(EventScheduler::POLLER_EPOLL);
-    // test proxy
-    // 创建一个线程池对象的实例,里边通过一个vector存储所有的线程，读取文件在子线程完成
+
+
+    // 创建2个线程的线程池
     ThreadPool* threadPool = ThreadPool::createNew(2);
-    // test代理
+
     // UsageEnvironment封装了EventScheduler和ThreadPool方便对调度和线程池的调用
     UsageEnvironment* env = UsageEnvironment::createNew(scheduler, threadPool);
 
@@ -78,6 +78,8 @@ int main(int argc, char* argv[]) {
     */
 
     /*--------------media---------------------*/
+    // MediaSource创建初始化一个缓冲区，对应到mAVFrameInputQueue队列，设置线程的任务回调函数MediaSource::taskCallback，通过多态读取调用H264FileMediaSource::readFrame从h264文件读取一个AVFrame到临时缓冲到mAVFrameInputQueue，指定位置是设置的缓冲区mAVFrames，然后取出到mAVFrameOutputQueue
+    // 添加DEFAULT_FRAME_NUM个线程任务到线程任务队列mTaskQueue
     MediaSource* mediaSource = H264FileMediaSource::createNew(env, fileanme);
 
     // rtpSink资源消费者,资源生产者是mediaSource
