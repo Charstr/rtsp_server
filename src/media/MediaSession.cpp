@@ -173,16 +173,12 @@ void MediaSession::sendPacketCallback(void* arg1, void* arg2, RtpPacket* rtpPack
     mediaSession->sendPacket(track, rtpPacket);
 }
 
-void MediaSession::sendPacket(MediaSession::Track* track, RtpPacket* rtpPacket)
-{
+void MediaSession::sendPacket(MediaSession::Track* track, RtpPacket* rtpPacket){
     std::list<RtpInstance*>::iterator it;
     // 向所有RtpInstance发送媒体数据包
-    for(it = track->mRtpInstances.begin(); it != track->mRtpInstances.end(); ++it)
-    {
-        if((*it)->alive() == true)
-        {
+    for(it = track->mRtpInstances.begin(); it != track->mRtpInstances.end(); ++it){
+        if((*it)->alive()) 
             (*it)->send(rtpPacket);
-        }
     }
 }
 

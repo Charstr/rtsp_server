@@ -26,8 +26,12 @@ public:
     // 检查是否正在监听
     bool listenning() const { return mListenning; }
     void listen();// 开始监听连接
-    // 设置处理新连接的回调函数
-    void setNewConnectionCallback(NewConnectionCallback cb, void* arg);
+
+    // 设置处理新连接的回调函数，原来在cpp文件实现
+    void setNewConnectionCallback(NewConnectionCallback cb, void* arg){
+        mNewConnectionCallback = cb;
+        mArg = arg;
+    }
 
 private:
     static void readCallback(void*); // 静态函数，用作读取回调函数的指针。

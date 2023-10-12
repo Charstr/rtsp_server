@@ -22,6 +22,7 @@
 事件包括Socket 可读写事件、定时器事件、rtsp读事件等。EventScheduler负责事件循环；Poller负责监听事件是否触发的部分；
 acceptor 负责 accept 新连接，并将新连接分发到 subReactor。
 */
+
 int main(int argc, char* argv[]) {
 
     std::string fileanme = "./test.h264";
@@ -35,6 +36,7 @@ int main(int argc, char* argv[]) {
 
     3. EventScheduler类用于事件调度，其中包括定时器和事件循环的实现。
     4. UsageEnvironment类用于封装与事件调度器和线程池相关的环境信息,构造函数接受EventScheduler*和ThreadPool*作为参数，并将它们保存在成员变量中。将事件调度器和线程池与其他部分隔离开来，并提供访问它们的接口。
+    
     5. TimerManager类用于管理定时器任务,负责跟踪定时器的触发时间和相应的回调函数,在某个时间点或以固定时间间隔触发回调函数,核心功能包括创建、管理和取消定时器任务，以及确保精确的时间控制。与事件调度器集成，以在事件循环中触发定时器。TimerManager,在上下文中，它可能使用操作系统提供的高分辨率时钟来确保定时器的准确触发。
 
     6. Poller类用于执行事件轮询，监测I/O事件（如套接字可读、可写）的发生，并通知事件调度器。与事件调度器协作，确保及时地通知事件调度器关于I/O事件的发生。
@@ -59,17 +61,17 @@ int main(int argc, char* argv[]) {
 
     /*
     一些事件的添加：
-    1. Acceptor::listen()：
-    mEnv->scheduler()->addIOEvent(mAcceptIOEvent);
+    1. EventScheduler::EventScheduler
+    mPoller->addIOEvent(mWakeIOEvent);唤醒事件
+
+    1. TimerManager::TimerManager
+    mPoller->addIOEvent(mTimerIOEvent); 定时事件
+    
+    2. Acceptor::listen()：
+    mEnv->scheduler()->addIOEvent(mAcceptIOEvent); 接受新连接的事件
     
     2. RtspServer::handleDisconnection
     mEnv->scheduler()->addTriggerEvent(mTriggerEvent);
-
-    3. TimerManager::TimerManager
-    mPoller->addIOEvent(mTimerIOEvent);
-
-    4. EventScheduler::EventScheduler
-    mPoller->addIOEvent(mWakeIOEvent);
 
     5. TcpConnection::TcpConnection
     
@@ -85,6 +87,7 @@ int main(int argc, char* argv[]) {
     // rtpSink资源消费者,资源生产者是mediaSource
     RtpSink* rtpSink = H264RtpSink::createNew(env, mediaSource);
     
+    // 这部分还没看
     MediaSession* session = MediaSession::createNew("live");
 
     session->addRtpSink(MediaSession::TrackId0, rtpSink);
@@ -93,7 +96,7 @@ int main(int argc, char* argv[]) {
     /* 向服务器添加会话 */
     server->addMeidaSession(session);
 
-    // 执行tcp连接中的listen操作，在监听socket上启动listen函数，同时将监听socket的可读事件注册到 EventScheduler
+    // 执行tcp连接中的listen操作，在监听socket上启动listen函数，同时将mAcceptIOEvent注册到调度器
     server->start();
 
     std::cout<<"Play the media using the URL \""<<server->getUrl(session)<<"\""<<std::endl;

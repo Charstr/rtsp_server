@@ -9,6 +9,8 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
+
+
 //EventScheduler类是一个事件调度器，用于管理和触发各种事件。用不同的轮询器(Poller)来处理IO事件和定时事件。一些辅助函数和回调函数，用于处理触发事件和其他事件的逻辑。
 
 static int createEventFd() {
@@ -17,7 +19,6 @@ static int createEventFd() {
         LOG_ERROR("failed to create event fd\n");
         return -1;
     }
-
     return evtFd;
 }
 
@@ -25,22 +26,20 @@ static int createEventFd() {
 // 工厂方法，创建一个新的事件调度器EventScheduler实例
 EventScheduler* EventScheduler::createNew(PollerType type){
     if(type != POLLER_SELECT && type != POLLER_POLL && type != POLLER_EPOLL)
-        return NULL;
+        return nullptr;
 
-    int evtFd = createEventFd();// mWakeupFd，每个EventLoop对象都有自己的eventfd
-    if (evtFd < 0)
-        return NULL;
-
-    // 使用I/O多路复用来监听文件描述符的状态,当RTSP服务器需要同时处理多个描述符时，可以，并在有事件发生时进行相应的处理
-    // 通过单例模式申请内存并强转类型然后在这块内存构造对象
+    int evtFd = createEventFd();// 用作mWakeupFd，每个EventLoop对象都有自己的eventfd
+    if (evtFd < 0) return nullptr;
     return New<EventScheduler>::allocate(type, evtFd);
 }
 
-// EventScheduler构造函数
+// EventScheduler构造函数，传进来EventScheduler::createNew的PollerType type和创建的evtFd
+
 EventScheduler::EventScheduler(PollerType type, int fd) :
     mQuit(false),
-    mWakeupFd(fd)
+    mWakeupFd(fd) // 用于唤醒等待中的线程的文件描述符。
 {
+    // mPoller 是事件轮询器，负责监听多个文件描述符上的事件，并将就绪的事件通知给相应的事件处理器
     switch (type){
     case POLLER_SELECT:
         mPoller = SelectPoller::createNew();
@@ -59,25 +58,24 @@ EventScheduler::EventScheduler(PollerType type, int fd) :
         break;
     }
     
-    // mPoller 是事件轮询器，负责监听多个文件描述符上的事件，并将就绪的事件通知给相应的事件处理器
-
     // 定时器管理器，负责管理定时事件的触发和处理,维护了一个定时器队列，用于存储各种定时任务，如定时发送数据、定时任务执行等。当定时事件到达时，TimerManager 调用注册的回调函数，执行相应的操作。
 
-    // 传进去mPoller是为了把事件注册到多路复用上
+    // 传进去mPoller是为了把事件mTimerIOEvent注册到多路复用上
     // 执行mPoller->addIOEvent(mTimerIOEvent);
     // mTimerManager管理多个定时器Timer
     mTimerManager = TimerManager::createNew(mPoller);
 
-    // 某个IO唤醒后的事件，要进行处理的事件
+    // mWakeIOEvent用于监听 mWakeupFd 上的读事件
     mWakeIOEvent = IOEvent::createNew(mWakeupFd, this);
 
+    // 设置读事件及回调函数，当事件发生的时候调用回调函数读取 mWakeupFd 中的数据唤醒等待在EventScheduler上的线程
+    
     // 设置mWakeupFd的事件类型和回调函数的函数指针，唤醒mWakeupFd
     mWakeIOEvent->setReadCallback(EventScheduler::handleReadCallback);
-    mWakeIOEvent->enableReadHandling(); // 设置事件类型
+    mWakeIOEvent->enableReadHandling(); 
 
-    // 把唤醒事件添加到调度管理器，对应于muduo的Channel::update实现
-    // Poller这里通过多态，调用的是epoll的addIOEvent函数
-    // 
+    // 把唤醒事件添加到调度管理器，通过多态，调用的是epoll的addIOEvent函数
+
     mPoller->addIOEvent(mWakeIOEvent);
     // 创建一个互斥锁
     mMutex = Mutex::createNew();
@@ -159,15 +157,13 @@ mWakeupFd已经注册到这个EventScheduler的事件监听器上,此时事件�
 // EventScheduler既然阻塞在事件监听上,就通过mWakeupFd给EventScheduler对象一个事件,结束阻塞
 
 */
-// 唤醒在哪里使用？
-void EventScheduler::wakeup()
-{
+// 这个在哪用？
+void EventScheduler::wakeup(){
     uint64_t one = 1;
     ssize_t ret = ::write(mWakeupFd, &one, sizeof(one));
     if(ret!=sizeof(one)){
 		LOG_ERROR("EventScheduler::wakeup() writes %d bytes instead of 8 \n",ret);   
     }
-    
 }
 
 // 处理断开连接的触发事件
@@ -196,6 +192,7 @@ void EventScheduler::handleRead(){
     uint64_t one;
     // 读取所有的唤醒事件
     while(::read(mWakeupFd, &one, sizeof(one)) > 0);
+
 }
 
 // 设置在本地线程处理的回调回调函数

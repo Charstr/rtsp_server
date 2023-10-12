@@ -43,9 +43,9 @@ std::string H264RtpSink::getAttribute()
     return std::string(buf);
 }
 
-// 根据帧的大小和类型发送RTP包。
-void H264RtpSink::handleFrame(AVFrame* frame)
-{
+// 根据帧的大小和类型发送RTP包，传进来的帧是mAVFrameOutputQueue取出的AVFrame
+void H264RtpSink::handleFrame(AVFrame* frame){
+
     RtpHeader* rtpHeader = mRtpPacket.mRtpHeadr;
     uint8_t naluType = frame->mFrame[0];
 
@@ -59,7 +59,7 @@ void H264RtpSink::handleFrame(AVFrame* frame)
         if ((naluType & 0x1F) == 7 || (naluType & 0x1F) == 8) // 如果是SPS、PPS就不需要加时间戳
             return;
     }else{
-        // 否则要拆分成几个发送
+        // 拆分成几个发送
         int pktNum = frame->mFrameSize / RTP_MAX_PKT_SIZE;       // 有几个完整的包
         int remainPktSize = frame->mFrameSize % RTP_MAX_PKT_SIZE; // 剩余不完整包的大小
         int i, pos = 1;

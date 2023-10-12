@@ -8,23 +8,24 @@ ThreadPool* ThreadPool::createNew(int num) {
 }
 
 
-// 初始化线程池的成员变量，并创建线程。
 ThreadPool::ThreadPool(int num) :
     mThreads(num),// 设置线程池中线程的数量，vector存储
     mQuit(false)// 初始化终止标志为false
 {
-    mMutex = Mutex::createNew();// 创建互斥锁
-    mCondition = Condition::createNew();// 创建条件变量
+    mMutex = Mutex::createNew();
+    mCondition = Condition::createNew();
 
-    createThreads();// 创建线程,启动线程，每个线程执行handleTask方法
+    // 创建多个线程并设置处理任务的函数Thread::threadRun，对于每个线程都通过单个工作线程的函数ThreadPool::MThread::run调用threadPool->handleTask，从任务队列取出一个任务执行
+    // 线程初始化后进入等待状态，等待任务队列中有任务可以执行。
+    createThreads();
 }
 
-// 创建线程的函数，遍历线程组，启动每一个线程，分配工作线程
+
 void ThreadPool::createThreads(){
     MutexLockGuard mutexLockGuard(mMutex);// 互斥锁保护线程池
     // 遍历线程池的大小，pthread_create创建线程MThread并设置线程执行的回调函数Thread::threadRun
-    // 通过单个工作线程的函数ThreadPool::MThread::run调用threadPool->handleTask，从任务队列取出
-    // 一个任务执行
+
+    // 向任务队列添加任务的时候都通过信号量唤醒一个等待中的线程，当任务队列有任务时，通过单个工作线程的函数ThreadPool::MThread::run调用threadPool->handleTask，从任务队列取出一个任务执行
     for(std::vector<MThread>::iterator it = mThreads.begin(); it != mThreads.end(); ++it)
         (*it).start(this);
 }

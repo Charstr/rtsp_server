@@ -10,7 +10,7 @@
 
 #define RTP_HEADER_SIZE         12
 // 设置多少？
-#define RTP_MAX_PKT_SIZE        1440 //1400
+#define RTP_MAX_PKT_SIZE        1400 //1400
 
 struct RtpHeader {
     /* byte 0 */

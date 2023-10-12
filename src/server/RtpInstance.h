@@ -57,8 +57,7 @@ public:
     uint16_t getPeerPort() { return mDestAddr.getPort(); }
 
     // 发送RTP数据包
-    int send(RtpPacket* rtpPacket)
-    {
+    int send(RtpPacket* rtpPacket){
         if(mRtpType == RTP_OVER_UDP) {
             return sendOverUdp(rtpPacket->mBuffer, rtpPacket->mSize);
         }else{

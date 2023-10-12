@@ -82,8 +82,7 @@ IOEvent::IOEvent(int fd, void* arg) :
 }
 
 // 处理IO事件回调
-void IOEvent::handleEvent()
-{
+void IOEvent::handleEvent(){
     if (mReadCallback && (mREvent & EVENT_READ)){
         mReadCallback(mArg);
     }

@@ -39,14 +39,16 @@ struct ListNode {
 
 class Solution {
 public:
-    int ans = INT_MIN;
-    int maxPathSum(TreeNode* root) {
-        if(!root) return 0;
-        // 左子树为根节点的最大和
-        int l = max(maxPathSum(root->left), 0);
-        int r = max(maxPathSum(root->right), 0);
-        ans = max(ans, l+r+root->val);
-        return max(l, r) + root->val;
+
+    vector<vector<int>> ans;
+    vector<int> path;
+
+    void dfs(){
+
+        
+    }
+    vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph) {
+
     }
 };
 

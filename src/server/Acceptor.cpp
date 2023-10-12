@@ -22,12 +22,15 @@ Acceptor::Acceptor(UsageEnvironment* env, const Ipv4Address& addr) :
     // 2. 绑定套接字到server地址和端口
     mSocket.bind(mAddr);
 
-    // 3. 创建接受连接的IO事件，将socket描述符传递给新的IO事件。对应muduo的Acceptor::acceptChannel_
+    // 3. 创建接受连接的IO事件，将socket描述符传递给新的IO事件。
     mAcceptIOEvent = IOEvent::createNew(mSocket.fd(), this);
     
     /*
-    4. 把回调函数Acceptor::readCallback注册到mAcceptIOEvent也就是这个接受连接的事件。当事件调度器检测到有新的可读事件（新的连接）过来，回调函数accept用函数接受连接返回一个server和客户端通信的fd，然后调用Acceptor::mNewConnectionCallback函数处理新连接。这个函数设置的是TcpServer::newConnectionCallback，通过多态，调用rtspServer::newConnectionCallback进行处理。
+    4. 设置mAcceptIOEvent接受连接的回调函数Acceptor::readCallback。回调函数用socket的accept用函数接受连接返回一个已建立连接的server和客户端通信的connfd，然后调用处理用这个connfd处理连接的回调函数Acceptor::mNewConnectionCallback进行处理。
 
+    5. 这里处理连接的回调函数在TcpServer的构造函数设置mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback, this)实际是通过多态调用rtspServer::newConnectionCallback进行处理
+
+    6. mAcceptIOEvent添加到epoll是在server->start()调用Acceptor::listen时候发生，因为在listen之后才会有这样的事件发生，所以要晚些加入到调度器
     */ 
     mAcceptIOEvent->setReadCallback(Acceptor::readCallback);
     mAcceptIOEvent->enableReadHandling();
@@ -37,34 +40,22 @@ Acceptor::~Acceptor(){
     // 移除事件调度释放内存
     if(mListenning)
         mEnv->scheduler()->removeIOEvent(mAcceptIOEvent);
-
-    //delete mAcceptIOEvent;
     Delete::release(mAcceptIOEvent);
 }
 
-// Acceptor相当于是只接受连接，处理新连接的函数是TcpServer干的事情，具体是通过多态分配到rtsp等
-void Acceptor::setNewConnectionCallback(NewConnectionCallback cb, void* arg){
-    // 设置新连接回调函数和参数
-    mNewConnectionCallback = cb;
-    mArg = arg;
-}
-
 // server->start
-// 调用listen(),开启对mSocket的监听,同时让mAcceptIOEvent注册到EventScheduler的事件监听器上.
+// 调用listen(),开启对mSocket的监听，同时把mAcceptIOEvent注册到EventScheduler
 void Acceptor::listen() {
-
-    // 开始监听连接请求
-    mListenning = true;
+    // 开始监听连接请求，这个时候才会有连接过来的事件mAcceptIOEvent，所以这时候加入到调度器
     mSocket.listen(1024);
-
-    // 将接受连接的IO事件mAcceptIOEvent添加到事件调度器的循环中，这个为什么是add而不是update
+    mListenning = true;
     mEnv->scheduler()->addIOEvent(mAcceptIOEvent);
 }
 
 
-// loop时候进来连接的处理
+/*-------loop时候mAcceptIOEvent发生，调用这个函数处理进来的连接--------*/
+
 void Acceptor::readCallback(void* arg) {
-    // 有连接请求时触发可读事件
     Acceptor* acceptor = (Acceptor*)arg;
     // 调用处理函数
     acceptor->handleRead();
@@ -75,7 +66,7 @@ void Acceptor::handleRead() {
     // 接受连接请求，返回和外界通信的套接字描述符 
     int connfd = mSocket.accept();
     LOG_DEBUG("client connect: %d\n", connfd);
-    // 调用处理连接的具体函数
+    // 调用处理连接的具体函数，这个函数在TcpServer的构造函数设置mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback, this)，实际是通过多态调用rtspServer::newConnectionCallback进行处理
     if(Acceptor::mNewConnectionCallback)
         Acceptor::mNewConnectionCallback(mArg, connfd);
 }

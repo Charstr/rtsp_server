@@ -30,20 +30,11 @@ RtpSink::RtpSink(UsageEnvironment* env, MediaSource* mediaSource, int payloadTyp
     mSSRC = rand();
 }
 
-RtpSink::~RtpSink()
-{
+RtpSink::~RtpSink(){
     mEnv->scheduler()->removeTimedEvent(mTimerId);
-    //delete mTimerEvent;
     Delete::release(mTimerEvent);
 }
 
-// 设置发送数据包的回调函数。
-void RtpSink::setSendFrameCallback(SendPacketCallback cb, void* arg1, void* arg2)
-{
-    mSendPacketCallback = cb;
-    mArg1 = arg1;
-    mArg2 = arg2;
-}
 
 // 发送RTP数据包的函数，会给数据包设置相应的头部信息，并调用发送数据包的回调函数。
 void RtpSink::sendRtpPacket(RtpPacket* packet){
@@ -64,6 +55,7 @@ void RtpSink::sendRtpPacket(RtpPacket* packet){
 }
 
 // 超时回调函数，用于处理帧数据并发送到目标位置。
+// source生产者
 void RtpSink::timeoutCallback(void* arg){
     RtpSink* rtpSink = (RtpSink*)arg;
     // 超时从输出队列mAVFrameOutputQueue取出一个AVFrame

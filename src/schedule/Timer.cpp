@@ -70,15 +70,13 @@ TimerManager::TimerManager(int timerFd, Poller* poller) :
     mLastTimerId(0)
 {   
 
-    // 根据定时器fd创建定时器IO事件
-    // 是多路复用机制中监听定时器事件的一类事件，监听到mTimerIOEvent发生的时候说明定时器事件发生
-    // 就会使用具体的mTimerFd文件描述符执行相应的处理逻辑
+    // 根据定时器fd创建定时器IO事件。
     mTimerIOEvent = IOEvent::createNew(mTimerFd, this);
 
-    // 设置处理定时任务的回调函数
+    // 定时器IO事件的回调函数，通过epoll任务就绪时候通过回调执行处理定时事件的任务
     mTimerIOEvent->setReadCallback(TimerManager::handleRead);
     mTimerIOEvent->enableReadHandling();
-    modifyTimeout(); // 修正时间？
+    modifyTimeout(); // 修正超时时间
     
     // 将定时器IO事件添加到事件循环中
     mPoller->addIOEvent(mTimerIOEvent);
@@ -130,7 +128,6 @@ void TimerManager::handleTimerEvent(){
     // 根据定时器队列中的剩下事件的最早触发时间，更新定时器文件描述符mTimerFd的超时时间。
     modifyTimeout();
 }
-
 
 // 添加定时发生的事件
 Timer::TimerId TimerManager::addTimer(TimerEvent* event, Timer::Timestamp timestamp,

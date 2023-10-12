@@ -25,8 +25,12 @@ public:
     virtual std::string getMediaDescription(uint16_t port) = 0;
      // 抽象函数，用于获取属性，子类需要实现
     virtual std::string getAttribute() = 0;
-    // 当媒体帧准备好时，回调函数将被触发，允许将媒体数据打包成RTP数据包发送。
-    void setSendFrameCallback(SendPacketCallback cb, void* arg1, void* arg2);
+    // 当媒体帧准备好时，回调函数将被触发，允许将媒体数据打包成RTP数据包发送，默认在cpp实现
+    void setSendFrameCallback(SendPacketCallback cb, void* arg1, void* arg2){
+        mSendPacketCallback = cb;
+        mArg1 = arg1;
+        mArg2 = arg2;
+    }
 
 protected:
     // 抽象函数，用于处理媒体帧，子类需要实现

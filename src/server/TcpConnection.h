@@ -23,8 +23,12 @@ public:
     // 构造函数，接受一个UsageEnvironment实例和一个套接字文件描述符
     TcpConnection(UsageEnvironment* env, int sockfd);
     virtual ~TcpConnection();
-    // 设置断开连接回调函数
-    void setDisconnectionCallback(DisconnectionCallback cb, void* arg);
+    
+    // 设置断开连接回调函数，默认在cpp文件实现
+    void setDisconnectionCallback(DisconnectionCallback cb, void* arg){
+        mDisconnectionCallback = cb;
+        mArg = arg;
+    }
 
 protected:
       // 启用/禁用读,写,错误事件
@@ -61,13 +65,11 @@ protected:
 
     void* mArg;
     // 缓冲区
-    Buffer mInputBuffer;  // 用户接受缓冲区
-    Buffer mOutBuffer;
+    Buffer mInputBuffer;  // 从用户侧接收到的数据缓存
+    Buffer mOutBuffer; // 输出数据的缓存，
+
     // 也是个缓冲区,不过是暂存那些发不出去的待发送数据
-    // 因为Tcp发送缓冲区是有大小限制的,加入到了高水位线,
-    // 就没办法把数据都通过send直接拷贝去tcp发送缓冲区,
-    // 而是暂存一些在这个outputBuffer_中,等待Tcp发送缓冲区有了空间
-    // 出发了写事件,再把outputBuffer_拷贝到Tcp发送缓冲区
+
     char mBuffer[2048];
 };
 

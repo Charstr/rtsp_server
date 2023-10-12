@@ -19,19 +19,21 @@ static void getPeerIp(int sockfd, std::string& ip) {
 }
 
 RtspConnection* RtspConnection::createNew(RtspServer* rtspServer, int sockfd) {
-    //return new RtspConnection(rtspServer, sockfd);
     return New<RtspConnection>::allocate(rtspServer, sockfd);
 }
 
-RtspConnection::RtspConnection(RtspServer* rtspServer, int sockfd) :
-    TcpConnection(rtspServer->envir(), sockfd), // sockf也就是connfd
+RtspConnection::RtspConnection(RtspServer* rtspServer, int sockfd):
+    TcpConnection(rtspServer->envir(), sockfd), // sockf就是connfd
     mRtspServer(rtspServer),
     mMethod(NONE),
     mTrackId(MediaSession::TrackIdNone),
     mSessionId(rand()),
-    mIsRtpOverTcp(false) { // udp/tcp传输
-    // 1. TcpConnection创建了用于处理读的mTcpConnIOEvent，并设置读写异常回调函数，默认启用只读事件并加入到事件调度中
-    
+    mIsRtpOverTcp(false) { // udp/tcp传输，默认udp传输
+
+    /*
+    1. TcpConnection根据Acceptor类accpet接受连接后返回的connfd，创建实际建立连接之后的用于传输的事件mTcpConnIOEvent，并设置处理读写、异常的回调函数，rtsp server默认只启用读事件，然后把事件mTcpConnIOEvent加入到事件调度中
+    */
+
     // 初始化rtp和rtsp示例，这个在setup的时候才有
     for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i){
         mRtpInstances[i] = NULL;
@@ -60,6 +62,7 @@ RtspConnection::~RtspConnection() {
 // 处理正常读取到的比特
 void RtspConnection::handleReadBytes() {
     bool ret;
+
     // 根据tcp/udp进行分开处理
     if(mIsRtpOverTcp) {
         if(mInputBuffer.peek()[0] == '$') {
@@ -106,7 +109,7 @@ void RtspConnection::handleReadBytes() {
     return;
     
 err:
-    // 实际是通过多态调用的rtsp的实现
+
     handleDisconnection();
 }
 
@@ -535,12 +538,13 @@ bool RtspConnection::handleCmdGetParamter()
     // 这里需要实现GET_PARAMETER命令的处理逻辑，根据实际需求进行编写。
     // 目前的代码中，该部分逻辑尚未实现，需要根据具体的需求补充相应的功能。
 }
+
 // 发送数据给客户端
-int RtspConnection::sendMessage(void* buf, int size)
-{
+int RtspConnection::sendMessage(void* buf, int size){
     int ret;
 
     mOutBuffer.append(buf, size);
+    // 通过connfd发送数据调用write
     ret = mOutBuffer.write(mSocket.fd());
     mOutBuffer.retrieveAll();
 
@@ -567,40 +571,33 @@ bool RtspConnection::createRtpRtcpOverUdp(MediaSession::TrackId trackId, std::st
     if(mRtpInstances[trackId] || mRtcpInstances[trackId])
         return false;
 
-    int i;
-    for(i = 0; i < 10; ++i)
-    {
+    int i; // 尝试10次
+    for(i = 0; i < 10; ++i){
         rtpSockfd = sockets::createUdpSock();
-        if(rtpSockfd < 0)
-        {
-            return false;
-        }
+        if(rtpSockfd < 0) return false;
 
         rtcpSockfd = sockets::createUdpSock();
-        if(rtcpSockfd < 0)
-        {
+        if(rtcpSockfd < 0){
             close(rtpSockfd);
             return false;
         }
 
         uint16_t port = rand() & 0xfffe;
-        if(port < 10000)
-            port += 10000;
+        // 端口要大
+        if(port < 10000) port += 10000;
         
         rtpPort = port;
         rtcpPort = port+1;
 
         ret = sockets::bind(rtpSockfd, "0.0.0.0", rtpPort);
-        if(ret != true)
-        {
+        if(ret != true){
             sockets::close(rtpSockfd);
             sockets::close(rtcpSockfd);
             continue;
         }
 
         ret = sockets::bind(rtcpSockfd, "0.0.0.0", rtcpPort);
-        if(ret != true)
-        {
+        if(ret != true){
             sockets::close(rtpSockfd);
             sockets::close(rtcpSockfd);
             continue;
@@ -609,8 +606,7 @@ bool RtspConnection::createRtpRtcpOverUdp(MediaSession::TrackId trackId, std::st
         break;
     }
 
-    if(i == 10)
-        return false;
+    if(i == 10) return false;
 
     mRtpInstances[trackId] = RtpInstance::createNewOverUdp(rtpSockfd, rtpPort,
                                                         peerIp, peerRtpPort);
@@ -628,8 +624,7 @@ bool RtspConnection::createRtpOverTcp(MediaSession::TrackId trackId, int sockfd,
     return true;
 }
 // 处理RTP over TCP数据
-void RtspConnection::handleRtpOverTcp()
-{
+void RtspConnection::handleRtpOverTcp(){
     uint8_t* buf = (uint8_t*)mInputBuffer.peek();
     uint16_t size;
 

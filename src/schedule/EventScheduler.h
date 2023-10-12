@@ -7,8 +7,6 @@
 #include "Timer.h"
 #include "threadPool/Mutex.h"
 
-class EventScheduler
-{
 
 /*
 
@@ -21,11 +19,11 @@ EventScheduler是一个事件调度器，用于管理触发事件和定时事件
 在事件处理的过程中，EventScheduler会不断检查是否有触发事件需要处理，然后使用底层的事件轮询机制来处理I/O事件。同时，也可以通过TimerManager添加定时事件，定时事件的处理会在事件循环中定期触发。最后，在事件调度器的线程中，可以使用runInLocalThread来添加需要在事件循环线程中执行的回调函数，这些回调函数会在事件循环中被调用。
 */
 
+class EventScheduler{
 public:
     typedef void (*Callback)(void*);
 
-    enum PollerType
-    {
+    enum PollerType{
         POLLER_SELECT,
         POLLER_POLL,
         POLLER_EPOLL
@@ -40,7 +38,6 @@ public:
     // 添加触发事件
     bool addTriggerEvent(TriggerEvent* event);
 
-    
     // 添加定时事件，延迟一定时间后执行
     Timer::TimerId addTimedEventRunAfater(TimerEvent* event, Timer::TimeInterval delay);
     // 添加定时事件，在指定的时间点执行
