@@ -6,12 +6,8 @@
 #include "base/New.h"
 #include "media/RtpSink.h"
 
-H264RtpSink* H264RtpSink::createNew(UsageEnvironment* env, MediaSource* mediaSource)
-{
-    if(!mediaSource)
-        return NULL;
-
-    //return new H264RtpSink(env, mediaSource);
+H264RtpSink* H264RtpSink::createNew(UsageEnvironment* env, MediaSource* mediaSource){
+    if(!mediaSource) return nullptr;
     return New<H264RtpSink>::allocate(env, mediaSource);
 }
 
@@ -20,6 +16,7 @@ H264RtpSink::H264RtpSink(UsageEnvironment* env, MediaSource* mediaSource) :
     mClockRate(90000),
     mFps(mediaSource->getFps())
 {
+    // 在 RtpSink构造函数创建了定时器事件mTimerEvent，start时候加入到定时器的列表中
     // 1秒/帧率得到多少ms触发一次
     // 设置定时器
     start(1000/mFps);

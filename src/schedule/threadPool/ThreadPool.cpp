@@ -7,7 +7,7 @@ ThreadPool* ThreadPool::createNew(int num) {
     return New<ThreadPool>::allocate(num);
 }
 
-
+/*---------------线程操作----------------*/
 ThreadPool::ThreadPool(int num) :
     mThreads(num),// 设置线程池中线程的数量，vector存储
     mQuit(false)// 初始化终止标志为false
@@ -45,17 +45,20 @@ void ThreadPool::cancelThreads(){
     mThreads.clear();// 清空线程池中的线程
 }
 
-// 线程执行任务处理函数
-void ThreadPool::MThread::run(void* arg){
-    ThreadPool* threadPool = (ThreadPool*)arg;
-    threadPool->handleTask();    
-}
+/*----------线程池处理任务---------------*/
 
 // 向任务队列中添加一个任务，并唤醒一个等待等待中的线程去处理任务。
 void ThreadPool::addTask(ThreadPool::Task& task){
     MutexLockGuard mutexLockGuard(mMutex);
     mTaskQueue.push(task);// 将任务加入队列
-    mCondition->signal();// 唤醒一个等待的线程
+    mCondition->signal();// 唤醒一个等待的线程，接下来就要调用线程执行具体任务的函数threadRun再调run
+}
+
+
+// threadRun函数调用选出来某个线程处理任务
+void ThreadPool::MThread::run(void* arg){
+    ThreadPool* threadPool = (ThreadPool*)arg;
+    threadPool->handleTask();    
 }
 
 // 处理任务的函数，不断从任务队列中获取任务并执行。
@@ -67,12 +70,14 @@ void ThreadPool::handleTask(){
         {
             // 保证任务的添加和移除（获取）的互斥性
             MutexLockGuard mutexLockGuard(mMutex);
-            // 任务队列为空时循环阻塞等待
+
+            // 任务队列为空时循环阻塞等待，这里会在没有任务也就是环形队列满了的时候阻塞
             if(mTaskQueue.empty())
                 mCondition->wait(mMutex);// 等待条件变量通知，开启线程
+
             // 如果线程池终止标志为true，则退出循环
             if(mQuit == true) break;
-
+            // 不退出但是此时队列为空就循环运行
             if(mTaskQueue.empty()) continue;
             
             // 用移动语义？
@@ -84,7 +89,6 @@ void ThreadPool::handleTask(){
         task.handle();// 执行任务的回调函数
     }
 }
-
 
 ThreadPool::~ThreadPool(){
     cancelThreads();// 终止线程

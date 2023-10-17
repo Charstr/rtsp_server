@@ -14,6 +14,8 @@
 //EventScheduler类是一个事件调度器，用于管理和触发各种事件。用不同的轮询器(Poller)来处理IO事件和定时事件。一些辅助函数和回调函数，用于处理触发事件和其他事件的逻辑。
 
 static int createEventFd() {
+    // 当一个进程调用 exec() 启动一个新程序时，所有已打开的文件描述符都会被关闭，除非文件描述符被设置为 FD_CLOEXEC 标志。这样可以避免在新程序中不小心操作这个文件描述符。
+    // 用于进程间的事件通知
     int evtFd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (evtFd < 0) {
         LOG_ERROR("failed to create event fd\n");

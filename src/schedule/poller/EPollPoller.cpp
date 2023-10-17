@@ -61,6 +61,7 @@ bool EPollPoller::updateIOEvent(IOEvent* event)
         epoll_ctl(mEPollFd, EPOLL_CTL_MOD, fd, &epollEvt);
     }else{
         epoll_ctl(mEPollFd, EPOLL_CTL_ADD, fd, &epollEvt);
+        // 描述符对应的事件
         mEventMap.insert(std::make_pair(fd, event));
         if(mEventMap.size() >= mEPollEventList.size())
             mEPollEventList.resize(mEPollEventList.size() * 2);

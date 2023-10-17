@@ -8,6 +8,7 @@ static int timerFdCreate(int clockid, int flags){
     return timerfd_create(clockid, flags);
 }
 
+// 设置超时时间，也就是下次触发的时间
 static bool timerFdSetTime(int fd, Timer::Timestamp when, Timer::TimeInterval period){
     struct itimerspec newVal;
 
@@ -65,13 +66,13 @@ TimerManager* TimerManager::createNew(Poller* poller) {
 }
 
 TimerManager::TimerManager(int timerFd, Poller* poller) :
-    mTimerFd(timerFd),
+    mTimerFd(timerFd), // 定时器文件描述符
     mPoller(poller),
     mLastTimerId(0)
 {   
-
-
-    // 根据定时器fd创建定时器IO事件，收到事件后处理各个定时器事件，定时器事件没别有自己的处理函数
+    
+    // 根据定时器文件描述符fd创建定时器IO事件，多路复用监听mTimerFd，
+    // 描述符有事件了，对应的是定时器IO事件，会处理多个不同的定时器事件，分别调用各自的处理函数
     // 这里指的是定时发送rtp包
     mTimerIOEvent = IOEvent::createNew(mTimerFd, this);
     mTimerIOEvent->setReadCallback(TimerManager::handleRead);
@@ -134,7 +135,6 @@ void TimerManager::handleTimerEvent(){
 
 /*---------------管理定时事件----------------------*/
 
-// 添加定时发生的事件
 Timer::TimerId TimerManager::addTimer(TimerEvent* event, Timer::Timestamp timestamp,
                             Timer::TimeInterval timeInterval)
 {

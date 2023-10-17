@@ -23,7 +23,7 @@ Acceptor::Acceptor(UsageEnvironment* env, const Ipv4Address& addr) :
     // 3. 创建接受连接的IO事件，将socket描述符传递给新的IO事件。
     // mAcceptIOEvent只是监听连接的，不进行数据的传输，所以使用的是listenfd
     // 当mAcceptIOEvent发生后，用回调函数accept连接返回的connfd是接下来进行数据传输的fd    
-
+    // 这里创建IOEvent用的是listenfd，而mTcpConnIOEvent连接传输数据用的是connfd
     mAcceptIOEvent = IOEvent::createNew(mSocket.fd(), this);
     /*
     4. 设置mAcceptIOEvent接受连接的回调函数Acceptor::readCallback。回调函数用socket的accept用函数接受连接返回一个已建立连接的server和客户端通信的connfd，然后调用处理用这个connfd处理连接的回调函数Acceptor::mNewConnectionCallback进行处理。
@@ -32,7 +32,8 @@ Acceptor::Acceptor(UsageEnvironment* env, const Ipv4Address& addr) :
 
     6. mAcceptIOEvent添加到epoll是在server->start()调用Acceptor::listen时候发生，因为在listen之后才会有这样的事件发生，所以要晚些加入到调度器
     */ 
-    // 连接过来的回调函数. 连接过来应该accept然后调用处理这个已建立连接的回调函数处理
+
+    // 设置有连接过来处理的回调函数。连接过来应该accept然后处理这个已建立连接
     // 这里没有把这个接受连接的回调函数加入到调度器中,而是在开始监听的时候加入
 
     mAcceptIOEvent->setReadCallback(Acceptor::readCallback);
@@ -54,7 +55,6 @@ void Acceptor::listen() {
     mListenning = true;
     mEnv->scheduler()->addIOEvent(mAcceptIOEvent);
 }
-
 
 /*-------loop时候mAcceptIOEvent发生，调用这个函数处理进来的连接--------*/
 

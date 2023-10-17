@@ -24,7 +24,7 @@ protected:
 
 private:
 
-    // 设置线程运行的回调函数
+    // 线程执行的函数
     static void *threadRun(void *);
 
 private:

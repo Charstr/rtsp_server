@@ -15,9 +15,8 @@ TcpConnection::TcpConnection(UsageEnvironment* env, int sockfd) :
     mArg(NULL) 
 {
 
-    // 创建实际建立连接之后的用于传输的事件mTcpConnIOEvent
+    // mAcceptIOEvent用的是listenfd，只是接受连接，这里创建实际建立连接之后的用于传输的事件mTcpConnIOEvent，用的是connfd
     mTcpConnIOEvent = IOEvent::createNew(sockfd, this);
-    // 传输数据的回调
     mTcpConnIOEvent->setReadCallback(TcpConnection::readCallback);
     mTcpConnIOEvent->setWriteCallback(TcpConnection::writeCallback);
     mTcpConnIOEvent->setErrorCallback(TcpConnection::errorCallback);
@@ -34,7 +33,7 @@ TcpConnection::~TcpConnection() {
     Delete::release(mTcpConnIOEvent);
 }
 
-
+/*-----------------设置事件的读写权限------------*/
 void TcpConnection::enableReadHandling(){
     if(mTcpConnIOEvent->isReadHandling())
         return;
@@ -83,28 +82,46 @@ void TcpConnection::disableErrorHandling() {
     mEnv->scheduler()->updateIOEvent(mTcpConnIOEvent);
 }
 
-// 有个事件发生了，并且已经建立了tcp的链接，接下来需要根据客户端发来的信息
-// 进行各种方法的解析
+
+/*-------------读写错误的回调函数-----------------*/
+void TcpConnection::readCallback(void* arg){
+    TcpConnection* tcpConnection = (TcpConnection*)arg;
+    tcpConnection->handleRead();
+}
+
+void TcpConnection::writeCallback(void* arg){
+    TcpConnection* tcpConnection = (TcpConnection*)arg;
+    tcpConnection->handleWrite();
+}
+
+void TcpConnection::errorCallback(void* arg){
+    TcpConnection* tcpConnection = (TcpConnection*)arg;
+    tcpConnection->handleError();
+}
+
+/*---------------具体的处理各种事件所用的函数--------------*/
+// epoll轮循到已建立连接的描述符connfd，对应的事件mTcpConnIOEvent发生，调用对应的回调函数
+// 接下来需要根据客户端发来的信息进行各种方法的解析
+
 void TcpConnection::handleRead() {
 
-    // 负责处理TCP连接的可读事件,从 connfd 中读取数据，并将其放入 inputbuffer 中
-    // 这里的读取数据其实是接受客户端发过来的option请求
-    int ret = mInputBuffer.read(mSocket.fd());
+    // 从 connfd 中读取数据，并将存到inputbuffer 中，读取到数据已经完成的传输层的连接
+    // 这里要进行应用层rtsp的连接，解析从客户端读取到的请求消息
 
-    if(ret == 0) {
+    int ret = mInputBuffer.read(mSocket.fd());
+    // 客户端断开连接或读取失败，那么这个连接就是要取消的
+    // handleDisconnection调用回调函数把要断开的连接加入到队列mDisconnectionlist，并添加触发事件mTriggerEvent。当mTriggerEvent触发的时候，调用handleDisconnectionList函数遍历所有要关闭的连接描述符，取出来描述符进行关闭
+    if(ret == 0) { // 客户端断开连接
         LOG_DEBUG("client disconnect\n");
-        // 客户端断开连接，多态调用断开连接的函数是RtspServer::disconnectionCallback
-        // 把要取消的连接加入到队列,添加触发事件mTriggerEvent，稍后处理断开连接
-        // 当mTriggerEvent触发的时候，调用handleDisconnectionList函数遍历所有要关闭的连接描述符，取出来描述符进行关闭
-        handleDisconnection();// 如果某个连接处理失败
+        handleDisconnection();
         return;
-    }else if(ret < 0){
+    }else if(ret < 0){//读取失败
         LOG_ERROR("read err\n");
-        handleDisconnection(); //读取失败
+        handleDisconnection(); 
         return;
     }
 
-    // 读取到数据，就多态调用RtspConnection::handleReadBytes进行字节的解析
+    // 正常接收到客户端的请求数据，就要进行解析处理，这里是多态实现，调用的是RtspConnection的函数
     handleReadBytes();
 }
 
@@ -123,20 +140,6 @@ void TcpConnection::handleError(){
     LOG_DEBUG("default error handle\n");
 }
 
-void TcpConnection::readCallback(void* arg){
-    TcpConnection* tcpConnection = (TcpConnection*)arg;
-    tcpConnection->handleRead();
-}
-
-void TcpConnection::writeCallback(void* arg){
-    TcpConnection* tcpConnection = (TcpConnection*)arg;
-    tcpConnection->handleWrite();
-}
-
-void TcpConnection::errorCallback(void* arg){
-    TcpConnection* tcpConnection = (TcpConnection*)arg;
-    tcpConnection->handleError();
-}
 
 // 处理断开连接
 void TcpConnection::handleDisconnection() {

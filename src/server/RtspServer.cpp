@@ -30,7 +30,8 @@ RtspServer::RtspServer(UsageEnvironment* env, const Ipv4Address& addr) :
 
     // 8. 这里创建触发事件，设置触发事件的回调函数triggerCallback，回调函数遍历所有要关闭的连接描述符，从mConnections找到对应的RtspConnection释放内存关闭资源，然后从mConnections中删除对应的connfd的值。最后把map清空。
 
-    // 上边完成了接受连接并进行处理的函数,这里设置断开连接的mTriggerEvent触发时候的处理函数
+    // 上边完成了接受连接并进行处理的函数
+    // 这里设置触发事件，处理mDisconnectionlist中所有要断开的连接
     mTriggerEvent = TriggerEvent::createNew(this);
     mTriggerEvent->setTriggerCallback(RtspServer::triggerCallback);
 
@@ -43,13 +44,14 @@ RtspServer::RtspServer(UsageEnvironment* env, const Ipv4Address& addr) :
 
 */
 
-// mAcceptIOEvent事件发生，多态通过该回调函数进行处理新连接
+// mAcceptIOEvent事件发生，设置对已建立连接的处理
 void RtspServer::handleNewConnection(int connfd) {
 
     // 1. 根据已经建立连接的connfd,创建RtspConnection对象。其中创建一个TcpConnection，构造函数中创建了IOEvent事件mTcpConnIOEvent，设置读写异常回调函数，默认启用只读事件，并添加传输数据的mTcpConnIOEvent到EventScheduler，获取客户端IPmPeerIp，并设置了是否mIsRtpOverTcp
 
     // TcpConnection的构造函数中，创建的IOEvent事件mTcpConnIOEvent设置读的回调函数TcpConnection::readCallback是进行rtsp数据传输的关键
 
+    // 对已建立的连接connfd的处理，建立一个rtsp连接。
     // mTcpConnIOEvent事件发生的时候实际就是在传输数据，而触发事件mTriggerEvent是断开连接的
     RtspConnection* conn = RtspConnection::createNew(this, connfd);
 
@@ -63,7 +65,7 @@ void RtspServer::handleNewConnection(int connfd) {
 }
 
 
-/*---------------客户端关闭连接或读取错误或option解析错误----------------------*/
+/*---------------客户端关闭连接或读取错误或option解析错误处理单个连接----------------------*/
 
 // 在TcpConnection::handleRead处理读事件客户端关闭连接或读取失败及RtspConnection::handleReadBytes进行option解析错误的时候，会调用该回调函数TcpConnection::handleDisconnection处理这个连接，把要取消连接的sockfd加入到队列mDisconnectionlist，并添加触发事件mTriggerEvent到std::vector<TriggerEvent*> mTriggerEvents，稍后处理断开连接。
 

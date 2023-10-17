@@ -59,11 +59,11 @@ RtspConnection::~RtspConnection() {
     }
 }
 
-// 正常读取到的比特在这里进行处理, UDP
+// 正常接收到了客户端的请求消息（TCP），进行解析
 void RtspConnection::handleReadBytes() {
     bool ret;
     // 这里每次进行一次的c->s通信过程，而不是完整的过程
-    // 根据tcp/udp进行分开处理
+    // 根据tcp/udp传输进行分开处理
     // mInputBuffer是readv从建立连接的connfd接收到的客户端数据
     // tcp传输的时候，客户端和服务器传输的数据都为加上4个字节头数据
     if(mIsRtpOverTcp) {
@@ -73,21 +73,21 @@ void RtspConnection::handleReadBytes() {
         }
     }
 
-    // 这里开始按照udp处理，根据客户端请求解析不同的信息，
+    // 通过UDP传输rtp数据，这里开始根据客户端请求解析不同的信息，
     // 分别解析method，url，version，CSeq，rtp和rtsp端口等
     // 如果是SETUP，那么就再解析Transport,提取出客户端的rtp和rtcp端口
 
     ret = parseRequest();
     if(ret != true){
-        LOG_WARNING("failed to parse request\n");
+        LOG_WARNING("failed to parse request\n"); // 错误解析的把连接加入到断开的列表
         handleDisconnection();
         return;
     }
 
     bool errOcc = false;
 
-    // 根据解析的客户端的method回复消息
-    // 每次发送消息后，mOutBuffer的读和写mReadIndex，mWriteIndex都会置0
+    // 根据解析到的客户端的method回复消息
+    // 每次发送消息后，mOutBuffer的mReadIndex，mWriteIndex都会置0
     switch (mMethod){
     case OPTIONS: //OPTIONS 请求服务器可用方法
 
@@ -125,7 +125,7 @@ void RtspConnection::handleReadBytes() {
             errOcc = true;
         }
         break;
-    case SETUP:
+    case SETUP: // SETUP 建立 RTSP 会话，创建RTP RTCP的传输
         // C发送建立请求，请求建立连接会话，准备接收音视频数据。transport字段列出可接受的传输选项
 
         /*
@@ -147,8 +147,17 @@ void RtspConnection::handleReadBytes() {
             errOcc = true;
         }
         break;
-    case PLAY:
-        if (handleCmdPlay() != true) {
+    case PLAY:// PLAY 请求开始传输数据，传输数据
+
+        /*
+        C 请求 S 开始发送数据
+        PLAY rtsp://192.168.31.115:8554/live RTSP/1.0\r\n
+        CSeq: 4\r\n
+        Session: 66334873\r\n
+        Range: npt=0.000-\r\n
+        \r\n
+        */
+        if (handleCmdPlay() != true) { 
             errOcc = true;
         }
         break;
@@ -440,7 +449,7 @@ bool RtspConnection::handleCmdOption(){
             "CSeq: %u\r\n"
             "Public: OPTIONS, DESCRIBE, SETUP, TEARDOWN, PLAY\r\n"
             "\r\n", mCSeq);
-
+    // 把mBuffer中的数据添加到mOutBuffer并发送出去
     if(sendMessage(mBuffer, strlen(mBuffer)) < 0)
         return false;
 
@@ -614,7 +623,7 @@ int RtspConnection::sendMessage(void* buf, int size){
     int ret;
 
     mOutBuffer.append(buf, size);
-    // 通过connfd发送数据调用write
+    // 通过connfd发送数据调用write，发送的多少是可读数据的多少
     ret = mOutBuffer.write(mSocket.fd());
 
     // 发送完成之后就要全部归0

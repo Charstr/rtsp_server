@@ -4,6 +4,7 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
+
 TcpServer::TcpServer(UsageEnvironment* env, const Ipv4Address& addr) :
     mEnv(env),
     mAddr(addr) 
@@ -20,14 +21,14 @@ TcpServer::TcpServer(UsageEnvironment* env, const Ipv4Address& addr) :
     3. 当mAcceptIOEvent事件触发也就是有新的连接过来的时候，调用回调函数Acceptor::readCallback，使用处理函数acceptor->handleRead接受这个连接然后返回通信的connfd。调用回调函数TcpServer::newConnectionCallback处理这个连接（connfd），通过多态RtspServer::handleNewConnection进行处理，进入到了RtspServer相关处理过程中
     */
 
-    // Acceptor有接收连接的accpet了,这里设置接受这个连接之后后续处理的回调函数,具体是在Acceptor::handleRead中调用，通过多态调用rtsp的。
+    // Acceptor有接收连接的accpet了,这里设置已经建立连接后处理连接的函数，在Acceptor::handleRead中调用，通过多态调用rtsp的。
     mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback, this);
 }
 
 void TcpServer::newConnectionCallback(void* arg, int connfd){
     // 处理新连接的回调函数
     TcpServer* tcpServer = (TcpServer*)arg;
-    // 多态，这里调用的是RtspServer的
+    // 多态，实际调用的是RtspServer::handleNewConnection
     tcpServer->handleNewConnection(connfd);
 }
 

@@ -55,17 +55,12 @@ void TimerEvent::handleEvent(){
 }
 
 IOEvent* IOEvent::createNew(int fd, void* arg){
-    //fd当前事件对应的描述符
     if(fd < 0) return nullptr;
-    // 使用New分配内存，创建IOEvent对象
-    //return new IOEvent(fd, arg);
     return New<IOEvent>::allocate(fd, arg);
 }
 
 IOEvent* IOEvent::createNew(int fd){
     if(fd < 0) return nullptr;
-    // 使用New分配内存，创建IOEvent对象
-    //return new IOEvent(fd, NULL);
     return New<IOEvent>::allocate(fd, (void*)0);
 }
 
