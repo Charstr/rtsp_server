@@ -23,6 +23,7 @@ ThreadPool::ThreadPool(int num) :
 
 void ThreadPool::createThreads(){
     MutexLockGuard mutexLockGuard(mMutex);// 互斥锁保护线程池
+    
     // 遍历线程池的大小，pthread_create创建线程MThread并设置线程执行的回调函数Thread::threadRun
 
     // 向任务队列添加任务的时候都通过信号量唤醒一个等待中的线程，当任务队列有任务时，通过单个工作线程的函数ThreadPool::MThread::run调用threadPool->handleTask，从任务队列取出一个任务执行

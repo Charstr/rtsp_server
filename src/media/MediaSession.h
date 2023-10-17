@@ -44,8 +44,7 @@ public:
 
 private:
     // 媒体会话中的单个媒体轨道由Track类表示，包括一个RtpSink（用于发送媒体数据）和一个RtpInstance列表（用于接收媒体数据）
-    class Track
-    {
+    class Track{
     public:
         RtpSink* mRtpSink;// 指向`RtpSink`的指针。
         int mTrackId;// 轨道ID
@@ -66,6 +65,7 @@ private:
     bool mIsStartMulticast;
     std::string mMulticastAddr;
     // rtp rtcp
+    // 指针类型的数组
     RtpInstance* mMulticastRtpInstances[MEDIA_MAX_TRACK_NUM];
     RtcpInstance* mMulticastRtcpInstances[MEDIA_MAX_TRACK_NUM];
 };

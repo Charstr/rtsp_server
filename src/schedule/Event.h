@@ -97,6 +97,7 @@ public:
     bool isWriteHandling() const { return (mEvent & EVENT_WRITE) != 0; }
     bool isErrorHandling() const { return (mEvent & EVENT_ERROR) != 0; };
 
+    // 分别对上边的三种事件调用各自的回调函数进行处理
     void handleEvent();
 
 private:

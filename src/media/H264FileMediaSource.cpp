@@ -33,7 +33,6 @@ H264FileMediaSource::H264FileMediaSource(UsageEnvironment* env, const std::strin
     
     /*
 
-
     线程池的任务：
     1. 将mTask插入到任务队列mTaskQueue，并Condition->signal();唤醒一个等待的线程进行处理。
 

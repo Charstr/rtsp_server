@@ -40,15 +40,25 @@ struct ListNode {
 class Solution {
 public:
 
-    vector<vector<int>> ans;
-    vector<int> path;
-
-    void dfs(){
-
-        
-    }
-    vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph) {
-
+    vector<int> postorderTraversal(TreeNode* root) {
+        vector<int> ans;
+        if(!root) return ans;
+        stack<TreeNode*> stk;
+        stk.push(root);
+        while(!stk.empty()){
+            TreeNode *fr = stk.top();
+            stk.pop();
+            if(fr){
+                stk.push(fr);
+                stk.push(nullptr);
+                if(fr->right) stk.push(fr->right);
+                if(fr->left) stk.push(fr->left);
+            }else{
+                ans.push_back(stk.top()->val);
+                stk.pop();
+            }
+        }
+        return ans;
     }
 };
 

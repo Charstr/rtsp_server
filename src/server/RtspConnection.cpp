@@ -59,11 +59,13 @@ RtspConnection::~RtspConnection() {
     }
 }
 
-// 处理正常读取到的比特
+// 正常读取到的比特在这里进行处理, UDP
 void RtspConnection::handleReadBytes() {
     bool ret;
-
+    // 这里每次进行一次的c->s通信过程，而不是完整的过程
     // 根据tcp/udp进行分开处理
+    // mInputBuffer是readv从建立连接的connfd接收到的客户端数据
+    // tcp传输的时候，客户端和服务器传输的数据都为加上4个字节头数据
     if(mIsRtpOverTcp) {
         if(mInputBuffer.peek()[0] == '$') {
             handleRtpOverTcp();
@@ -71,94 +73,155 @@ void RtspConnection::handleReadBytes() {
         }
     }
 
+    // 这里开始按照udp处理，根据客户端请求解析不同的信息，
+    // 分别解析method，url，version，CSeq，rtp和rtsp端口等
+    // 如果是SETUP，那么就再解析Transport,提取出客户端的rtp和rtcp端口
+
     ret = parseRequest();
     if(ret != true){
         LOG_WARNING("failed to parse request\n");
-        goto err;
+        handleDisconnection();
+        return;
     }
 
+    bool errOcc = false;
+
+    // 根据解析的客户端的method回复消息
+    // 每次发送消息后，mOutBuffer的读和写mReadIndex，mWriteIndex都会置0
     switch (mMethod){
-    case OPTIONS:
-        if(handleCmdOption() != true)
-            goto err;
+    case OPTIONS: //OPTIONS 请求服务器可用方法
+
+        /*
+        RTSP/1.0 200 OK\r\n
+        CSeq: 1\r\n
+        Public: OPTIONS, DESCRIBE, SETUP, TEARDOWN, PLAY\r\n
+        \r\n
+        */
+
+        if (handleCmdOption() != true) {
+            errOcc = true;
+        }
         break;
-    case DESCRIBE:
-        if(handleCmdDescribe() != true)
-            goto err;
+    case DESCRIBE: // DESCRIBE 得到媒体描述信息
+        //S回应SDP格式的媒体描述信息，告诉C当前有哪些音视频流，有什么属性（一个会话级描述，IP、端口等公共的描述，多个媒体级描述，每个音视频流对应一个描述，如编解码器信息等）
+        /*
+        RTSP/1.0 200 OK\r\n
+        CSeq: 2\r\n
+        Content-length: 146\r\n
+        Content-type: application/sdp\r\n
+        \r\n
+
+        v=0\r\n
+        o=- 91565340853 1 in IP4 192.168.31.115\r\n
+        t=0 0\r\n
+        a=contol:*\r\n
+        m=video 0 RTP/AVP 96\r\n
+        a=rtpmap:96 H264/90000\r\n
+        a=framerate:25\r\n
+        a=control:track0\r\n
+        */
+
+        if (handleCmdDescribe() != true) {
+            errOcc = true;
+        }
         break;
     case SETUP:
-        if(handleCmdSetup() != true)
-            goto err;
+        // C发送建立请求，请求建立连接会话，准备接收音视频数据。transport字段列出可接受的传输选项
+
+        /*
+        // UDP
+        RTSP/1.0 200 OK\r\n
+        CSeq: 3\r\n
+        Transport: RTP/AVP;unicast;client_port=54492-54493;server_port=56400-56401\r\n
+        Session: 66334873\r\n
+        \r\n
+
+        //TCP
+        RTSP/1.0 200 OK\r\n
+        CSeq: 4\r\n
+        Transport: RTP/AVP/TCP;unicast;interleaved=0-1\r\n
+        Session: 327b23c6\r\n
+        \r\n
+        */
+        if (handleCmdSetup() != true) {
+            errOcc = true;
+        }
         break;
     case PLAY:
-        if(handleCmdPlay() != true)
-            goto err;
+        if (handleCmdPlay() != true) {
+            errOcc = true;
+        }
         break;
     case TEARDOWN:
-        if(handleCmdTeardown() != true)
-            goto err;
+        if (handleCmdTeardown() != true) {
+            errOcc = true;
+        }
         break;
     case GET_PARAMETER:
-        if(handleCmdGetParamter() != true)
-            goto err;
+        if (handleCmdGetParamter() != true) {
+            errOcc = true;
+        }
         break;
     default:
-        goto err;
+        errOcc = true;
         break;
     }
-    return;
-    
-err:
 
-    handleDisconnection();
+    if(errOcc) handleDisconnection(); 
 }
 
-bool RtspConnection::parseRequest()
-{
+bool RtspConnection::parseRequest(){
     bool ret;
 
-    /* 解析第一行 */
+    // 根据\r\n提取一行
     const char* crlf = mInputBuffer.findCRLF();
-    if(crlf == NULL)
-    {
+    // 没有\r\n就是有错，mReadIndex和mWriteIndex都置0归位
+    if(crlf == NULL){
         mInputBuffer.retrieveAll();
         return false;
     }
+
+    
+    // 解析第一行method url vesion，说明有\r\n符号，crlf指向那个位置
     ret = parseRequest1(mInputBuffer.peek(), crlf);
-    if(ret == false)
-    {
+    if(ret == false){
         mInputBuffer.retrieveAll();
         return false;
     }
+    // 接下来要解析序列号
+    // 移动读索引mReadIndex到crlf后边两个，这里截取固定长度的
     mInputBuffer.retrieveUntil(crlf+2);
 
-    /* 解析剩下的内容 */
+    // 再找最后一次出现的\r\n的索引
+    // 得到这条请求剩余的消息
     crlf = mInputBuffer.findLastCrlf();
-    if(crlf == NULL)
-    {
+    if(crlf == NULL){
         mInputBuffer.retrieveAll();
         return false;
     }
+
+    // 到这里消息应该是从CSeq那一行开始的，先解析CSeq然后再根据不同的method
+    // 进行不同的处理
     ret = parseRequest2(mInputBuffer.peek(), crlf);
-    if(ret == false)
-    {
+    if(ret == false){
         mInputBuffer.retrieveAll();
         return false;
     }
+
     mInputBuffer.retrieveUntil(crlf + 2);
 
     return true;
 }
 
-bool RtspConnection::parseRequest1(const char* begin, const char* end)
-{
+// 解析客户端的请求，begin是这一条消息的开始，end是指向\r\n之前位置的指针
+bool RtspConnection::parseRequest1(const char* begin, const char* end){
+    // 取出来消息的第一行，不包含\r\n
     std::string message(begin, end);
     char method[64] = {0};
     char url[512] = {0};
     char version[64] = {0};
 
-    if(sscanf(message.c_str(), "%s %s %s", method, url, version) != 3)
-    {
+    if(sscanf(message.c_str(), "%s %s %s", method, url, version) != 3){
         return false; 
     }
 
@@ -207,12 +270,11 @@ bool RtspConnection::parseRequest1(const char* begin, const char* end)
 
     return true;
 }
+
 // 解析CSeq字段
-bool RtspConnection::parseCSeq(std::string& message)
-{
+bool RtspConnection::parseCSeq(std::string& message){
     std::size_t pos = message.find("CSeq");
-    if (pos != std::string::npos)
-    {
+    if (pos != std::string::npos){
         uint32_t cseq = 0;
         sscanf(message.c_str()+pos, "%*[^:]: %u", &cseq);
         mCSeq = cseq;
@@ -223,8 +285,7 @@ bool RtspConnection::parseCSeq(std::string& message)
 }
 
 // 解析Accept字段
-bool RtspConnection::parseAccept(std::string& message)
-{
+bool RtspConnection::parseAccept(std::string& message){
     if ((message.rfind("Accept")==std::string::npos)
         || (message.rfind("sdp")==std::string::npos))
     {
@@ -235,15 +296,13 @@ bool RtspConnection::parseAccept(std::string& message)
 }
 
 // 解析Transport字段
-bool RtspConnection::parseTransport(std::string& message)
-{
+bool RtspConnection::parseTransport(std::string& message){
     std::size_t pos = message.find("Transport");
-    if(pos != std::string::npos)
-    {
-        if((pos=message.find("RTP/AVP/TCP")) != std::string::npos)
-        {
+    if(pos != std::string::npos){
+        // RTP OVER TCP时候会通过interleaved=0-1表示会话连接的RTP channel为0，RTCP channel为1
+        if((pos=message.find("RTP/AVP/TCP")) != std::string::npos){
             uint8_t rtpChannel, rtcpChannel;
-            mIsRtpOverTcp = true;
+            mIsRtpOverTcp = true; // 通过TCP传输
 
             if(sscanf(message.c_str()+pos, "%*[^;];%*[^;];%*[^=]=%hhu-%hhu",
                         &rtpChannel, &rtcpChannel) != 2)
@@ -251,54 +310,44 @@ bool RtspConnection::parseTransport(std::string& message)
                 return false;
             }
 
-            mRtpChannel = rtpChannel;
-
+            mRtpChannel = rtpChannel; 
             return true;
-        }
-        else if((pos=message.find("RTP/AVP")) != std::string::npos)
-        {
+        } else if((pos=message.find("RTP/AVP")) != std::string::npos){
+            // UDP传输
             uint16_t rtpPort = 0, rtcpPort = 0;
-            if(((message.find("unicast", pos)) != std::string::npos))
-            {
+
+            // 单播解析rtp和rtcp端口
+            if(((message.find("unicast", pos)) != std::string::npos)) {
                 if(sscanf(message.c_str()+pos, "%*[^;];%*[^;];%*[^=]=%hu-%hu",
                      &rtpPort, &rtcpPort) != 2)
                 {
                     return false;
                 }
-            }
-            else if((message.find("multicast", pos)) != std::string::npos)
-            {
+            }else if((message.find("multicast", pos)) != std::string::npos){
+                // 多播这里没有处理
                 return true;
-            }
-            else
-                return false;
+            }else return false;
 
             mPeerRtpPort = rtpPort;
             mPeerRtcpPort = rtcpPort;
-        }
-        else
-        {
-            return false;
-        }
+        } else return false;
 
         return true;
     }
 
     return false;
 }
+
 // 解析媒体Track
-bool RtspConnection::parseMediaTrack()
-{
+bool RtspConnection::parseMediaTrack(){
     std::size_t pos = mUrl.find("track0");
-    if(pos != std::string::npos)
-    {
+    if(pos != std::string::npos){
         mTrackId = MediaSession::TrackId0;
         return true;
     }
 
     pos = mUrl.find("track1");
-    if(pos != std::string::npos)
-    {
+    if(pos != std::string::npos){
         mTrackId = MediaSession::TrackId1;
         return true;
     }
@@ -307,11 +356,9 @@ bool RtspConnection::parseMediaTrack()
 }
 
 // 解析SessionId字段
-bool RtspConnection::parseSessionId(std::string& message)
-{
+bool RtspConnection::parseSessionId(std::string& message){
     std::size_t pos = message.find("Session");
-    if (pos != std::string::npos)
-    {
+    if (pos != std::string::npos){
         uint32_t sessionId = 0;
         if(sscanf(message.c_str()+pos, "%*[^:]: %u", &sessionId) != 1)
             return false;
@@ -328,20 +375,52 @@ bool RtspConnection::parseRequest2(const char* begin, const char* end)
     if(parseCSeq(message) != true)
         return false;
     
-    if(mMethod == OPTIONS)
-        return true;
-    
+    /*
+    OPTIONS请求服务器可用方法，不需要处理
+    OPTIONS rtsp://192.168.31.115:8554/live RTSP/1.0\r\n
+    CSeq: 1\r\n
+    \r\n
+    */
+    if(mMethod == OPTIONS) return true;
+    /*
+    DESCRIBE请求得到S提供的媒体描述信息
+    DESCRIBE rtsp://192.168.31.115:8554/live RTSP/1.0\r\n
+    CSeq: 2\r\n
+    Accept: application/sdp\r\n
+    \r\n
+    */
     if(mMethod == DESCRIBE)
         return parseAccept(message);
+    
+    /*
+    SETUP 建立 RTSP 会话，准备接收音视频数据。
+    // UDP
+    SETUP rtsp://192.168.31.115:8554/live/track0 RTSP/1.0\r\n
+    CSeq: 3\r\n
+    Transport: RTP/AVP;unicast;client_port=54492-54493\r\n
+    \r\n
 
-    if(mMethod == SETUP)
-    {
+    //TCP
+    SETUP rtsp://127.0.0.1:8554/live/track0 RTSP/1.0\r\n
+    CSeq: 4\r\n
+    Transport: RTP/AVP/TCP;unicast;interleaved=0-1\r\n
+    \r\n
+    */
+    // 单播多播的处理，解析rtp和rtcp端口等
+    if(mMethod == SETUP){
         if(parseTransport(message) != true)
             return false;
-
+        // 解析track？？
         return parseMediaTrack();
     }
-
+    /*
+    PLAY 请求开始传输数据，传输数据
+    PLAY rtsp://192.168.31.115:8554/live RTSP/1.0\r\n
+    CSeq: 4\r\n
+    Session: 66334873\r\n
+    Range: npt=0.000-\r\n
+    \r\n
+    */
     if(mMethod == PLAY)
         return parseSessionId(message);
 
@@ -354,8 +433,8 @@ bool RtspConnection::parseRequest2(const char* begin, const char* end)
     return false;
 }
 // 处理OPTIONS命令
-bool RtspConnection::handleCmdOption()
-{
+bool RtspConnection::handleCmdOption(){
+    // 用一个临时缓冲区来接，然后再append到mOutBuffer，通过buffer的write发送
     snprintf(mBuffer, sizeof(mBuffer),
             "RTSP/1.0 200 OK\r\n"
             "CSeq: %u\r\n"
@@ -367,13 +446,12 @@ bool RtspConnection::handleCmdOption()
 
     return true;
 }
+
 // 处理DESCRIBE命令
-bool RtspConnection::handleCmdDescribe()
-{
+bool RtspConnection::handleCmdDescribe(){
     /* 找到会话 */
     MediaSession* session = mRtspServer->loopupMediaSession(mSuffix);
-    if(!session)
-    {
+    if(!session){
         LOG_DEBUG("can't loop up %s session\n", mSuffix.c_str());
         return false;
     }
@@ -401,17 +479,14 @@ bool RtspConnection::handleCmdDescribe()
     return true;
 }
 // 处理SETUP命令
-bool RtspConnection::handleCmdSetup()
-{
+bool RtspConnection::handleCmdSetup(){
     char sessionName[100];
-    if(sscanf(mSuffix.c_str(), "%[^/]/", sessionName) != 1)
-    {
+    if(sscanf(mSuffix.c_str(), "%[^/]/", sessionName) != 1){
         return false;
     }
 
     MediaSession* session = mRtspServer->loopupMediaSession(sessionName);
-    if(!session)
-    {
+    if(!session) {
         LOG_DEBUG("can't loop up %s session\n", sessionName);
         return false;
     }
@@ -419,8 +494,7 @@ bool RtspConnection::handleCmdSetup()
     if(mTrackId >= MEDIA_MAX_TRACK_NUM || mRtpInstances[mTrackId] || mRtcpInstances[mTrackId])
         return false;
 
-    if(session->isStartMulticast())
-    {
+    if(session->isStartMulticast()){
         snprintf((char*)mBuffer, sizeof(mBuffer),
                     "RTSP/1.0 200 OK\r\n"
                     "CSeq: %d\r\n"
@@ -434,12 +508,11 @@ bool RtspConnection::handleCmdSetup()
                     session->getMulticastDestRtpPort(mTrackId),
                     session->getMulticastDestRtpPort(mTrackId)+1,
                     mSessionId);
-    }
-    else
-    {
-        if(mIsRtpOverTcp) //rtp over tcp
-        {
-            /* 创建rtp over tcp */
+    }else{
+        //rtp over tcp 
+        if(mIsRtpOverTcp){
+
+            // 创建rtp over tcp */
             createRtpOverTcp(mTrackId, mSocket.fd(), mRtpChannel);
             mRtpInstances[mTrackId]->setSessionId(mSessionId);
             session->addRtpInstance(mTrackId, mRtpInstances[mTrackId]);
@@ -454,9 +527,8 @@ bool RtspConnection::handleCmdSetup()
                         mRtpChannel,
                         mRtpChannel+1,
                         mSessionId);
-        }
-        else //rtp over udp
-        {
+        }else{ //rtp over udp
+            // 默认都是通过udp传输的
             if(createRtpRtcpOverUdp(mTrackId, mPeerIp, mPeerRtpPort, mPeerRtcpPort) != true)
             {
                 LOG_WARNING("failed to create rtp and rtcp\n");
@@ -466,7 +538,7 @@ bool RtspConnection::handleCmdSetup()
             mRtpInstances[mTrackId]->setSessionId(mSessionId);
             mRtcpInstances[mTrackId]->setSessionId(mSessionId);
 
-            /* 添加到会话中 */
+            // RtpInstances添加到某个track的列表中
             session->addRtpInstance(mTrackId, mRtpInstances[mTrackId]);
 
             snprintf((char*)mBuffer, sizeof(mBuffer),
@@ -491,8 +563,7 @@ bool RtspConnection::handleCmdSetup()
     return true;
 }
 // 处理PLAY命令
-bool RtspConnection::handleCmdPlay()
-{
+bool RtspConnection::handleCmdPlay(){
     snprintf((char*)mBuffer, sizeof(mBuffer),
             "RTSP/1.0 200 OK\r\n"
             "CSeq: %d\r\n"
@@ -505,8 +576,7 @@ bool RtspConnection::handleCmdPlay()
     if(sendMessage(mBuffer, strlen(mBuffer)) < 0)
         return false;
 
-    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i)
-    {
+    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i){
         if(mRtpInstances[i])
             mRtpInstances[i]->setAlive(true);
         
@@ -539,13 +609,15 @@ bool RtspConnection::handleCmdGetParamter()
     // 目前的代码中，该部分逻辑尚未实现，需要根据具体的需求补充相应的功能。
 }
 
-// 发送数据给客户端
+// mOutBuffer是服务端发给客户端的数据，rtsp的option相关的
 int RtspConnection::sendMessage(void* buf, int size){
     int ret;
 
     mOutBuffer.append(buf, size);
     // 通过connfd发送数据调用write
     ret = mOutBuffer.write(mSocket.fd());
+
+    // 发送完成之后就要全部归0
     mOutBuffer.retrieveAll();
 
     return ret;
@@ -571,8 +643,10 @@ bool RtspConnection::createRtpRtcpOverUdp(MediaSession::TrackId trackId, std::st
     if(mRtpInstances[trackId] || mRtcpInstances[trackId])
         return false;
 
+
     int i; // 尝试10次
     for(i = 0; i < 10; ++i){
+        // 创建连接的rtp和rtsp描述符
         rtpSockfd = sockets::createUdpSock();
         if(rtpSockfd < 0) return false;
 

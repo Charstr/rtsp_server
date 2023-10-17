@@ -31,20 +31,24 @@ int main(int argc, char* argv[]) {
     Logger::setLogLevel(Logger::LogWarning);
 
     /*
+    创建任务调度器。一些事件的添加：
+    1. EventScheduler::EventScheduler
+    mPoller->addIOEvent(mWakeIOEvent);唤醒事件？？？
 
-    实现步骤和详细流程：
-
-    3. EventScheduler类用于事件调度，其中包括定时器和事件循环的实现。
-    4. UsageEnvironment类用于封装与事件调度器和线程池相关的环境信息,构造函数接受EventScheduler*和ThreadPool*作为参数，并将它们保存在成员变量中。将事件调度器和线程池与其他部分隔离开来，并提供访问它们的接口。
+    2. TimerManager::TimerManager
+    mPoller->addIOEvent(mTimerIOEvent); 定时事件，
     
-    5. TimerManager类用于管理定时器任务,负责跟踪定时器的触发时间和相应的回调函数,在某个时间点或以固定时间间隔触发回调函数,核心功能包括创建、管理和取消定时器任务，以及确保精确的时间控制。与事件调度器集成，以在事件循环中触发定时器。TimerManager,在上下文中，它可能使用操作系统提供的高分辨率时钟来确保定时器的准确触发。
+    3. Acceptor::listen()：
+    mEnv->scheduler()->addIOEvent(mAcceptIOEvent); 接受新连接的事件
+    
+    4. RtspServer::handleDisconnection
+    mEnv->scheduler()->addTriggerEvent(mTriggerEvent); 断开连接
 
-    6. Poller类用于执行事件轮询，监测I/O事件（如套接字可读、可写）的发生，并通知事件调度器。与事件调度器协作，确保及时地通知事件调度器关于I/O事件的发生。
+    5. TcpConnection::TcpConnection
+    mEnv->scheduler()->addIOEvent(mTcpConnIOEvent); 发送数据
     */
 
-    // 创建任务调度器
     EventScheduler* scheduler = EventScheduler::createNew(EventScheduler::POLLER_EPOLL);
-
 
     // 创建2个线程的线程池
     ThreadPool* threadPool = ThreadPool::createNew(2);
@@ -59,41 +63,27 @@ int main(int argc, char* argv[]) {
     // 管理RTSP连接和媒体会话,负责处理客户端连接
     RtspServer* server = RtspServer::createNew(env, ipAddr);
 
-    /*
-    一些事件的添加：
-    1. EventScheduler::EventScheduler
-    mPoller->addIOEvent(mWakeIOEvent);唤醒事件
-
-    1. TimerManager::TimerManager
-    mPoller->addIOEvent(mTimerIOEvent); 定时事件
-    
-    2. Acceptor::listen()：
-    mEnv->scheduler()->addIOEvent(mAcceptIOEvent); 接受新连接的事件
-    
-    2. RtspServer::handleDisconnection
-    mEnv->scheduler()->addTriggerEvent(mTriggerEvent);
-
-    5. TcpConnection::TcpConnection
-    
-    mEnv->scheduler()->addIOEvent(mTcpConnIOEvent);
-
-    */
-
     /*--------------media---------------------*/
     // MediaSource创建初始化一个缓冲区，对应到mAVFrameInputQueue队列，设置线程的任务回调函数MediaSource::taskCallback，通过多态读取调用H264FileMediaSource::readFrame从h264文件读取一个AVFrame到临时缓冲到mAVFrameInputQueue，指定位置是设置的缓冲区mAVFrames，然后取出到mAVFrameOutputQueue
     // 添加DEFAULT_FRAME_NUM个线程任务到线程任务队列mTaskQueue
-    MediaSource* mediaSource = H264FileMediaSource::createNew(env, fileanme);
+    MediaSource* videoMediaSource = H264FileMediaSource::createNew(env, fileanme);
 
-    // rtpSink资源消费者,资源生产者是mediaSource
-    RtpSink* rtpSink = H264RtpSink::createNew(env, mediaSource);
-    
-    // 这部分还没看
+    // h264消费者，把一个AVFrame分成多个rtp包发送，设置了fps然后定时启动
+    RtpSink* videoRtpSink = H264RtpSink::createNew(env, videoMediaSource);
+
+    // 传进去的字符串是mSessionName
     MediaSession* session = MediaSession::createNew("live");
 
-    session->addRtpSink(MediaSession::TrackId0, rtpSink);
+
+    /*
+    1. 设置session track0的消费者指针videoRtpSink，并设置videoRtpSink发送某个track的rtp数据包使用的回调函数. 
+    2. 回调是在具体的H264RtpSink的handleFrame中进行调用, handleFrame把一个AVFrame分成多个rtp包发送
+    3. 回调函数会遍历某个track的mRtpInstances链表，调用RtpInstance类send函数发送各个实例的rtp数据包. 
+    */
+    session->addRtpSink(MediaSession::TrackId0, videoRtpSink);
     //session->startMulticast(); //多播
 
-    /* 向服务器添加会话 */
+    // 添加mSessionName和MediaSession指针的映射
     server->addMeidaSession(session);
 
     // 执行tcp连接中的listen操作，在监听socket上启动listen函数，同时将mAcceptIOEvent注册到调度器

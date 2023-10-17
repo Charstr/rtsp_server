@@ -61,7 +61,7 @@ private:
     Poller* mPoller;// 事件管理器
     int mTimerFd;// 定时器文件描述符
     // map容器存储定时器的TimerId和Timer对象之间的映射关系
-    std::map<Timer::TimerId, Timer> mTimers;
+    std::map<Timer::TimerId, Timer> mTimers; // 定时器事件
     
     typedef std::pair<Timer::Timestamp, Timer::TimerId> TimerIndex;
      // 定时器事件队列,以按时间顺序管理定时器。根据最早触发的定时器来调整timerfd的触发时间。

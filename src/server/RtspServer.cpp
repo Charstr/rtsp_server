@@ -30,15 +30,13 @@ RtspServer::RtspServer(UsageEnvironment* env, const Ipv4Address& addr) :
 
     // 8. 这里创建触发事件，设置触发事件的回调函数triggerCallback，回调函数遍历所有要关闭的连接描述符，从mConnections找到对应的RtspConnection释放内存关闭资源，然后从mConnections中删除对应的connfd的值。最后把map清空。
 
+    // 上边完成了接受连接并进行处理的函数,这里设置断开连接的mTriggerEvent触发时候的处理函数
     mTriggerEvent = TriggerEvent::createNew(this);
     mTriggerEvent->setTriggerCallback(RtspServer::triggerCallback);
 
     // 9. 创建互斥锁用于多线程同步
     mMutex = Mutex::createNew();
 }
-
-
-
 
 /*
 1. 当有新的连接进来，epoll注意到有mAcceptIOEvent事件发生，调用回调函数Acceptor::readCallback用socket的accept用函数接受连接返回一个server和客户端通信的connfd，然后调用处理这个connfd处理连接的回调函数Acceptor::mNewConnectionCallback进行处理（在TcpServer的构造函数中设置的mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback, this);实际是通过多态调用的 RtspServer::handleNewConnection运行）
@@ -50,7 +48,7 @@ void RtspServer::handleNewConnection(int connfd) {
 
     // 1. 根据已经建立连接的connfd,创建RtspConnection对象。其中创建一个TcpConnection，构造函数中创建了IOEvent事件mTcpConnIOEvent，设置读写异常回调函数，默认启用只读事件，并添加传输数据的mTcpConnIOEvent到EventScheduler，获取客户端IPmPeerIp，并设置了是否mIsRtpOverTcp
 
-    // mTcpConnIOEvent设置读的回调函数TcpConnection::readCallback就是负责客户端连接的时候进行rtsp数据传输的入口
+    // TcpConnection的构造函数中，创建的IOEvent事件mTcpConnIOEvent设置读的回调函数TcpConnection::readCallback是进行rtsp数据传输的关键
 
     // mTcpConnIOEvent事件发生的时候实际就是在传输数据，而触发事件mTriggerEvent是断开连接的
     RtspConnection* conn = RtspConnection::createNew(this, connfd);
@@ -83,6 +81,7 @@ void RtspServer::handleDisconnection(int sockfd){
     // 添加触发事件mTriggerEvent到std::vector<TriggerEvent*> mTriggerEvents，稍后处理断开连接
     mEnv->scheduler()->addTriggerEvent(mTriggerEvent);
 }
+
 
 
 /*-----mTriggerEvent事件发生的时候调用，释放RtspConnection内存并从建立连接的映射删除--------*/
@@ -121,7 +120,7 @@ MediaSession* RtspServer::loopupMediaSession(std::string name){
     // 根据名称查找媒体会话
     std::map<std::string, MediaSession*>::iterator it = mMediaSessions.find(name);
     if(it == mMediaSessions.end())
-        return NULL;
+        return nullptr;
     
     return it->second;
 }

@@ -69,7 +69,7 @@ EventScheduler::EventScheduler(PollerType type, int fd) :
     mWakeIOEvent = IOEvent::createNew(mWakeupFd, this);
 
     // 设置读事件及回调函数，当事件发生的时候调用回调函数读取 mWakeupFd 中的数据唤醒等待在EventScheduler上的线程
-    
+
     // 设置mWakeupFd的事件类型和回调函数的函数指针，唤醒mWakeupFd
     mWakeIOEvent->setReadCallback(EventScheduler::handleReadCallback);
     mWakeIOEvent->enableReadHandling(); 
@@ -118,8 +118,7 @@ bool EventScheduler::removeTimedEvent(Timer::TimerId timerId){
 }
 
 // 添加I/O事件
-bool EventScheduler::addIOEvent(IOEvent* event)
-{
+bool EventScheduler::addIOEvent(IOEvent* event){
     return mPoller->addIOEvent(event);
 }
 
@@ -134,14 +133,15 @@ bool EventScheduler::removeIOEvent(IOEvent* event){
 }
 
 // 循环处理触发事件、处理IO事件和处理其他事件。
+// 都会遍历对应的数组，分别调用回调函数进行处理
 void EventScheduler::loop(){
     while(mQuit != true){
 
         // 处理触发事件，调用的回调函数指针mTriggerCallback设置的是RtspServer::triggerCallback函数，遍历需要断开连接的mDisconnectionlist，根据映射关系从mConnections取出要断开的连接对应的RtspConnection，释放内存并从mConnections移除对应的连接描述符
         this->handleTriggerEvents();
-        // 处理IO事件，epoll_wait把发生的事件赋值到事件数组中（vector<epoll_event> mEPollEventList，并返回数目nums，然后遍历事件数组的前nums个，根据epoll返回的具体事件类型，把发生的事件添加到mEvents，然后遍历整个数组分别调用各个事件的回调函数进行处理。
-        // mTcpConnIOEvent是传输数据的事件，mAcceptIOEvent是用来接受连接的
-        // mTimerIOEvent定时事件和mWakeIOEvent唤醒事件干什么？
+
+        // 处理IO事件，epoll_wait把发生的事件赋值到事件数组中（vector<epoll_event> mEPollEventList，并返回数目nums，然后遍历事件数组的前nums个，根据epoll返回的具体事件类型，把发生的事件添加到mEvents，然后遍历mEvents，分别调用各个IOEvent设置的回调函数进行处理。
+        // 这里是epoll的handleEvent的入口，遍历IOEvent的数组
         mPoller->handleEvent();
         // 处理其他事件
         this->handleOtherEvent();
@@ -192,19 +192,16 @@ void EventScheduler::handleRead(){
     uint64_t one;
     // 读取所有的唤醒事件
     while(::read(mWakeupFd, &one, sizeof(one)) > 0);
-
 }
 
 // 设置在本地线程处理的回调回调函数
-void EventScheduler::runInLocalThread(Callback callBack, void* arg)
-{
+void EventScheduler::runInLocalThread(Callback callBack, void* arg){
     MutexLockGuard mutexLockGuard(mMutex);
     mCallBackQueue.push(std::make_pair(callBack, arg));
 }
 
 // 处理其他事件，如本地线程中添加的回调函数
-void EventScheduler::handleOtherEvent()
-{
+void EventScheduler::handleOtherEvent(){
     MutexLockGuard mutexLockGuard(mMutex);
     while(!mCallBackQueue.empty()){
         std::pair<Callback, void*> event = mCallBackQueue.front();
@@ -214,8 +211,7 @@ void EventScheduler::handleOtherEvent()
 
 
 // EventScheduler析构函数，清理资源
-EventScheduler::~EventScheduler()
-{
+EventScheduler::~EventScheduler(){
     mPoller->removeIOEvent(mWakeIOEvent);
     ::close(mWakeupFd);
 

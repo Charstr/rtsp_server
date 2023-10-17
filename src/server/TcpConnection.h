@@ -66,11 +66,9 @@ protected:
     void* mArg;
     // 缓冲区
     Buffer mInputBuffer;  // 从用户侧接收到的数据缓存
-    Buffer mOutBuffer; // 输出数据的缓存，
+    Buffer mOutBuffer; // 输出数据的缓存
 
-    // 也是个缓冲区,不过是暂存那些发不出去的待发送数据
-
-    char mBuffer[2048];
+    char mBuffer[2048]; // 临时的缓冲区，作用是暂存一下然后拷贝到mOutBuffer中
 };
 
 #endif //_TCP_CONNECTION_H_

@@ -71,7 +71,8 @@ public:
 
 private:
 
-    // 继承自Thread类，表示线程池中的工作线程
+    // 继承自Thread类，表示线程池中的工作线程，每个工作线程都有对应的线程ID
+
     class MThread : public Thread {
     protected:
         virtual void run(void *arg); // 重写线程执行函数

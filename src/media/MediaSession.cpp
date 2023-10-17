@@ -9,10 +9,7 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
-MediaSession* MediaSession::createNew(std::string sessionName)
-{
-    // 创建并返回新的媒体会话对象
-    //return new MediaSession(sessionName);
+MediaSession* MediaSession::createNew(std::string sessionName){
     return New<MediaSession>::allocate(sessionName);
 }
 
@@ -20,21 +17,21 @@ MediaSession::MediaSession(const std::string& sessionName) :
     mSessionName(sessionName),
     mIsStartMulticast(false)
 {
-    // 初始化媒体轨道
+
+    // 初始化媒体轨道，可以传音视频，栈还是堆？？
     mTracks[0].mTrackId = TrackId0;
     mTracks[1].mTrackId = TrackId1;
     mTracks[0].mIsAlive = false;
     mTracks[1].mIsAlive = false;
+
     // 初始化多播RtpInstance和RtcpInstance数组
-    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i)
-    {
+    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i){
         mMulticastRtpInstances[i] = NULL;
         mMulticastRtcpInstances[i] = NULL;
     }
 }
 
-MediaSession::~MediaSession()
-{
+MediaSession::~MediaSession(){
      // 销毁多播RtpInstance和RtcpInstance
     for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i)
     {
@@ -51,8 +48,7 @@ MediaSession::~MediaSession()
     }
 }
 
-std::string MediaSession::generateSDPDescription()
-{
+std::string MediaSession::generateSDPDescription(){
     if(!mSdp.empty())
         return mSdp;
     // 生成SDP描述
@@ -104,38 +100,56 @@ std::string MediaSession::generateSDPDescription()
     return mSdp;
 }
 
-MediaSession::Track* MediaSession::getTrack(MediaSession::TrackId trackId)
-{
-    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i)
-    {
+
+MediaSession::Track* MediaSession::getTrack(MediaSession::TrackId trackId){
+    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i){
         if(mTracks[i].mTrackId == trackId)
             return &mTracks[i];
     }
 
-    return NULL;
+    return nullptr;
 }
 
-bool MediaSession::addRtpSink(MediaSession::TrackId trackId, RtpSink* rtpSink)
-{
+/*--------RTP包的发送----------------*/
+bool MediaSession::addRtpSink(MediaSession::TrackId trackId, RtpSink* rtpSink){
+    
     Track* track;
 
+    // MediaSession构造函数的时候创建有Track mTracks[MEDIA_MAX_TRACK_NUM]
+    // 这里根据trackId取出来对应的音视频track
     track = getTrack(trackId);
-    if(!track)
-        return false;
 
-    // 多态,
+    if(!track) return false;
+
+    // rtpSink这里指向的是h264的
     track->mRtpSink = rtpSink;
-    track->mIsAlive = true;
+    track->mIsAlive = true; // 这一轨道激活
 
-    // 设置RtpSink的发送帧回调函数MediaSession::sendPacketCallback
-    // mediaSession->sendPacket 发送packet
+    // 设置RtpSink的rtp数据包的回调函数MediaSession::sendPacketCallback
     rtpSink->setSendFrameCallback(MediaSession::sendPacketCallback, this, track);
 
     return true;
 }
 
-bool MediaSession::addRtpInstance(MediaSession::TrackId trackId, RtpInstance* rtpInstance)
-{
+// 某个MediaSession的某个Track发送某个RtpPacket
+void MediaSession::sendPacketCallback(void* arg1, void* arg2, RtpPacket* rtpPacket){
+    MediaSession* mediaSession = (MediaSession*)arg1; // 
+    MediaSession::Track* track = (MediaSession::Track*)arg2; // 音视频的某个track
+    
+    mediaSession->sendPacket(track, rtpPacket);
+}
+
+void MediaSession::sendPacket(MediaSession::Track* track, RtpPacket* rtpPacket){
+    std::list<RtpInstance*>::iterator it;
+    // RtpInstance的send函数发送媒体数据包,发送具体实例的rtp包
+    // 在解析rtsp命令的时候会创建RtpInstance插入到mRtpInstances
+    for(it = track->mRtpInstances.begin(); it != track->mRtpInstances.end(); ++it){
+        if((*it)->alive()) 
+            (*it)->send(rtpPacket);
+    }
+}
+
+bool MediaSession::addRtpInstance(MediaSession::TrackId trackId, RtpInstance* rtpInstance){
     Track* track = getTrack(trackId);
     if(!track || track->mIsAlive != true)
         return false;
@@ -165,25 +179,8 @@ bool MediaSession::removeRtpInstance(RtpInstance* rtpInstance)
     return false;
 }
 
-void MediaSession::sendPacketCallback(void* arg1, void* arg2, RtpPacket* rtpPacket)
-{
-    MediaSession* mediaSession = (MediaSession*)arg1;
-    MediaSession::Track* track = (MediaSession::Track*)arg2;
-    
-    mediaSession->sendPacket(track, rtpPacket);
-}
 
-void MediaSession::sendPacket(MediaSession::Track* track, RtpPacket* rtpPacket){
-    std::list<RtpInstance*>::iterator it;
-    // 向所有RtpInstance发送媒体数据包
-    for(it = track->mRtpInstances.begin(); it != track->mRtpInstances.end(); ++it){
-        if((*it)->alive()) 
-            (*it)->send(rtpPacket);
-    }
-}
-
-bool MediaSession::startMulticast()
-{
+bool MediaSession::startMulticast(){
     /* 随机生成多播地址 */
     struct sockaddr_in addr = { 0 };
     uint32_t range = 0xE8FFFFFF - 0xE8000100;

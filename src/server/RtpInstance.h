@@ -28,9 +28,7 @@ public:
         return New<RtpInstance>::allocate(localSockfd, localPort, destIp, destPort);
     }
     // 创建一个处理TCP RTP数据流的实例
-    static RtpInstance* createNewOverTcp(int clientSockfd, uint8_t rtpChannel)
-    {
-        //return new RtpInstance(clientSockfd, rtpChannel);
+    static RtpInstance* createNewOverTcp(int clientSockfd, uint8_t rtpChannel){
         return New<RtpInstance>::allocate(clientSockfd, rtpChannel);
     }
 
@@ -70,6 +68,7 @@ public:
             return sendOverTcp(rtpPktPtr, rtpPacket->mSize+4);
         }
     }
+
     // 检查连接是否存活
     bool alive() const { return mIsAlive; }
     void setAlive(bool alive) { mIsAlive = alive;}// 设置连接是否存活
@@ -78,13 +77,11 @@ public:
 
 private:
      // 发送UDP/TCP数据包
-    int sendOverUdp(void* buf, int size)
-    {
+    int sendOverUdp(void* buf, int size){
         return sockets::sendto(mSockfd, buf, size, mDestAddr.getAddr());
     }
 
-    int sendOverTcp(void* buf, int size)
-    {
+    int sendOverTcp(void* buf, int size){
         return sockets::write(mSockfd, buf, size);
     }
 

@@ -120,7 +120,7 @@ void EPollPoller::handleEvent() {
         mEvents.push_back(it->second);// 将发生的事件添加到集合
     }
 
-    // 遍历所有的事件，通过不同的回调函数处理进行处理
+    // IO多路复用注册有多种事件，这里选择就绪的事件分别进行处理
     for(std::vector<IOEvent*>::iterator it = mEvents.begin(); it != mEvents.end(); ++it)
         (*it)->handleEvent();
     

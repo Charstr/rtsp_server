@@ -83,6 +83,8 @@ void TcpConnection::disableErrorHandling() {
     mEnv->scheduler()->updateIOEvent(mTcpConnIOEvent);
 }
 
+// 有个事件发生了，并且已经建立了tcp的链接，接下来需要根据客户端发来的信息
+// 进行各种方法的解析
 void TcpConnection::handleRead() {
 
     // 负责处理TCP连接的可读事件,从 connfd 中读取数据，并将其放入 inputbuffer 中

@@ -4,6 +4,7 @@
 #include "H264RtpSink.h"
 #include "base/Logging.h"
 #include "base/New.h"
+#include "media/RtpSink.h"
 
 H264RtpSink* H264RtpSink::createNew(UsageEnvironment* env, MediaSource* mediaSource)
 {
@@ -20,22 +21,21 @@ H264RtpSink::H264RtpSink(UsageEnvironment* env, MediaSource* mediaSource) :
     mFps(mediaSource->getFps())
 {
     // 1秒/帧率得到多少ms触发一次
+    // 设置定时器
     start(1000/mFps);
 }
 
 H264RtpSink::~H264RtpSink(){}
 
 // 根据给定的端口号和负载类型生成媒体描述。
-std::string H264RtpSink::getMediaDescription(uint16_t port)
-{
+std::string H264RtpSink::getMediaDescription(uint16_t port){
     char buf[100] = {0};
     sprintf(buf, "m=video %hu RTP/AVP %d", port, mPayloadType);
 
     return std::string(buf);
 }
 
-std::string H264RtpSink::getAttribute()
-{
+std::string H264RtpSink::getAttribute(){
     char buf[100];
     sprintf(buf, "a=rtpmap:%d H264/%d\r\n", mPayloadType, mClockRate);
     sprintf(buf+strlen(buf), "a=framerate:%d", mFps);
@@ -91,8 +91,9 @@ void H264RtpSink::handleFrame(AVFrame* frame){
 
             memcpy(rtpHeader->payload+2, frame->mFrame+pos, RTP_MAX_PKT_SIZE);
             mRtpPacket.mSize = RTP_MAX_PKT_SIZE+2;
+            // 发送rtp包，调用回调函数RtpSink::mSendPacketCallback发送
             sendRtpPacket(&mRtpPacket);
-
+            //RtpSink::sendRtpPacket(&mRtpPacket);
             mSeq++;
             pos += RTP_MAX_PKT_SIZE;
         }

@@ -62,8 +62,9 @@ protected:
     uint32_t mSSRC;
 
 private:
-    TimerEvent* mTimerEvent;// 定时器事件
-    Timer::TimerId mTimerId;// 定时器ID
+
+    TimerEvent* mTimerEvent;// 定时器事件，定时触发进行数据的发送
+    Timer::TimerId mTimerId;// 定时器ID，上边是对应的定时器事件
 };
 
 #endif //_MEDIA_SINK_H_

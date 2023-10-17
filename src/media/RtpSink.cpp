@@ -21,10 +21,11 @@ RtpSink::RtpSink(UsageEnvironment* env, MediaSource* mediaSource, int payloadTyp
     
 {
 
-    // sink是消费者，创建一个定时器事件，用于定时器触发的 
+
+    // sink是消费者，创建一个定时器事件，用于定时器触发的
     mTimerEvent = TimerEvent::createNew(this);
+    
     // 设置超时回调函数RtpSink::timeoutCallback，达到定时触发的时候从mAVFrameOutputQueue帧输出队列取出来一帧，通过多态调用H264RtpSink::handleFrame函数发送一个rtp packet
-    // 定时器触发的操作，发送数据包
     mTimerEvent->setTimeoutCallback(RtpSink::timeoutCallback);
 
     mSSRC = rand();
@@ -37,6 +38,7 @@ RtpSink::~RtpSink(){
 
 
 // 发送RTP数据包的函数，会给数据包设置相应的头部信息，并调用发送数据包的回调函数。
+// 具体的rtpsink调用
 void RtpSink::sendRtpPacket(RtpPacket* packet){
     RtpHeader* rtpHead = packet->mRtpHeadr;
     rtpHead->csrcLen = mCsrcLen;
@@ -49,7 +51,7 @@ void RtpSink::sendRtpPacket(RtpPacket* packet){
     rtpHead->timestamp = htonl(mTimestamp);
     rtpHead->ssrc = htonl(mSSRC);
     packet->mSize += RTP_HEADER_SIZE;
-    // 会调用函数发送
+    // 回调函数发送rtp数据包，设置的是MediaSession::sendPacketCallback函数
     if(RtpSink::mSendPacketCallback)
         RtpSink::mSendPacketCallback(mArg1, mArg2, packet);
 }
@@ -68,9 +70,8 @@ void RtpSink::timeoutCallback(void* arg){
     rtpSink->mMediaSource->putFrame(frame);
 }
 
-// 启动定时事件，以指定的时间间隔ms调用timeoutCallback函数。
+// 添加定时器
 void RtpSink::start(int ms){
-    
     mTimerId = mEnv->scheduler()->addTimedEventRunEvery(mTimerEvent, ms);
 }
 
