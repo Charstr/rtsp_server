@@ -29,6 +29,7 @@ struct AdtsHeader {
     uint8_t id;        //1 bit 0代表MPEG-4, 1代表MPEG-2。
     uint8_t layer;     //2 bit 必须为0
     uint8_t protectionAbsent;  //1 bit 1代表没有CRC，0代表有CRC, 需要额外2字节保存CRC校验码
+    
     uint8_t profile;           //1 bit AAC级别（MPEG-2 AAC中定义了3种profile，MPEG-4 AAC中定义了6种profile）
     uint8_t samplingFreqIndex; //4 bit 采样率
     uint8_t privateBit;        //1bit 编码时设置为0，解码时忽略
@@ -382,7 +383,7 @@ static void doClient(int clientSockfd, const char* clientIP, int clientPort,
                     printf("fread err\n");
                     break;
                 }
-
+                // 解析头部，读出来头部
                 if (parseAdtsHeader(frame, &adtsHeader) < 0){
                     printf("parseAdtsHeader err\n");
                     break;

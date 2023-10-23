@@ -33,10 +33,8 @@ MediaSession::MediaSession(const std::string& sessionName) :
 
 MediaSession::~MediaSession(){
      // 销毁多播RtpInstance和RtcpInstance
-    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i)
-    {
-        if(mMulticastRtpInstances[i])
-        {
+    for(int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i){
+        if(mMulticastRtpInstances[i]){
             this->removeRtpInstance(mMulticastRtpInstances[i]);
             //delete mMulticastRtpInstances[i];
             Delete::release(mMulticastRtpInstances[i]);
@@ -125,7 +123,8 @@ bool MediaSession::addRtpSink(MediaSession::TrackId trackId, RtpSink* rtpSink){
     track->mRtpSink = rtpSink;
     track->mIsAlive = true; // 这一轨道激活
 
-    // 设置RtpSink的rtp数据包的回调函数MediaSession::sendPacketCallback
+    // 设置发送RtpSink的rtp数据包的回调函数MediaSession::sendPacketCallback
+    // 设置某一个track的
     rtpSink->setSendFrameCallback(MediaSession::sendPacketCallback, this, track);
 
     return true;
@@ -159,10 +158,8 @@ bool MediaSession::addRtpInstance(MediaSession::TrackId trackId, RtpInstance* rt
     return true;
 }
 
-bool MediaSession::removeRtpInstance(RtpInstance* rtpInstance)
-{
-    for(int i = 0; i <  MEDIA_MAX_TRACK_NUM; ++i)
-    {
+bool MediaSession::removeRtpInstance(RtpInstance* rtpInstance){
+    for(int i = 0; i <  MEDIA_MAX_TRACK_NUM; ++i){
         if(mTracks[i].mIsAlive == false)
             continue;
         

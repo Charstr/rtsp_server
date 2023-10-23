@@ -20,14 +20,11 @@ public:
         RTP_OVER_TCP
     };
 
-    // 创建一个处理UDP RTP数据流的实例
+    // 创建RTP数据流的实例
     static RtpInstance* createNewOverUdp(int localSockfd, uint16_t localPort,
-                                    std::string destIp, uint16_t destPort)
-    {
-        //return new RtpInstance(localSockfd, localPort, destIp, destPort);
+                                    std::string destIp, uint16_t destPort){
         return New<RtpInstance>::allocate(localSockfd, localPort, destIp, destPort);
     }
-    // 创建一个处理TCP RTP数据流的实例
     static RtpInstance* createNewOverTcp(int clientSockfd, uint8_t rtpChannel){
         return New<RtpInstance>::allocate(clientSockfd, rtpChannel);
     }
@@ -63,6 +60,7 @@ public:
             uint8_t* rtpPktPtr = rtpPacket->_mBuffer;
             rtpPktPtr[0] = '$';
             rtpPktPtr[1] = (uint8_t)mRtpChannel;
+            // 发送的字节数是直接在
             rtpPktPtr[2] = (uint8_t)(((rtpPacket->mSize)&0xFF00)>>8);
             rtpPktPtr[3] = (uint8_t)((rtpPacket->mSize)&0xFF);
             return sendOverTcp(rtpPktPtr, rtpPacket->mSize+4);
@@ -80,7 +78,7 @@ private:
     int sendOverUdp(void* buf, int size){
         return sockets::sendto(mSockfd, buf, size, mDestAddr.getAddr());
     }
-
+    // TCP包要指定发送多少
     int sendOverTcp(void* buf, int size){
         return sockets::write(mSockfd, buf, size);
     }

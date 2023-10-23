@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <sys/timerfd.h>
 
 #include "Timer.h"
@@ -50,10 +51,14 @@ void Timer::handleEvent(){
 TimerManager* TimerManager::createNew(Poller* poller) {
     if(!poller) return nullptr;
 
-    // Linux提供的定时器timerfd_create，将定时器文件描述符作为一个事件交给Reactor
-    // 定时器队列采用管理超时时间
-    // 消费者有一个定时器，间隔一定时间就会向生产者取数据，并将数据RTP打包再传输
-    // 时间的文件描述符
+
+    /*
+        
+    1. CLOCK_MONOTONIC使用单调时钟（不受系统时间调整影响的时钟）来度量时间。TFD_NONBLOCK  表示非阻塞模式（即read() 操作不会阻塞），TFD_CLOEXEC 表示在执行exec()函数时关闭该文件描述符。
+    2. 定时器文件描述符作为一个事件交给Reactor。定时器队列采用管理超时时间，消费者有一个定时器，间隔一定时间就会向生产者取数据，并将数据RTP打包再传输
+
+    */
+
     int timerFd = timerFdCreate(CLOCK_MONOTONIC,
                                 TFD_NONBLOCK | TFD_CLOEXEC);
     if(timerFd < 0){
@@ -92,6 +97,7 @@ TimerManager::TimerManager(int timerFd, Poller* poller) :
 void TimerManager::handleRead(void* arg){
     if(!arg) return;
     TimerManager* timerManager = (TimerManager*)arg;
+    printf("mTimerIOEvent回调\n");
     timerManager->handleTimerEvent();
 }
 

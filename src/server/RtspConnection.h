@@ -83,7 +83,7 @@ private:
     uint16_t mPeerRtpPort;
     uint16_t mPeerRtcpPort;
     MediaSession::TrackId mTrackId;
-    RtpInstance* mRtpInstances[MEDIA_MAX_TRACK_NUM];
+    RtpInstance* mRtpInstances[MEDIA_MAX_TRACK_NUM]; // RtpInstance指针数组
     RtcpInstance* mRtcpInstances[MEDIA_MAX_TRACK_NUM];
     MediaSession* mSession;
     int mSessionId;

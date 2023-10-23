@@ -3,6 +3,7 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
+#include <cstdio>
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -86,6 +87,8 @@ void TcpConnection::disableErrorHandling() {
 /*-------------读写错误的回调函数-----------------*/
 void TcpConnection::readCallback(void* arg){
     TcpConnection* tcpConnection = (TcpConnection*)arg;
+    
+    printf("mTcpConnIOEvent回调\n");
     tcpConnection->handleRead();
 }
 

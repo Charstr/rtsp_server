@@ -2,6 +2,7 @@
 #include "server/SocketsOps.h"
 #include "base/Logging.h"
 #include "base/New.h"
+#include <cstdio>
 
 Acceptor* Acceptor::createNew(UsageEnvironment* env, const Ipv4Address& addr){
     return New<Acceptor>::allocate(env, addr);
@@ -61,6 +62,7 @@ void Acceptor::listen() {
 void Acceptor::readCallback(void* arg) {
     Acceptor* acceptor = (Acceptor*)arg;
     // 调用处理函数
+    printf("mAcceptIOEvent回调\n");
     acceptor->handleRead();
 }
 

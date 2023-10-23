@@ -44,4 +44,4 @@ target_link_libraries(h264_rtsp_server ${LD_FLAGS})
 # target_link_libraries(server1 ${LD_FLAGS})
 
 #leetcode
-add_executable(leetcode main.cpp)
+# add_executable(leetcode main.cpp)

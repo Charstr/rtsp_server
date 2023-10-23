@@ -81,7 +81,7 @@ void ThreadPool::handleTask(){
             if(mTaskQueue.empty()) continue;
             
             // 用移动语义？
-            task = std::move(mTaskQueue.front());// 取出队列中的任务
+            task = mTaskQueue.front();// 取出队列中的任务
 
             mTaskQueue.pop();// 移除队列头部的任务
         }

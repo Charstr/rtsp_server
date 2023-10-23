@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <iostream>
 
 #include "RtspServer.h"
 #include "RtspConnection.h"
@@ -62,8 +63,7 @@ RtspConnection::~RtspConnection() {
 // 正常接收到了客户端的请求消息（TCP），进行解析
 void RtspConnection::handleReadBytes() {
     bool ret;
-    // 这里每次进行一次的c->s通信过程，而不是完整的过程
-    // 根据tcp/udp传输进行分开处理
+    // 每次进行一次的c<->s通信过程，根据tcp/udp传输进行分开处理
     // mInputBuffer是readv从建立连接的connfd接收到的客户端数据
     // tcp传输的时候，客户端和服务器传输的数据都为加上4个字节头数据
     if(mIsRtpOverTcp) {
@@ -175,7 +175,7 @@ void RtspConnection::handleReadBytes() {
         errOcc = true;
         break;
     }
-
+    // 到这里只是连接的建立
     if(errOcc) handleDisconnection(); 
 }
 
@@ -233,7 +233,10 @@ bool RtspConnection::parseRequest1(const char* begin, const char* end){
     if(sscanf(message.c_str(), "%s %s %s", method, url, version) != 3){
         return false; 
     }
-
+    
+    
+    printf("method: %s\n", method);
+    //std::cout<<"method: "<<method<<std::endl;
     if(!strcmp(method, "OPTIONS"))
         mMethod = OPTIONS;
     else if(!strcmp(method, "DESCRIBE"))
@@ -489,7 +492,7 @@ bool RtspConnection::handleCmdDescribe(){
 }
 // 处理SETUP命令
 bool RtspConnection::handleCmdSetup(){
-    char sessionName[100];
+    char sessionName[100]; // 就是设置的live
     if(sscanf(mSuffix.c_str(), "%[^/]/", sessionName) != 1){
         return false;
     }
@@ -537,7 +540,7 @@ bool RtspConnection::handleCmdSetup(){
                         mRtpChannel+1,
                         mSessionId);
         }else{ //rtp over udp
-            // 默认都是通过udp传输的
+            // 默认都是通过udp传输的，创建UDP连接
             if(createRtpRtcpOverUdp(mTrackId, mPeerIp, mPeerRtpPort, mPeerRtcpPort) != true)
             {
                 LOG_WARNING("failed to create rtp and rtcp\n");
@@ -618,7 +621,7 @@ bool RtspConnection::handleCmdGetParamter()
     // 目前的代码中，该部分逻辑尚未实现，需要根据具体的需求补充相应的功能。
 }
 
-// mOutBuffer是服务端发给客户端的数据，rtsp的option相关的
+// mOutBuffer是服务端发给客户端的数据，这里是RTSP应答消息
 int RtspConnection::sendMessage(void* buf, int size){
     int ret;
 

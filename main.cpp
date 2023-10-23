@@ -17,6 +17,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
 using namespace std;
 
 
@@ -37,29 +38,28 @@ struct ListNode {
     ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
-class Solution {
+class LRUCache {
 public:
-
-    vector<int> postorderTraversal(TreeNode* root) {
-        vector<int> ans;
-        if(!root) return ans;
-        stack<TreeNode*> stk;
-        stk.push(root);
-        while(!stk.empty()){
-            TreeNode *fr = stk.top();
-            stk.pop();
-            if(fr){
-                stk.push(fr);
-                stk.push(nullptr);
-                if(fr->right) stk.push(fr->right);
-                if(fr->left) stk.push(fr->left);
-            }else{
-                ans.push_back(stk.top()->val);
-                stk.pop();
-            }
-        }
-        return ans;
+    list<pair<int, int>> _lru;
+    unordered_map<int, list<pair<int, int>>::iterator> _cached;
+    // key iter
+    LRUCache(int capacity) {
+        _capacity = capacity;
     }
+    
+    int get(int key) {
+        auto it = _cached.find(key);
+        if(it!=_cached.end()){
+            _lru.splice(_lru.begin(), _lru, it->second);
+            return it->second->second;
+        }
+        return -1;
+    }
+    
+    void put(int key, int value) {
+
+    }
+    int _capacity;
 };
 
 int main(){

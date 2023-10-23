@@ -34,9 +34,9 @@ bool EPollPoller::addIOEvent(IOEvent* event)
     return updateIOEvent(event);
 }
 
-// epoll_ctl具体操作
-bool EPollPoller::updateIOEvent(IOEvent* event)
-{
+// epoll_ctl具体操作 添加epoll_event到mEPollEventList
+bool EPollPoller::updateIOEvent(IOEvent* event){
+
     // 创建一个epoll事件，这些函数要学习一下
     struct epoll_event epollEvt;
     // 获取事件对应的文件描述符
@@ -56,10 +56,11 @@ bool EPollPoller::updateIOEvent(IOEvent* event)
     
     IOEventMap::iterator it = mEventMap.find(fd);
     
-    // 事件已经注册过了，就epoll_ctl具体操作
-    if(it != mEventMap.end()) {
+    // EPOLL_CTL_ADD（注册新的文件描述符）、EPOLL_CTL_MOD（修改已注册的文件描述符的事件） 或者 EPOLL_CTL_DEL（从 epoll 实例中删除文件描述符）。
+    // mEPollFd是epoll 实例的文件描述符，fd是要进行操作的文件描述符。
+    if(it != mEventMap.end()) { // 已有的修正，
         epoll_ctl(mEPollFd, EPOLL_CTL_MOD, fd, &epollEvt);
-    }else{
+    }else{ // 没有的加入
         epoll_ctl(mEPollFd, EPOLL_CTL_ADD, fd, &epollEvt);
         // 描述符对应的事件
         mEventMap.insert(std::make_pair(fd, event));
@@ -75,7 +76,7 @@ bool EPollPoller::removeIOEvent(IOEvent* event) {
     IOEventMap::iterator it = mEventMap.find(fd);
     if(it == mEventMap.end())
         return false;
-    
+    // EPOLL_CTL_DEL（从 epoll 实例中删除文件描述符）
     epoll_ctl(mEPollFd, EPOLL_CTL_DEL, fd, NULL);
     mEventMap.erase(fd);
 
@@ -123,6 +124,7 @@ void EPollPoller::handleEvent() {
 
     // IO多路复用注册有多种事件，这里选择就绪的事件分别进行处理
     for(std::vector<IOEvent*>::iterator it = mEvents.begin(); it != mEvents.end(); ++it)
+        
         (*it)->handleEvent();
     
     mEvents.clear();

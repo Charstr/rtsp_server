@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <sys/eventfd.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -39,9 +40,11 @@ EventScheduler* EventScheduler::createNew(PollerType type){
 
 EventScheduler::EventScheduler(PollerType type, int fd) :
     mQuit(false),
-    mWakeupFd(fd) // 用于唤醒等待中的线程的文件描述符。
+    mWakeupFd(fd) // 用于唤醒等待中的线程的文件描述符 evtfd
 {
-    // mPoller 是事件轮询器，负责监听多个文件描述符上的事件，并将就绪的事件通知给相应的事件处理器
+
+    // mPoller 负责监听多个文件描述符上的事件，并将就绪的事件通知给相应的事件处理器
+    // 构造函数创建描述符mEPollFd
     switch (type){
     case POLLER_SELECT:
         mPoller = SelectPoller::createNew();
@@ -64,15 +67,12 @@ EventScheduler::EventScheduler(PollerType type, int fd) :
 
     // 传进去mPoller是为了把事件mTimerIOEvent注册到多路复用上
     // 执行mPoller->addIOEvent(mTimerIOEvent);
-    // mTimerManager管理多个定时器Timer
     mTimerManager = TimerManager::createNew(mPoller);
 
     // mWakeIOEvent用于监听 mWakeupFd 上的读事件
     mWakeIOEvent = IOEvent::createNew(mWakeupFd, this);
 
-    // 设置读事件及回调函数，当事件发生的时候调用回调函数读取 mWakeupFd 中的数据唤醒等待在EventScheduler上的线程
-
-    // 设置mWakeupFd的事件类型和回调函数的函数指针，唤醒mWakeupFd
+    // 读取 mWakeupFd 中的数据唤醒等待在EventScheduler上的线程
     mWakeIOEvent->setReadCallback(EventScheduler::handleReadCallback);
     mWakeIOEvent->enableReadHandling(); 
 
@@ -134,8 +134,7 @@ bool EventScheduler::removeIOEvent(IOEvent* event){
     return mPoller->removeIOEvent(event);
 }
 
-// 循环处理触发事件、处理IO事件和处理其他事件。
-// 都会遍历对应的数组，分别调用回调函数进行处理
+// 工作线程
 void EventScheduler::loop(){
     while(mQuit != true){
 
@@ -174,6 +173,7 @@ void EventScheduler::handleTriggerEvents(){
         for(std::vector<TriggerEvent*>::iterator it = mTriggerEvents.begin();
             it != mTriggerEvents.end(); ++it)
         {
+            // printf("处理mTriggerEvents\n");
             (*it)->handleEvent();
         }
 
@@ -184,6 +184,7 @@ void EventScheduler::handleTriggerEvents(){
 // 用于处理唤醒事件的回调函数
 void EventScheduler::handleReadCallback(void* arg){
     if(!arg) return;
+    printf("mWakeIOEvent回调\n");
     EventScheduler* scheduler = (EventScheduler*)arg;
     scheduler->handleRead();
 }

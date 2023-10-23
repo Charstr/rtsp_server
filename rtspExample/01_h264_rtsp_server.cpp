@@ -25,7 +25,7 @@ acceptor 负责 accept 新连接，并将新连接分发到 subReactor。
 
 int main(int argc, char* argv[]) {
 
-    std::string fileanme = "./test.h264";
+    std::string fileanme = "/home/lcp/myProj/rtsp_server/rtspExample/test.h264";
 
     //Logger::setLogFile("xxx.log");
     Logger::setLogLevel(Logger::LogWarning);
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     /*
     创建任务调度器。一些事件的添加：
     1. EventScheduler::EventScheduler
-    mPoller->addIOEvent(mWakeIOEvent);唤醒事件？？？
+    mPoller->addIOEvent(mWakeIOEvent);唤醒事件
 
     2. TimerManager::TimerManager
     mPoller->addIOEvent(mTimerIOEvent); 定时事件，
@@ -69,6 +69,7 @@ int main(int argc, char* argv[]) {
     MediaSource* videoMediaSource = H264FileMediaSource::createNew(env, fileanme);
 
     // h264消费者，把一个AVFrame分成多个rtp包发送，设置了fps然后定时启动
+    // 一个session对应的一个source和sink
     RtpSink* videoRtpSink = H264RtpSink::createNew(env, videoMediaSource);
 
     // 传进去的字符串是mSessionName

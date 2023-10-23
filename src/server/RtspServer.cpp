@@ -90,6 +90,8 @@ void RtspServer::handleDisconnection(int sockfd){
 
 void RtspServer::triggerCallback(void* arg){
     RtspServer* rtspServer = (RtspServer*)arg;
+    // 
+    printf("triggerCallback回调\n");
     rtspServer->handleDisconnectionList();
 }
 

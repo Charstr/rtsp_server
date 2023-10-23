@@ -29,8 +29,6 @@ H264FileMediaSource::H264FileMediaSource(UsageEnvironment* env, const std::strin
 
     setFps(30);
 
-
-    
     /*
 
     线程池的任务：
