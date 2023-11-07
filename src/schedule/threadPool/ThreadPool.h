@@ -3,10 +3,9 @@
 #include <queue>
 #include <vector>
 
-#include "Thread.h"
-#include "Mutex.h"
 #include "Condition.h"
-
+#include "Mutex.h"
+#include "Thread.h"
 
 /*
 
@@ -19,82 +18,83 @@
 */
 
 // 对应于EventLoopThreadPool
-class ThreadPool{
+class ThreadPool {
 public:
-    // Task类，用于表示要执行的任务。每个任务都包含一个回调函数和一个参数。
+	// Task类，用于表示要执行的任务。每个任务都包含一个回调函数和一个参数。
 
-    class Task{
-    public:
-        typedef void (*TaskCallback)(void*);
-        Task() { };
-        
-        // 设置任务回调函数及参数
-        void setTaskCallback(TaskCallback cb, void* arg) {
-            mTaskCallback = cb; mArg = arg;
-        }
+	class Task {
+	public:
+		typedef void (*TaskCallback)(void *);
+		Task(){};
 
-        // 执行任务的回调函数
-        void handle() { 
-            if(Task::mTaskCallback) 
-                Task::mTaskCallback(mArg); 
-        }
+		// 设置任务回调函数及参数
+		void setTaskCallback(TaskCallback cb, void *arg) {
+			mTaskCallback = cb;
+			mArg = arg;
+		}
 
-        // 拷贝赋值函数
-        Task& operator=(const Task& task) {
-            if(this != &task){
-                this->mTaskCallback = task.mTaskCallback;
-                this->mArg = task.mArg;
-            }
-            return *this;
-        }
-    private:
-        void (*mTaskCallback)(void*); // 执行任务使用的回调函数
-        void* mArg;
-    };
+		// 执行任务的回调函数
+		void handle() {
+			if (Task::mTaskCallback)
+				Task::mTaskCallback(mArg);
+		}
 
-    // 静态方法，用于创建线程池实例
-    static ThreadPool* createNew(int num);
-    // 构造函数，初始化线程池的成员变量，包括任务队列（mTaskQueue）、互斥锁（mMutex）、条件变量（mCondition）等。
-    ThreadPool(int num);
+		// 拷贝赋值函数
+		Task &operator=(const Task &task) {
+			if (this != &task) {
+				this->mTaskCallback = task.mTaskCallback;
+				this->mArg = task.mArg;
+			}
+			return *this;
+		}
 
-    // 禁用部分函数
-    ThreadPool(const ThreadPool & )=delete;
-    ThreadPool(ThreadPool&&)=delete;
-    ThreadPool& operator=(const ThreadPool&)=delete;
-    ThreadPool& operator=(ThreadPool&&)=delete;
+	private:
+		void (*mTaskCallback)(void *); // 执行任务使用的回调函数
+		void *mArg;
+	};
 
-    // 终止线程池，释放资源
-    ~ThreadPool();
+	// 静态方法，用于创建线程池实例
+	static ThreadPool *createNew(int num);
+	// 构造函数，初始化线程池的成员变量，包括任务队列（mTaskQueue）、互斥锁（mMutex）、条件变量（mCondition）等。
+	ThreadPool(int num);
 
-    // 添加任务到线程池，并唤醒一个等待的线程。
-    void addTask(Task& task);
+	// 禁用部分函数
+	ThreadPool(const ThreadPool &) = delete;
+	ThreadPool(ThreadPool &&) = delete;
+	ThreadPool &operator=(const ThreadPool &) = delete;
+	ThreadPool &operator=(ThreadPool &&) = delete;
 
-private:
+	// 终止线程池，释放资源
+	~ThreadPool();
 
-    // 继承自Thread类，表示线程池中的工作线程，每个工作线程都有对应的线程ID
-
-    class MThread : public Thread {
-    protected:
-        virtual void run(void *arg); // 重写线程执行函数
-    };
-
-    // 创建线程池中的线程，并启动
-    void createThreads();// 创建线程
-    // 终止线程池，设置终止标志为true，唤醒所有等待的线程，并等待它们终止。
-    void cancelThreads();
-    // 线程执行函数，从任务队列中取出任务并执行，直到线程池终止。
-    void handleTask();
+	// 添加任务到线程池，并唤醒一个等待的线程。
+	void addTask(Task &task);
 
 private:
+	// 继承自Thread类，表示线程池中的工作线程，每个工作线程都有对应的线程ID
 
-    std::queue<Task> mTaskQueue;// 执行函数安全队列，即任务队列
-    std::vector<MThread> mThreads;// 工作线程队列
+	class MThread : public Thread {
+	protected:
+		virtual void run(void *arg); // 重写线程执行函数
+	};
 
-    Mutex* mMutex;// 互斥锁，保证任务的添加和移除（获取）的互斥性
+	// 创建线程池中的线程，并启动
+	void createThreads(); // 创建线程
+	// 终止线程池，设置终止标志为true，唤醒所有等待的线程，并等待它们终止。
+	void cancelThreads();
+	// 线程执行函数，从任务队列中取出任务并执行，直到线程池终止。
+	void handleTask();
 
-    Condition* mCondition;// 线程环境锁，可以让线程处于休眠或者唤醒状态，当任务队列为空时，线程应该等待（阻塞）
+private:
+	std::queue<Task> mTaskQueue;   // 执行函数安全队列，即任务队列
+	std::vector<MThread> mThreads; // 工作线程队列
 
-    bool mQuit; // 标志线程池是否终止
+	Mutex *mMutex; // 互斥锁，保证任务的添加和移除（获取）的互斥性
+
+	Condition *
+		mCondition; // 线程环境锁，可以让线程处于休眠或者唤醒状态，当任务队列为空时，线程应该等待（阻塞）
+
+	bool mQuit; // 标志线程池是否终止
 };
 
 #endif //_THREADPOOL_H_

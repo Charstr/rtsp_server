@@ -39,7 +39,7 @@ include CMakeFiles/rules.ninja
 #############################################
 # Logical path to working directory; prefix for absolute paths.
 
-cmake_ninja_workdir = /home/lcp/myProj/rtsp_server/build/
+cmake_ninja_workdir = /home/lcp/envPkg/rtsp_server/build/
 # =============================================================================
 # Object build statements for EXECUTABLE target h264_rtsp_server
 
@@ -49,227 +49,227 @@ cmake_ninja_workdir = /home/lcp/myProj/rtsp_server/build/
 
 build cmake_object_order_depends_target_h264_rtsp_server: phony || CMakeFiles/h264_rtsp_server.dir
 
-build CMakeFiles/h264_rtsp_server.dir/rtspExample/01_h264_rtsp_server.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/rtspExample/01_h264_rtsp_server.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/rtspExample/01_h264_rtsp_server.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/rtspExample/01_h264_rtsp_server.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/rtspExample/01_h264_rtsp_server.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/rtspExample
 
-build CMakeFiles/h264_rtsp_server.dir/src/base/Allocator.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/base/Allocator.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/base/Allocator.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/base/Allocator.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/base/Allocator.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/base
 
-build CMakeFiles/h264_rtsp_server.dir/src/base/AsyncLogging.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/base/AsyncLogging.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/base/AsyncLogging.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/base/AsyncLogging.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/base/AsyncLogging.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/base
 
-build CMakeFiles/h264_rtsp_server.dir/src/base/Buffer.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/base/Buffer.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/base/Buffer.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/base/Buffer.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/base/Buffer.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/base
 
-build CMakeFiles/h264_rtsp_server.dir/src/base/Logging.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/base/Logging.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/base/Logging.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/base/Logging.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/base/Logging.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/base
 
-build CMakeFiles/h264_rtsp_server.dir/src/media/AACFileMediaSource.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/media/AACFileMediaSource.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/media/AACFileMediaSource.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/media/AACFileMediaSource.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/media/AACFileMediaSource.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/media
 
-build CMakeFiles/h264_rtsp_server.dir/src/media/AACRtpSink.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/media/AACRtpSink.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/media/AACRtpSink.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/media/AACRtpSink.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/media/AACRtpSink.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/media
 
-build CMakeFiles/h264_rtsp_server.dir/src/media/H264FileMediaSource.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/media/H264FileMediaSource.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/media/H264FileMediaSource.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/media/H264FileMediaSource.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/media/H264FileMediaSource.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/media
 
-build CMakeFiles/h264_rtsp_server.dir/src/media/H264RtpSink.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/media/H264RtpSink.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/media/H264RtpSink.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/media/H264RtpSink.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/media/H264RtpSink.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/media
 
-build CMakeFiles/h264_rtsp_server.dir/src/media/MediaSession.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/media/MediaSession.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/media/MediaSession.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/media/MediaSession.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/media/MediaSession.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/media
 
-build CMakeFiles/h264_rtsp_server.dir/src/media/MediaSource.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/media/MediaSource.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/media/MediaSource.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/media/MediaSource.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/media/MediaSource.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/media
 
-build CMakeFiles/h264_rtsp_server.dir/src/media/RtpSink.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/media/RtpSink.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/media/RtpSink.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/media/RtpSink.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/media/RtpSink.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/media
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/Event.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/Event.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/Event.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/Event.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/Event.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/EventScheduler.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/EventScheduler.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/EventScheduler.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/EventScheduler.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/EventScheduler.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/Timer.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/Timer.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/Timer.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/Timer.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/Timer.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/UsageEnvironment.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/UsageEnvironment.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/UsageEnvironment.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/UsageEnvironment.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/UsageEnvironment.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/EPollPoller.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/poller/EPollPoller.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/EPollPoller.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/poller/EPollPoller.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/EPollPoller.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule/poller
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/PollPoller.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/poller/PollPoller.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/PollPoller.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/poller/PollPoller.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/PollPoller.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule/poller
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/Poller.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/poller/Poller.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/Poller.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/poller/Poller.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/Poller.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule/poller
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/SelectPoller.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/poller/SelectPoller.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/SelectPoller.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/poller/SelectPoller.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/poller/SelectPoller.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule/poller
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/Condition.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/threadPool/Condition.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/Condition.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/threadPool/Condition.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/Condition.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/Mutex.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/threadPool/Mutex.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/Mutex.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/threadPool/Mutex.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/Mutex.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/Thread.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/threadPool/Thread.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/Thread.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/threadPool/Thread.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/Thread.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool
 
-build CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/ThreadPool.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/schedule/threadPool/ThreadPool.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/ThreadPool.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/schedule/threadPool/ThreadPool.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool/ThreadPool.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/schedule/threadPool
 
-build CMakeFiles/h264_rtsp_server.dir/src/server/Acceptor.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/server/Acceptor.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/server/Acceptor.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/server/Acceptor.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/server
 
-build CMakeFiles/h264_rtsp_server.dir/src/server/InetAddress.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/server/InetAddress.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/server/InetAddress.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/server/InetAddress.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/server/InetAddress.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/server
 
-build CMakeFiles/h264_rtsp_server.dir/src/server/RtspConnection.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/server/RtspConnection.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/server/RtspConnection.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/server/RtspConnection.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/server/RtspConnection.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/server
 
-build CMakeFiles/h264_rtsp_server.dir/src/server/RtspServer.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/server/RtspServer.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/server/RtspServer.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/server/RtspServer.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/server/RtspServer.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/server
 
-build CMakeFiles/h264_rtsp_server.dir/src/server/SocketsOps.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/server/SocketsOps.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/server/SocketsOps.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/server/SocketsOps.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/server/SocketsOps.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/server
 
-build CMakeFiles/h264_rtsp_server.dir/src/server/TcpConnection.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/server/TcpConnection.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/server/TcpConnection.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/server/TcpConnection.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/server
 
-build CMakeFiles/h264_rtsp_server.dir/src/server/TcpServer.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/server/TcpServer.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/server/TcpServer.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/server/TcpServer.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/server/TcpServer.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/server
 
-build CMakeFiles/h264_rtsp_server.dir/src/server/TcpSocket.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/myProj/rtsp_server/src/server/TcpSocket.cpp || cmake_object_order_depends_target_h264_rtsp_server
+build CMakeFiles/h264_rtsp_server.dir/src/server/TcpSocket.cpp.o: CXX_COMPILER__h264_rtsp_server_Debug /home/lcp/envPkg/rtsp_server/src/server/TcpSocket.cpp || cmake_object_order_depends_target_h264_rtsp_server
   DEP_FILE = CMakeFiles/h264_rtsp_server.dir/src/server/TcpSocket.cpp.o.d
   FLAGS = -g   -O0 -g -std=gnu++17
-  INCLUDES = -I/home/lcp/myProj/rtsp_server/src
+  INCLUDES = -I/home/lcp/envPkg/rtsp_server/src
   OBJECT_DIR = CMakeFiles/h264_rtsp_server.dir
   OBJECT_FILE_DIR = CMakeFiles/h264_rtsp_server.dir/src/server
 
@@ -295,7 +295,7 @@ build h264_rtsp_server: CXX_EXECUTABLE_LINKER__h264_rtsp_server_Debug CMakeFiles
 # Utility command for edit_cache
 
 build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /home/lcp/myProj/rtsp_server/build && /usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+  COMMAND = cd /home/lcp/envPkg/rtsp_server/build && /usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -306,7 +306,7 @@ build edit_cache: phony CMakeFiles/edit_cache.util
 # Utility command for rebuild_cache
 
 build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cd /home/lcp/myProj/rtsp_server/build && /usr/bin/cmake --regenerate-during-build -S/home/lcp/myProj/rtsp_server -B/home/lcp/myProj/rtsp_server/build
+  COMMAND = cd /home/lcp/envPkg/rtsp_server/build && /usr/bin/cmake --regenerate-during-build -S/home/lcp/envPkg/rtsp_server -B/home/lcp/envPkg/rtsp_server/build
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -322,7 +322,7 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 
 #############################################
-# Folder: /home/lcp/myProj/rtsp_server/build
+# Folder: /home/lcp/envPkg/rtsp_server/build
 
 build all: phony h264_rtsp_server
 

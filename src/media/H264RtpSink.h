@@ -6,23 +6,21 @@
 
 // sink消费者,客户端消费文件
 // 生产者和消费者都来自于一个顶级父类,消费者父类是MediaSource
-class H264RtpSink : public RtpSink
-{
+class H264RtpSink : public RtpSink {
 public:
-    static H264RtpSink* createNew(UsageEnvironment* env, MediaSource* mediaSource);
-    
-    H264RtpSink(UsageEnvironment* env, MediaSource* mediaSource);
-    virtual ~H264RtpSink();
+	static H264RtpSink *createNew(UsageEnvironment *env, MediaSource *mediaSource);
 
-    virtual std::string getMediaDescription(uint16_t port);
-    virtual std::string getAttribute();
-    virtual void handleFrame(AVFrame* frame);
+	H264RtpSink(UsageEnvironment *env, MediaSource *mediaSource);
+	virtual ~H264RtpSink();
+
+	virtual std::string getMediaDescription(uint16_t port);
+	virtual std::string getAttribute();
+	virtual void handleFrame(AVFrame *frame);
 
 private:
-    RtpPacket mRtpPacket;
-    int mClockRate;
-    int mFps;
-
+	RtpPacket mRtpPacket;
+	int mClockRate;
+	int mFps;
 };
 
 #endif //_H264_MEDIA_SINK_H_

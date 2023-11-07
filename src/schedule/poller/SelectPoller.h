@@ -7,25 +7,24 @@
 
 #include "PollPoller.h"
 
-class SelectPoller : public Poller
-{
+class SelectPoller : public Poller {
 public:
-    static SelectPoller* createNew();
+	static SelectPoller *createNew();
 
-    SelectPoller();
-    virtual ~SelectPoller();
+	SelectPoller();
+	virtual ~SelectPoller();
 
-    virtual bool addIOEvent(IOEvent* event);
-    virtual bool updateIOEvent(IOEvent* event);
-    virtual bool removeIOEvent(IOEvent* event);
-    virtual void handleEvent();
+	virtual bool addIOEvent(IOEvent *event);
+	virtual bool updateIOEvent(IOEvent *event);
+	virtual bool removeIOEvent(IOEvent *event);
+	virtual void handleEvent();
 
 private:
-    fd_set mReadSet;
-    fd_set mWriteSet;
-    fd_set mExceptionSet;
-    int mMaxNumSockets;
-    std::vector<IOEvent*> mEvents;
+	fd_set mReadSet;
+	fd_set mWriteSet;
+	fd_set mExceptionSet;
+	int mMaxNumSockets;
+	std::vector<IOEvent *> mEvents;
 };
 
 #endif //_POLLER_H_

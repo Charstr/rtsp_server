@@ -8,33 +8,30 @@ Mutex类封装了互斥锁的操作，MutexLockGuard类是一个辅助类，用�
 
 */
 
-class Mutex{
+class Mutex {
 public:
-    static Mutex* createNew();
-    
-    Mutex();
-    ~Mutex();
+	static Mutex *createNew();
 
-    void lock(); // 上锁，阻塞当前线程直到获得锁
-    void unlock();// 解锁，释放锁
-    
-    // / 获取底层的pthread_mutex_t
-    pthread_mutex_t* get() { return &mMutex; };
+	Mutex();
+	~Mutex();
+
+	void lock();   // 上锁，阻塞当前线程直到获得锁
+	void unlock(); // 解锁，释放锁
+
+	// / 获取底层的pthread_mutex_t
+	pthread_mutex_t *get() { return &mMutex; };
 
 private:
-    pthread_mutex_t mMutex;// 互斥锁对象
-
+	pthread_mutex_t mMutex; // 互斥锁对象
 };
 
-class MutexLockGuard
-{
+class MutexLockGuard {
 public:
-    MutexLockGuard(Mutex* mutex);// 构造函数，自动上锁互斥锁
-    ~MutexLockGuard();// 析构函数，自动解锁互斥锁
+	MutexLockGuard(Mutex *mutex); // 构造函数，自动上锁互斥锁
+	~MutexLockGuard();			  // 析构函数，自动解锁互斥锁
 
 private:
-    Mutex* mMutex;// 指向互斥锁的指针
-
+	Mutex *mMutex; // 指向互斥锁的指针
 };
 
 #endif //_MUTEX_H_

@@ -1,26 +1,24 @@
 #ifndef _SOCKET_H_
 #define _SOCKET_H_
-#include <string>
 #include <stdint.h>
+#include <string>
 
 #include "InetAddress.h"
 
-class TcpSocket
-{
+class TcpSocket {
 public:
-    explicit TcpSocket(int sockfd) :
-        mSockfd(sockfd) { }
+	explicit TcpSocket(int sockfd) : mSockfd(sockfd) {}
 
-    ~TcpSocket();
+	~TcpSocket();
 
-    int fd() const { return mSockfd; }
-    bool bind(Ipv4Address& addr);
-    bool listen(int backlog);
-    int accept();
-    void setReuseAddr(int on);
+	int fd() const { return mSockfd; }
+	bool bind(Ipv4Address &addr);
+	bool listen(int backlog);
+	int accept();
+	void setReuseAddr(int on);
 
 private:
-    int mSockfd;
+	int mSockfd;
 };
 
 #endif //_SOCKET_H_
