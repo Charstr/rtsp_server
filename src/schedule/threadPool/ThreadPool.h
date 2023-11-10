@@ -60,9 +60,9 @@ public:
 
 	// 禁用部分函数
 	ThreadPool(const ThreadPool &) = delete;
-	ThreadPool(ThreadPool &&) = delete;
+	// ThreadPool(ThreadPool &&) = delete;
 	ThreadPool &operator=(const ThreadPool &) = delete;
-	ThreadPool &operator=(ThreadPool &&) = delete;
+	// ThreadPool &operator=(ThreadPool &&) = delete;
 
 	// 终止线程池，释放资源
 	~ThreadPool();
@@ -86,13 +86,12 @@ private:
 	void handleTask();
 
 private:
-	std::queue<Task> mTaskQueue;   // 执行函数安全队列，即任务队列
+	std::queue<Task> mTaskQueue; // 执行函数安全队列，即任务队列
 	std::vector<MThread> mThreads; // 工作线程队列
 
 	Mutex *mMutex; // 互斥锁，保证任务的添加和移除（获取）的互斥性
-
-	Condition *
-		mCondition; // 线程环境锁，可以让线程处于休眠或者唤醒状态，当任务队列为空时，线程应该等待（阻塞）
+	// 线程环境锁，可以让线程处于休眠或者唤醒状态，当任务队列为空时，线程应该等待（阻塞）
+	Condition *mCondition;
 
 	bool mQuit; // 标志线程池是否终止
 };

@@ -7,8 +7,7 @@
 #include "media/RtpSink.h"
 
 H264RtpSink *H264RtpSink::createNew(UsageEnvironment *env, MediaSource *mediaSource) {
-	if (!mediaSource)
-		return nullptr;
+	if (!mediaSource) return nullptr;
 	return New<H264RtpSink>::allocate(env, mediaSource);
 }
 
@@ -56,7 +55,7 @@ void H264RtpSink::handleFrame(AVFrame *frame) {
 			return;
 	} else {
 		// 拆分成几个发送
-		int pktNum = frame->mFrameSize / RTP_MAX_PKT_SIZE;		  // 有几个完整的包
+		int pktNum = frame->mFrameSize / RTP_MAX_PKT_SIZE; // 有几个完整的包
 		int remainPktSize = frame->mFrameSize % RTP_MAX_PKT_SIZE; // 剩余不完整包的大小
 		int i, pos = 1;
 
@@ -81,10 +80,10 @@ void H264RtpSink::handleFrame(AVFrame *frame) {
 			 * */
 			rtpHeader->payload[1] = naluType & 0x1F;
 
-			if (i == 0)										// 第一包数据
-				rtpHeader->payload[1] |= 0x80;				// start
+			if (i == 0) // 第一包数据
+				rtpHeader->payload[1] |= 0x80; // start
 			else if (remainPktSize == 0 && i == pktNum - 1) // 最后一包数据
-				rtpHeader->payload[1] |= 0x40;				// end
+				rtpHeader->payload[1] |= 0x40; // end
 
 			memcpy(rtpHeader->payload + 2, frame->mFrame + pos, RTP_MAX_PKT_SIZE);
 			mRtpPacket.mSize = RTP_MAX_PKT_SIZE + 2;

@@ -44,21 +44,13 @@ EventScheduler::EventScheduler(PollerType type, int fd)
 	// mPoller 负责监听多个文件描述符上的事件，并将就绪的事件通知给相应的事件处理器
 	// 构造函数创建描述符mEPollFd
 	switch (type) {
-	case POLLER_SELECT:
-		mPoller = SelectPoller::createNew();
-		break;
+	case POLLER_SELECT: mPoller = SelectPoller::createNew(); break;
 
-	case POLLER_POLL:
-		mPoller = PollPoller::createNew();
-		break;
+	case POLLER_POLL: mPoller = PollPoller::createNew(); break;
 
-	case POLLER_EPOLL:
-		mPoller = EPollPoller::createNew();
-		break;
+	case POLLER_EPOLL: mPoller = EPollPoller::createNew(); break;
 
-	default:
-		_exit(-1);
-		break;
+	default: _exit(-1); break;
 	}
 
 	// 定时器管理器，负责管理定时事件的触发和处理,维护了一个定时器队列，用于存储各种定时任务，如定时发送数据、定时任务执行等。当定时事件到达时，TimerManager
@@ -118,13 +110,19 @@ bool EventScheduler::removeTimedEvent(Timer::TimerId timerId) {
 }
 
 // 添加I/O事件
-bool EventScheduler::addIOEvent(IOEvent *event) { return mPoller->addIOEvent(event); }
+bool EventScheduler::addIOEvent(IOEvent *event) {
+	return mPoller->addIOEvent(event);
+}
 
 // 更新I/O事件
-bool EventScheduler::updateIOEvent(IOEvent *event) { return mPoller->updateIOEvent(event); }
+bool EventScheduler::updateIOEvent(IOEvent *event) {
+	return mPoller->updateIOEvent(event);
+}
 
 // 移除I/O事件
-bool EventScheduler::removeIOEvent(IOEvent *event) { return mPoller->removeIOEvent(event); }
+bool EventScheduler::removeIOEvent(IOEvent *event) {
+	return mPoller->removeIOEvent(event);
+}
 
 // 工作线程
 void EventScheduler::loop() {
@@ -186,8 +184,7 @@ void EventScheduler::handleRead() {
 
 	uint64_t one;
 	// 读取所有的唤醒事件
-	while (::read(mWakeupFd, &one, sizeof(one)) > 0)
-		;
+	while (::read(mWakeupFd, &one, sizeof(one)) > 0) {}
 }
 
 // 设置在本地线程处理的回调回调函数

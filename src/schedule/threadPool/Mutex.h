@@ -15,7 +15,7 @@ public:
 	Mutex();
 	~Mutex();
 
-	void lock();   // 上锁，阻塞当前线程直到获得锁
+	void lock(); // 上锁，阻塞当前线程直到获得锁
 	void unlock(); // 解锁，释放锁
 
 	// / 获取底层的pthread_mutex_t
@@ -28,7 +28,7 @@ private:
 class MutexLockGuard {
 public:
 	MutexLockGuard(Mutex *mutex); // 构造函数，自动上锁互斥锁
-	~MutexLockGuard();			  // 析构函数，自动解锁互斥锁
+	~MutexLockGuard(); // 析构函数，自动解锁互斥锁
 
 private:
 	Mutex *mMutex; // 指向互斥锁的指针

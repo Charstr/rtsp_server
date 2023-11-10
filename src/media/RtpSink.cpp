@@ -63,4 +63,6 @@ void RtpSink::start(int ms) {
 	mTimerId = mEnv->scheduler()->addTimedEventRunEvery(mTimerEvent, ms);
 }
 
-void RtpSink::stop() { mEnv->scheduler()->removeTimedEvent(mTimerId); }
+void RtpSink::stop() {
+	mEnv->scheduler()->removeTimedEvent(mTimerId);
+}

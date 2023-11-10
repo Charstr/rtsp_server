@@ -8,7 +8,7 @@ ThreadPool *ThreadPool::createNew(int num) { return New<ThreadPool>::allocate(nu
 /*---------------线程操作----------------*/
 ThreadPool::ThreadPool(int num)
 	: mThreads(num), // 设置线程池中线程的数量，vector存储
-	  mQuit(false)	 // 初始化终止标志为false
+	  mQuit(false) // 初始化终止标志为false
 {
 	mMutex = Mutex::createNew();
 	mCondition = Condition::createNew();
@@ -32,7 +32,7 @@ void ThreadPool::createThreads() {
 void ThreadPool::cancelThreads() {
 	MutexLockGuard mutexLockGuard(mMutex); // 使用互斥锁保护线程池
 
-	mQuit = true;			 // 设置线程池终止标志为true
+	mQuit = true; // 设置线程池终止标志为true
 	mCondition->broadcast(); // 通知，唤醒所有工作线程
 
 	// 将线程加入到等待队列
@@ -48,8 +48,8 @@ void ThreadPool::cancelThreads() {
 void ThreadPool::addTask(ThreadPool::Task &task) {
 	MutexLockGuard mutexLockGuard(mMutex);
 	mTaskQueue.push(task); // 将任务加入队列
-	mCondition
-		->signal(); // 唤醒一个等待的线程，接下来就要调用线程执行具体任务的函数threadRun再调run
+	// 唤醒一个等待的线程，接下来就要调用线程执行具体任务的函数threadRun再调run
+	mCondition->signal();
 }
 
 // threadRun函数调用选出来某个线程处理任务
@@ -69,15 +69,12 @@ void ThreadPool::handleTask() {
 			MutexLockGuard mutexLockGuard(mMutex);
 
 			// 任务队列为空时循环阻塞等待，这里会在没有任务也就是环形队列满了的时候阻塞
-			if (mTaskQueue.empty())
-				mCondition->wait(mMutex); // 等待条件变量通知，开启线程
+			if (mTaskQueue.empty()) mCondition->wait(mMutex); // 等待条件变量通知，开启线程
 
 			// 如果线程池终止标志为true，则退出循环
-			if (mQuit == true)
-				break;
+			if (mQuit == true) break;
 			// 不退出但是此时队列为空就循环运行
-			if (mTaskQueue.empty())
-				continue;
+			if (mTaskQueue.empty()) continue;
 
 			// 用移动语义？
 			task = mTaskQueue.front(); // 取出队列中的任务
@@ -92,6 +89,6 @@ void ThreadPool::handleTask() {
 ThreadPool::~ThreadPool() {
 	cancelThreads(); // 终止线程
 
-	Delete::release(mMutex);	 // 释放互斥锁
+	Delete::release(mMutex); // 释放互斥锁
 	Delete::release(mCondition); // 释放条件变量
 }
