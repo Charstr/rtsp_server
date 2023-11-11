@@ -24,7 +24,6 @@ MediaSource是用于管理视频帧的生产者，负责缓冲视频帧并放入
 
 class AVFrame {
 public:
-	// 分配视频帧缓冲区
 	AVFrame() : mBuffer(new uint8_t[FRAME_MAX_SIZE]), mFrameSize(0) {}
 
 	~AVFrame() {

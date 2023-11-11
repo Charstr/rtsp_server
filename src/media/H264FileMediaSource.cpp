@@ -27,27 +27,7 @@ H264FileMediaSource::H264FileMediaSource(UsageEnvironment *env, const std::strin
 
 	setFps(30);
 
-	/*
-
-	线程池的任务：
-	1. 将mTask插入到任务队列mTaskQueue，并Condition->signal();唤醒一个等待的线程进行处理。
-
-	1. 添加到线程池的任务队列，创建线程的时候设置有处理任务的函数
-	Thread::threadRun，通过多态调用ThreadPool::MThread::run处理任务
-	2.
-	调用线程池的ThreadPool::handleTask函数，从任务队列mTaskQueue取出来任务并调用对应任务的回调函数（这里设置的是MediaSource::taskCallback，通过多态调用H264FileMediaSource::readFrame从h264文件读取一个AVFrame到mAVFrameOutputQueue）执行任务
-	3. 每个任务通过回调会读取一个视频帧数据并添加到队列mAVFrameOutputQueue
-	*/
-
-	// 当提交了一个任务后，通过条件变量
-	// mCondition->signal()唤醒其中一个空闲线程，被唤醒的线程会从任务队列 mTaskQueue
-	// 中取出任务，然后执行该任务的回调函数。代码中的是Thread::threadRun，多态调用ThreadPool::MThread::run，函数内部调用
-	// ThreadPool::handleTask 函数，执行具体的任务逻辑。
-
-	// 线程池处理任务是异步执行的，任务的提交和执行是分离的，任务在一个线程池中排队等待执行，而不是立即在提交的地方执行。程序可以继续执行后续的逻辑，而不必等待任务完成。
-	// 异步执行的方式可以提高程序的并发性和响应性，特别是在处理I/O密集型任务（比如文件读写、网络通信等）时，可以充分利用CPU资源，提高程序的吞吐量。
-
-	// 这里为什么添加mTask到任务队列mTaskQueue？避免了线程池在启动后还需要一定时间才能接受到新的任务，提高系统的响应速度
+	// 生产者，添加任务readFrame到线程池的任务队列，并唤醒一个线程去执行
 	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i) {
 		mEnv->threadPool()->addTask([this] {
 			this->readFrame();
@@ -73,9 +53,11 @@ void H264FileMediaSource::readFrame() {
 	// mFd确定了文件要读取的位置
 	frame->mFrameSize = getFrameFromH264File(mFd, frame->mBuffer, FRAME_MAX_SIZE);
 
+	// 判断读取到的内容
 	if (frame->mFrameSize < 0)
 		return;
 
+	// 读取的时候直接进行判断
 	if (startCode3(frame->mBuffer)) {
 		frame->mFrame = frame->mBuffer + 3;
 		frame->mFrameSize -= 3;
@@ -124,6 +106,7 @@ int H264FileMediaSource::getFrameFromH264File(int fd, uint8_t *frame, int size) 
 	if (fd < 0)
 		return fd;
 
+	// 读取到frame中
 	rSize = read(fd, frame, size);
 	if (!startCode3(frame) && !startCode4(frame))
 		return -1;

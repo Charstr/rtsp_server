@@ -1,7 +1,10 @@
 #include "ThreadPool.h"
 #include "base/New.h"
 #include <cstdint>
+#include <memory>
 
+// 比如说这样的，通过自定义的New手动申请释放会出现忘记的情况，所以通过智能指针来代替
+// 这个线程池只是用来生产
 ThreadPool *ThreadPool::createNew(int numThreads) {
 	return New<ThreadPool>::allocate(numThreads);
 }
