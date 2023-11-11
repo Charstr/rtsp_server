@@ -1,4 +1,5 @@
 #include <iostream>
+#include <mutex>
 #include <stdlib.h>
 
 #include "Allocator.h"
@@ -23,8 +24,8 @@ Allocator *Allocator::getInstance() {
 void *Allocator::alloc(uint32_t size) {
 	Obj *result;
 	uint32_t index;
-	// RAII
-	MutexLockGuard mutexLockGuard(mMutex); // 加锁
+
+	std::lock_guard<std::mutex> lock(m_mutex);
 
 	/* 如果分配内存大于 MAX_BYTES，那么就直接通过 malloc 分配 */
 	if (size > MAX_BYTES)
@@ -49,7 +50,7 @@ void Allocator::dealloc(void *p, uint32_t size) {
 	Obj *obj = (Obj *)p;
 	uint32_t index;
 
-	MutexLockGuard mutexLockGuard(mMutex);
+	std::lock_guard<std::mutex> lock(m_mutex);
 
 	/* 如果释放内存大于 MAX_BYTES，那么就直接通过 free 释放 */
 	if (size > MAX_BYTES) {
@@ -66,7 +67,7 @@ void Allocator::dealloc(void *p, uint32_t size) {
 
 /* 重新分配内存 */
 void *Allocator::refill(uint32_t bytes) {
-	int nobjs = 20;							// 一次申请20个obj
+	int nobjs = 20; // 一次申请20个obj
 	char *chunk = chunkAlloc(bytes, nobjs); // 分配内存块
 	Obj *result;
 	Obj *currentObj;
@@ -101,7 +102,7 @@ void *Allocator::refill(uint32_t bytes) {
 
 char *Allocator::chunkAlloc(uint32_t size, int &nobjs) {
 	char *result;
-	uint32_t totalBytes = size * nobjs;			// 总字节数
+	uint32_t totalBytes = size * nobjs; // 总字节数
 	uint32_t bytesLeft = mEndFree - mStartFree; // 缓存块剩余空间大小
 
 	if (bytesLeft > totalBytes) // 如果缓存块空间充足，则直接从缓存块中获取内存

@@ -47,7 +47,7 @@ Acceptor::~Acceptor() {
 	// 移除事件调度释放内存
 	if (mListenning)
 		mEnv->scheduler()->removeIOEvent(mAcceptIOEvent);
-	Delete::release(mAcceptIOEvent);
+	// Delete::release(mAcceptIOEvent);
 }
 
 // server->start

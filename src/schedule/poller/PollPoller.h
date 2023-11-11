@@ -13,9 +13,9 @@ public:
 	PollPoller();
 	virtual ~PollPoller();
 
-	virtual bool addIOEvent(IOEvent *event);
-	virtual bool updateIOEvent(IOEvent *event);
-	virtual bool removeIOEvent(IOEvent *event);
+	virtual bool addIOEvent(std::shared_ptr<IOEvent> event);
+	virtual bool updateIOEvent(std::shared_ptr<IOEvent> event);
+	virtual bool removeIOEvent(std::shared_ptr<IOEvent> event);
 	virtual void handleEvent();
 
 private:
@@ -23,7 +23,7 @@ private:
 	PollFdList mPollFdList;
 	typedef std::map<int, int> PollFdMap;
 	PollFdMap mPollFdMap; // fd -> index in PollFdList
-	std::vector<IOEvent *> mEvents;
+	std::vector<std::shared_ptr<IOEvent>> mEvents;
 };
 
 #endif //_POLLPOLLER_H_

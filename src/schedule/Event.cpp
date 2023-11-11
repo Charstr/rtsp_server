@@ -1,18 +1,13 @@
 #include <stdio.h>
 
 #include "Event.h"
-#include "base/New.h"
 
-TriggerEvent *TriggerEvent::createNew(void *arg) {
-	// return new TriggerEvent(arg);
-	//  使用New分配内存，创建TriggerEvent对象
-	return New<TriggerEvent>::allocate(arg);
+std::shared_ptr<TriggerEvent> TriggerEvent::createNew(void *arg) {
+	return std::make_shared<TriggerEvent>(arg);
 }
 
-TriggerEvent *TriggerEvent::createNew() {
-	// return new TriggerEvent(NULL);
-	//  使用New分配内存，创建TriggerEvent对象
-	return New<TriggerEvent>::allocate((void *)0);
+std::shared_ptr<TriggerEvent> TriggerEvent::createNew() {
+	return std::make_shared<TriggerEvent>(nullptr);
 }
 
 TriggerEvent::TriggerEvent(void *arg) : mArg(arg) {}
@@ -22,15 +17,13 @@ void TriggerEvent::handleEvent() {
 		mTriggerCallback(mArg);
 }
 
-// 使用New分配内存，创建TimerEvent对象
-TimerEvent *TimerEvent::createNew(void *arg) {
-	// return new TimerEvent(arg);
-	return New<TimerEvent>::allocate(arg);
+// 使用std::make_shared创建TimerEvent对象
+std::shared_ptr<TimerEvent> TimerEvent::createNew(void *arg) {
+	return std::make_shared<TimerEvent>(arg);
 }
 
-TimerEvent *TimerEvent::createNew() {
-	// return new TimerEvent(NULL);
-	return New<TimerEvent>::allocate((void *)0);
+std::shared_ptr<TimerEvent> TimerEvent::createNew() {
+	return std::make_shared<TimerEvent>(nullptr);
 }
 
 TimerEvent::TimerEvent(void *arg) : mArg(arg) {}
@@ -41,16 +34,17 @@ void TimerEvent::handleEvent() {
 		mTimeoutCallback(mArg);
 }
 
-IOEvent *IOEvent::createNew(int fd, void *arg) {
+// 不要忘记加上作用域去掉static
+std::shared_ptr<IOEvent> IOEvent::createNew(int fd, void *arg) {
 	if (fd < 0)
 		return nullptr;
-	return New<IOEvent>::allocate(fd, arg);
+	return std::make_shared<IOEvent>(fd, arg);
 }
 
-IOEvent *IOEvent::createNew(int fd) {
+std::shared_ptr<IOEvent> IOEvent::createNew(int fd) {
 	if (fd < 0)
 		return nullptr;
-	return New<IOEvent>::allocate(fd, (void *)0);
+	return std::make_shared<IOEvent>(fd, nullptr);
 }
 
 IOEvent::IOEvent(int fd, void *arg)

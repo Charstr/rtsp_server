@@ -20,8 +20,8 @@ TimerManager类通过TimerEvent的指针来允许不同类型的定时事件。�
 class Timer // 单个定时器
 {
 public:
-	typedef uint32_t TimerId;	   // 定时器ID
-	typedef int64_t Timestamp;	   // 毫秒级时间戳
+	typedef uint32_t TimerId; // 定时器ID
+	typedef int64_t Timestamp; // 毫秒级时间戳
 	typedef uint32_t TimeInterval; // 毫秒级时间间隔
 
 	~Timer();
@@ -30,15 +30,15 @@ public:
 
 private:
 	friend class TimerManager;
-	Timer(TimerEvent *event, Timestamp timestamp, TimeInterval timeInterval);
+	Timer(std::shared_ptr<TimerEvent> event, Timestamp timestamp, TimeInterval timeInterval);
 	void handleEvent(); // 处理超时回调定时器事件
 
 private:
 	// 定时器事件，handleEvent时候执行的是设置的mTimerEvent的回调处理函数mTimeoutCallback
-	TimerEvent *mTimerEvent;
-	Timestamp mTimestamp;		// 定时器触发时间戳
+	std::shared_ptr<TimerEvent> mTimerEvent;
+	Timestamp mTimestamp; // 定时器触发时间戳
 	TimeInterval mTimeInterval; // 定时器触发时间间隔
-	bool mRepeat;				// 定时器是否重复触发
+	bool mRepeat; // 定时器是否重复触发
 };
 
 // 管理多个定时器
@@ -50,19 +50,20 @@ public:
 	TimerManager(int timerFd, Poller *poller);
 	~TimerManager();
 	// 添加一个定时器，返回定时器ID
-	Timer::TimerId addTimer(TimerEvent *event, Timer::Timestamp timestamp,
-							Timer::TimeInterval timeInterval);
+	Timer::TimerId addTimer(
+		std::shared_ptr<TimerEvent> event, Timer::Timestamp timestamp,
+		Timer::TimeInterval timeInterval);
 	// 移除指定ID的定时器
 	bool removeTimer(Timer::TimerId timerId);
 
 private:
-	void modifyTimeout();			// 修改定时器超时时间
+	void modifyTimeout(); // 修改定时器超时时间
 	static void handleRead(void *); // 定时器事件的读回调函数，处理多个定时器事件
-	void handleTimerEvent();		// 处理定时器事件
+	void handleTimerEvent(); // 处理定时器事件
 
 private:
 	Poller *mPoller; // 事件管理器
-	int mTimerFd;	 // 定时器文件描述符
+	int mTimerFd; // 定时器文件描述符
 	// map容器存储定时器的TimerId和Timer对象之间的映射关系
 	std::map<Timer::TimerId, Timer> mTimers; // 定时器事件
 
@@ -70,8 +71,8 @@ private:
 	// 定时器事件队列,以按时间顺序管理定时器。根据最早触发的定时器来调整timerfd的触发时间。
 	std::multimap<TimerIndex, Timer> mEvents;
 
-	uint32_t mLastTimerId;	// 最后一个定时器的ID,当前使用的最大的TimerId
-	IOEvent *mTimerIOEvent; // 定时器的IOEvent对象
+	uint32_t mLastTimerId; // 最后一个定时器的ID,当前使用的最大的TimerId
+	std::shared_ptr<IOEvent> mTimerIOEvent; // 定时器的IOEvent对象
 };
 
 #endif //_TIMER_H_

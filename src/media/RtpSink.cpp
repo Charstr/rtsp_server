@@ -22,7 +22,7 @@ RtpSink::RtpSink(UsageEnvironment *env, MediaSource *mediaSource, int payloadTyp
 
 RtpSink::~RtpSink() {
 	mEnv->scheduler()->removeTimedEvent(mTimerId);
-	Delete::release(mTimerEvent);
+	// Delete::release(mTimerEvent);
 }
 
 // 发送RTP数据包的函数，会给数据包设置相应的头部信息，并调用发送数据包的回调函数。

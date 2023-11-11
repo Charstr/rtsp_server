@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <mutex>
 #include <stdint.h>
 #include <sys/eventfd.h>
 #include <unistd.h>
@@ -9,8 +10,6 @@
 #include "poller/EPollPoller.h"
 #include "poller/PollPoller.h"
 #include "poller/SelectPoller.h"
-
-// EventScheduler类是一个事件调度器，用于管理和触发各种事件。用不同的轮询器(Poller)来处理IO事件和定时事件。一些辅助函数和回调函数，用于处理触发事件和其他事件的逻辑。
 
 static int createEventFd() {
 	// 当一个进程调用 exec()
@@ -23,16 +22,15 @@ static int createEventFd() {
 	}
 	return evtFd;
 }
+std::shared_ptr<EventScheduler> EventScheduler::createNew(PollerType type) {
 
-// 工厂方法，创建一个新的事件调度器EventScheduler实例
-EventScheduler *EventScheduler::createNew(PollerType type) {
 	if (type != POLLER_SELECT && type != POLLER_POLL && type != POLLER_EPOLL)
 		return nullptr;
 
 	int evtFd = createEventFd(); // 用作mWakeupFd，每个EventLoop对象都有自己的eventfd
 	if (evtFd < 0)
 		return nullptr;
-	return New<EventScheduler>::allocate(type, evtFd);
+	return std::make_shared<EventScheduler>(type, evtFd);
 }
 
 // EventScheduler构造函数，传进来EventScheduler::createNew的PollerType type和创建的evtFd
@@ -44,13 +42,18 @@ EventScheduler::EventScheduler(PollerType type, int fd)
 	// mPoller 负责监听多个文件描述符上的事件，并将就绪的事件通知给相应的事件处理器
 	// 构造函数创建描述符mEPollFd
 	switch (type) {
-	case POLLER_SELECT: mPoller = SelectPoller::createNew(); break;
-
-	case POLLER_POLL: mPoller = PollPoller::createNew(); break;
-
-	case POLLER_EPOLL: mPoller = EPollPoller::createNew(); break;
-
-	default: _exit(-1); break;
+	case POLLER_SELECT:
+		mPoller = SelectPoller::createNew();
+		break;
+	case POLLER_POLL:
+		mPoller = PollPoller::createNew();
+		break;
+	case POLLER_EPOLL:
+		mPoller = EPollPoller::createNew();
+		break;
+	default:
+		_exit(-1);
+		break;
 	}
 
 	// 定时器管理器，负责管理定时事件的触发和处理,维护了一个定时器队列，用于存储各种定时任务，如定时发送数据、定时任务执行等。当定时事件到达时，TimerManager
@@ -70,20 +73,18 @@ EventScheduler::EventScheduler(PollerType type, int fd)
 	// 把唤醒事件添加到调度管理器，通过多态，调用的是epoll的addIOEvent函数
 
 	mPoller->addIOEvent(mWakeIOEvent);
-	// 创建一个互斥锁
-	mMutex = Mutex::createNew();
 }
 
 // 添加触发事件mTriggerEvent到
-bool EventScheduler::addTriggerEvent(TriggerEvent *event) {
+bool EventScheduler::addTriggerEvent(std::shared_ptr<TriggerEvent> event) {
 	mTriggerEvents.push_back(event);
 
 	return true;
 }
 
 // 添加定时事件，在一定时间后执行
-Timer::TimerId EventScheduler::addTimedEventRunAfater(TimerEvent *event,
-													  Timer::TimeInterval delay) {
+Timer::TimerId EventScheduler::addTimedEventRunAfater(
+	std::shared_ptr<TimerEvent> event, Timer::TimeInterval delay) {
 	Timer::Timestamp when = Timer::getCurTime();
 	when += delay;
 
@@ -91,13 +92,14 @@ Timer::TimerId EventScheduler::addTimedEventRunAfater(TimerEvent *event,
 }
 
 // 添加定时事件，指定执行时间点
-Timer::TimerId EventScheduler::addTimedEventRunAt(TimerEvent *event, Timer::Timestamp when) {
+Timer::TimerId
+EventScheduler::addTimedEventRunAt(std::shared_ptr<TimerEvent> event, Timer::Timestamp when) {
 	return mTimerManager->addTimer(event, when, 0);
 }
 
 // 添加定时事件，定期执行, 到when的时候触发，触发的间隔为interval
-Timer::TimerId EventScheduler::addTimedEventRunEvery(TimerEvent *event,
-													 Timer::TimeInterval interval) {
+Timer::TimerId EventScheduler::addTimedEventRunEvery(
+	std::shared_ptr<TimerEvent> event, Timer::TimeInterval interval) {
 	Timer::Timestamp when = Timer::getCurTime();
 	when += interval;
 
@@ -110,21 +112,20 @@ bool EventScheduler::removeTimedEvent(Timer::TimerId timerId) {
 }
 
 // 添加I/O事件
-bool EventScheduler::addIOEvent(IOEvent *event) {
+bool EventScheduler::addIOEvent(std::shared_ptr<IOEvent> event) {
 	return mPoller->addIOEvent(event);
 }
 
 // 更新I/O事件
-bool EventScheduler::updateIOEvent(IOEvent *event) {
+bool EventScheduler::updateIOEvent(std::shared_ptr<IOEvent> event) {
 	return mPoller->updateIOEvent(event);
 }
 
 // 移除I/O事件
-bool EventScheduler::removeIOEvent(IOEvent *event) {
+bool EventScheduler::removeIOEvent(std::shared_ptr<IOEvent> event) {
 	return mPoller->removeIOEvent(event);
 }
 
-// 工作线程
 void EventScheduler::loop() {
 	while (mQuit != true) {
 
@@ -160,7 +161,7 @@ void EventScheduler::wakeup() {
 // 处理断开连接的触发事件
 void EventScheduler::handleTriggerEvents() {
 	if (!mTriggerEvents.empty()) {
-		for (std::vector<TriggerEvent *>::iterator it = mTriggerEvents.begin();
+		for (std::vector<std::shared_ptr<TriggerEvent>>::iterator it = mTriggerEvents.begin();
 			 it != mTriggerEvents.end(); ++it) {
 			// printf("处理mTriggerEvents\n");
 			(*it)->handleEvent();
@@ -184,18 +185,20 @@ void EventScheduler::handleRead() {
 
 	uint64_t one;
 	// 读取所有的唤醒事件
-	while (::read(mWakeupFd, &one, sizeof(one)) > 0) {}
+	while (::read(mWakeupFd, &one, sizeof(one)) > 0) {
+	}
 }
 
 // 设置在本地线程处理的回调回调函数
 void EventScheduler::runInLocalThread(Callback callBack, void *arg) {
-	MutexLockGuard mutexLockGuard(mMutex);
+	std::lock_guard<std::mutex> lguard(m_mutex);
+
 	mCallBackQueue.push(std::make_pair(callBack, arg));
 }
 
 // 处理其他事件，如本地线程中添加的回调函数
 void EventScheduler::handleOtherEvent() {
-	MutexLockGuard mutexLockGuard(mMutex);
+	std::lock_guard<std::mutex> lguard(m_mutex);
 	while (!mCallBackQueue.empty()) {
 		std::pair<Callback, void *> event = mCallBackQueue.front();
 		event.first(event.second);
@@ -207,8 +210,6 @@ EventScheduler::~EventScheduler() {
 	mPoller->removeIOEvent(mWakeIOEvent);
 	::close(mWakeupFd);
 
-	Delete::release(mWakeIOEvent);
 	Delete::release(mTimerManager);
 	Delete::release(mPoller);
-	Delete::release(mMutex);
 }

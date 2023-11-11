@@ -16,9 +16,11 @@ PollPoller::PollPoller() {}
 
 PollPoller::~PollPoller() {}
 
-bool PollPoller::addIOEvent(IOEvent *event) { return updateIOEvent(event); }
+bool PollPoller::addIOEvent(std::shared_ptr<IOEvent> event) {
+	return updateIOEvent(event);
+}
 
-bool PollPoller::updateIOEvent(IOEvent *event) {
+bool PollPoller::updateIOEvent(std::shared_ptr<IOEvent> event) {
 	int fd = event->getFd();
 	if (fd < 0) {
 		LOG_WARNING("failed to add io event\n");
@@ -65,7 +67,7 @@ bool PollPoller::updateIOEvent(IOEvent *event) {
 	return true;
 }
 
-bool PollPoller::removeIOEvent(IOEvent *event) {
+bool PollPoller::removeIOEvent(std::shared_ptr<IOEvent> event) {
 	int fd = event->getFd();
 
 	/* 查看该任务是否存在 */
@@ -131,7 +133,8 @@ void PollPoller::handleEvent() {
 		}
 	}
 
-	for (std::vector<IOEvent *>::iterator it = mEvents.begin(); it != mEvents.end(); ++it) {
+	for (std::vector<std::shared_ptr<IOEvent>>::iterator it = mEvents.begin(); it != mEvents.end();
+		 ++it) {
 		(*it)->handleEvent();
 	}
 

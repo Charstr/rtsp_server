@@ -1,12 +1,16 @@
 #include <algorithm>
 #include <assert.h>
+#include <memory>
+#include <mutex>
 #include <stdio.h>
 
 #include "RtspServer.h"
 #include "base/New.h"
 
-RtspServer *RtspServer::createNew(UsageEnvironment *env, Ipv4Address &addr) {
-	return New<RtspServer>::allocate(env, addr);
+std::shared_ptr<EventScheduler> createNew(UsageEnvironment *env, Ipv4Address &addr);
+
+std::shared_ptr<RtspServer> RtspServer::createNew(UsageEnvironment *env, Ipv4Address &addr) {
+	return std::make_shared<RtspServer>(env, addr);
 }
 
 RtspServer::RtspServer(UsageEnvironment *env, const Ipv4Address &addr) : TcpServer(env, addr) {
@@ -40,9 +44,6 @@ RtspServer::RtspServer(UsageEnvironment *env, const Ipv4Address &addr) : TcpServ
 	// 这里设置触发事件，处理mDisconnectionlist中所有要断开的连接
 	mTriggerEvent = TriggerEvent::createNew(this);
 	mTriggerEvent->setTriggerCallback(RtspServer::triggerCallback);
-
-	// 9. 创建互斥锁用于多线程同步
-	mMutex = Mutex::createNew();
 }
 
 /*
@@ -86,7 +87,7 @@ void RtspServer::disconnectionCallback(void *arg, int sockfd) {
 }
 
 void RtspServer::handleDisconnection(int sockfd) {
-	MutexLockGuard mutexLockGuard(mMutex);
+	std::lock_guard<std::mutex> lguard(m_mutex);
 
 	// 要取消连接的描述符加入到队列mDisconnectionlist，建立连接的时候是存在map<int, RtspConnection*>
 	// mConnections
@@ -99,14 +100,12 @@ void RtspServer::handleDisconnection(int sockfd) {
 
 void RtspServer::triggerCallback(void *arg) {
 	RtspServer *rtspServer = (RtspServer *)arg;
-	//
-	printf("triggerCallback回调\n");
+	// printf("triggerCallback回调\n");
 	rtspServer->handleDisconnectionList();
 }
 
 void RtspServer::handleDisconnectionList() {
-	MutexLockGuard mutexLockGuard(mMutex);
-
+	std::lock_guard<std::mutex> lguard(m_mutex);
 	// 遍历mDisconnectionlist所有要关闭的连接描述符，从存储连接描述符和RtspConnection的map
 	// mConnections中找到对应的RtspConnection进行释放，然后删除对应的fd
 	for (std::vector<int>::iterator it = mDisconnectionlist.begin(); it != mDisconnectionlist.end();
@@ -144,13 +143,11 @@ MediaSession *RtspServer::loopupMediaSession(std::string name) {
 std::string RtspServer::getUrl(MediaSession *session) {
 	char url[200];
 
-	snprintf(url, sizeof(url), "rtsp://%s:%d/%s", sockets::getLocalIp().c_str(), mAddr.getPort(),
-			 session->name().c_str());
+	snprintf(
+		url, sizeof(url), "rtsp://%s:%d/%s", sockets::getLocalIp().c_str(), mAddr.getPort(),
+		session->name().c_str());
 
 	return std::string(url);
 }
 
-RtspServer::~RtspServer() {
-	Delete::release(mTriggerEvent);
-	Delete::release(mMutex);
-}
+RtspServer::~RtspServer() {}

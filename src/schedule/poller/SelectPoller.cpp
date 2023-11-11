@@ -17,9 +17,11 @@ SelectPoller::SelectPoller() {
 
 SelectPoller::~SelectPoller() {}
 
-bool SelectPoller::addIOEvent(IOEvent *event) { return updateIOEvent(event); }
+bool SelectPoller::addIOEvent(std::shared_ptr<IOEvent> event) {
+	return updateIOEvent(event);
+}
 
-bool SelectPoller::updateIOEvent(IOEvent *event) {
+bool SelectPoller::updateIOEvent(std::shared_ptr<IOEvent> event) {
 	int fd = event->getFd();
 	if (fd < 0) {
 		LOG_WARNING("failed to add io event\n");
@@ -59,7 +61,7 @@ bool SelectPoller::updateIOEvent(IOEvent *event) {
 	return true;
 }
 
-bool SelectPoller::removeIOEvent(IOEvent *event) {
+bool SelectPoller::removeIOEvent(std::shared_ptr<IOEvent> event) {
 	int fd = event->getFd();
 	if (fd < 0)
 		return false;
@@ -113,7 +115,8 @@ void SelectPoller::handleEvent() {
 		}
 	}
 
-	for (std::vector<IOEvent *>::iterator it = mEvents.begin(); it != mEvents.end(); ++it) {
+	for (std::vector<std::shared_ptr<IOEvent>>::iterator it = mEvents.begin(); it != mEvents.end();
+		 ++it) {
 		(*it)->handleEvent();
 	}
 

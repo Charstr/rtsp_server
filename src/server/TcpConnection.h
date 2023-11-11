@@ -57,8 +57,8 @@ private:
 protected:
 	UsageEnvironment *mEnv;
 	TcpSocket mSocket; // 用于保存已建立连接的客户端fd
-
-	IOEvent *mTcpConnIOEvent; // 上边fd对应的IO事件，在构造函数中创建并注册到事件调度中
+	// 上边fd对应的IO事件，在构造函数中创建并注册到事件调度中
+	std::shared_ptr<IOEvent> mTcpConnIOEvent;
 
 	// 回调函数和参数
 	DisconnectionCallback mDisconnectionCallback;
@@ -66,7 +66,7 @@ protected:
 	void *mArg;
 	// 缓冲区
 	Buffer mInputBuffer; // 从用户侧接收到的数据缓存
-	Buffer mOutBuffer;	 // 输出数据的缓存
+	Buffer mOutBuffer; // 输出数据的缓存
 
 	char mBuffer[2048]; // 临时的缓冲区，作用是暂存一下然后拷贝到mOutBuffer中
 };

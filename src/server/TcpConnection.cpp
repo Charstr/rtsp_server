@@ -27,7 +27,7 @@ TcpConnection::TcpConnection(UsageEnvironment *env, int sockfd)
 
 TcpConnection::~TcpConnection() {
 	mEnv->scheduler()->removeIOEvent(mTcpConnIOEvent);
-	Delete::release(mTcpConnIOEvent);
+	// Delete::release(mTcpConnIOEvent);
 }
 
 /*-----------------设置事件的读写权限------------*/
@@ -135,7 +135,9 @@ void TcpConnection::handleWrite() {
 	mOutBuffer.retrieveAll();
 }
 
-void TcpConnection::handleError() { LOG_DEBUG("default error handle\n"); }
+void TcpConnection::handleError() {
+	LOG_DEBUG("default error handle\n");
+}
 
 // 处理断开连接
 void TcpConnection::handleDisconnection() {

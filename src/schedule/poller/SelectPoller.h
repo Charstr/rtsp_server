@@ -14,9 +14,9 @@ public:
 	SelectPoller();
 	virtual ~SelectPoller();
 
-	virtual bool addIOEvent(IOEvent *event);
-	virtual bool updateIOEvent(IOEvent *event);
-	virtual bool removeIOEvent(IOEvent *event);
+	virtual bool addIOEvent(std::shared_ptr<IOEvent> event);
+	virtual bool updateIOEvent(std::shared_ptr<IOEvent> event);
+	virtual bool removeIOEvent(std::shared_ptr<IOEvent> event);
 	virtual void handleEvent();
 
 private:
@@ -24,7 +24,7 @@ private:
 	fd_set mWriteSet;
 	fd_set mExceptionSet;
 	int mMaxNumSockets;
-	std::vector<IOEvent *> mEvents;
+	std::vector<std::shared_ptr<IOEvent>> mEvents;
 };
 
 #endif //_POLLER_H_

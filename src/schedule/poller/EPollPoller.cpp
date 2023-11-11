@@ -21,12 +21,16 @@ EPollPoller::EPollPoller() : mEPollEventList(InitEventListSize) {
 	mEPollFd = ::epoll_create1(EPOLL_CLOEXEC);
 }
 
-EPollPoller::~EPollPoller() { ::close(mEPollFd); }
+EPollPoller::~EPollPoller() {
+	::close(mEPollFd);
+}
 
-bool EPollPoller::addIOEvent(IOEvent *event) { return updateIOEvent(event); }
+bool EPollPoller::addIOEvent(std::shared_ptr<IOEvent> event) {
+	return updateIOEvent(event);
+}
 
 // epoll_ctl具体操作 添加epoll_event到mEPollEventList
-bool EPollPoller::updateIOEvent(IOEvent *event) {
+bool EPollPoller::updateIOEvent(std::shared_ptr<IOEvent> event) {
 
 	// 创建一个epoll事件，这些函数要学习一下
 	struct epoll_event epollEvt;
@@ -62,7 +66,7 @@ bool EPollPoller::updateIOEvent(IOEvent *event) {
 	return true;
 }
 
-bool EPollPoller::removeIOEvent(IOEvent *event) {
+bool EPollPoller::removeIOEvent(std::shared_ptr<IOEvent> event) {
 	int fd = event->getFd();
 	IOEventMap::iterator it = mEventMap.find(fd);
 	if (it == mEventMap.end())
@@ -114,7 +118,8 @@ void EPollPoller::handleEvent() {
 	}
 
 	// IO多路复用注册有多种事件，这里选择就绪的事件分别进行处理
-	for (std::vector<IOEvent *>::iterator it = mEvents.begin(); it != mEvents.end(); ++it)
+	for (std::vector<std::shared_ptr<IOEvent>>::iterator it = mEvents.begin(); it != mEvents.end();
+		 ++it)
 
 		(*it)->handleEvent();
 

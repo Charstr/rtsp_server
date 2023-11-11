@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <fcntl.h>
+#include <mutex>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -47,15 +48,20 @@ H264FileMediaSource::H264FileMediaSource(UsageEnvironment *env, const std::strin
 	// 异步执行的方式可以提高程序的并发性和响应性，特别是在处理I/O密集型任务（比如文件读写、网络通信等）时，可以充分利用CPU资源，提高程序的吞吐量。
 
 	// 这里为什么添加mTask到任务队列mTaskQueue？避免了线程池在启动后还需要一定时间才能接受到新的任务，提高系统的响应速度
-	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i)
-		mEnv->threadPool()->addTask(mTask);
+	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i) {
+		mEnv->threadPool()->addTask([this] {
+			this->readFrame();
+		});
+	}
 }
 
-H264FileMediaSource::~H264FileMediaSource() { ::close(mFd); }
+H264FileMediaSource::~H264FileMediaSource() {
+	::close(mFd);
+}
 
 // 从h264文件读取一帧，线程池任务队列的多态调用
 void H264FileMediaSource::readFrame() {
-	MutexLockGuard mutexLockGuard(mMutex);
+	std::lock_guard<std::mutex> lguard(m_mutex);
 
 	if (mAVFrameInputQueue.empty())
 		return;
@@ -84,7 +90,9 @@ void H264FileMediaSource::readFrame() {
 	mAVFrameOutputQueue.push(frame);
 }
 
-static inline bool startCode3(uint8_t *buf) { return buf[0] == 0 && buf[1] == 0 && buf[2] == 1; }
+static inline bool startCode3(uint8_t *buf) {
+	return buf[0] == 0 && buf[1] == 0 && buf[2] == 1;
+}
 
 static inline bool startCode4(uint8_t *buf) {
 	return buf[0] == 0 && buf[1] == 0 && buf[2] == 0 && buf[3] == 1;

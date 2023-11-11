@@ -16,9 +16,9 @@ public:
 	virtual ~EPollPoller();
 
 	// 将IOEvent对应的文件描述符和对应事件添加到epull机制
-	virtual bool addIOEvent(IOEvent *event);
-	virtual bool updateIOEvent(IOEvent *event);
-	virtual bool removeIOEvent(IOEvent *event);
+	virtual bool addIOEvent(std::shared_ptr<IOEvent> event);
+	virtual bool updateIOEvent(std::shared_ptr<IOEvent> event);
+	virtual bool removeIOEvent(std::shared_ptr<IOEvent> event);
 
 	// 对应muduo的poll函数，epoll_wait轮询得到当前要处理的事件数目进行处理。
 	virtual void handleEvent();
@@ -28,7 +28,7 @@ private:
 
 	std::vector<epoll_event> mEPollEventList; // epoll_event集合
 
-	std::vector<IOEvent *> mEvents; // 发生事件的集合
+	std::vector<std::shared_ptr<IOEvent>> mEvents; // 发生事件的集合
 };
 
 #endif //_EPOLLPOLLER_H_

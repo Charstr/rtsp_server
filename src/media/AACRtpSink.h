@@ -9,7 +9,6 @@
 class AACRtpSink : public RtpSink {
 public:
 	static AACRtpSink *createNew(UsageEnvironment *env, MediaSource *mediaSource);
-	;
 
 	AACRtpSink(UsageEnvironment *env, MediaSource *mediaSource, int payloadType);
 	virtual ~AACRtpSink();
@@ -24,7 +23,7 @@ protected:
 private:
 	RtpPacket mRtpPacket; // 存储RTP（Real-time Transport Protocol）数据包。
 	uint32_t mSampleRate; // 采样频率
-	uint32_t mChannels;	  // 通道数
+	uint32_t mChannels; // 通道数
 	int mFps;
 };
 

@@ -2,9 +2,9 @@
 #include "base/Logging.h"
 #include "base/New.h"
 #include <cstddef>
+#include <mutex>
 
 MediaSource::MediaSource(UsageEnvironment *env) : mEnv(env) {
-	mMutex = Mutex::createNew();
 
 	/*
 
@@ -18,7 +18,8 @@ MediaSource::MediaSource(UsageEnvironment *env) : mEnv(env) {
 	这样就构成了一个环形队列
 	*/
 
-	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i) mAVFrameInputQueue.push(&mAVFrames[i]);
+	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i)
+		mAVFrameInputQueue.push(&mAVFrames[i]);
 
 	// 设置线程池任务的回调函数MediaSource::taskCallback。
 
@@ -27,20 +28,16 @@ MediaSource::MediaSource(UsageEnvironment *env) : mEnv(env) {
 	// 通过多态读取调用从h264文件读取一个AVFrame
 
 	// 确保当有新的视频帧需要处理时，可以立即分配线程来处理这个任务，而不是等待线程池中的线程执行完当前任务后再去获取新的任务。
-	// mTask的任务是取读取一个AVFrame，所以设置这一个回调
-	mTask.setTaskCallback(MediaSource::taskCallback, this);
+	// 这里确保了给的任务
 }
 
-MediaSource::~MediaSource() {
-	Delete::release(mMutex);
-}
+MediaSource::~MediaSource() {}
 
 // RtpSink调用getFrame和putFrame函数进行数据消费
 
 AVFrame *MediaSource::getFrame() {
-	MutexLockGuard mutexLockGuard(mMutex); // 使用互斥锁保护临界区
+	std::lock_guard<std::mutex> lock(m_mutex);
 
-	// 输出队列为空，返回空指针
 	if (mAVFrameOutputQueue.empty())
 		return nullptr;
 
@@ -53,7 +50,7 @@ AVFrame *MediaSource::getFrame() {
 
 // 将一个AVFrame对象放入输入队列，然后将一个任务添加到线程池。
 void MediaSource::putFrame(AVFrame *frame) {
-	MutexLockGuard mutexLockGuard(mMutex);
+	std::lock_guard<std::mutex> lock(m_mutex);
 
 	mAVFrameInputQueue.push(frame); // 将视频帧放入待处理队列
 
@@ -65,14 +62,6 @@ void MediaSource::putFrame(AVFrame *frame) {
 	// 每当一个新的帧被放入输入队列时，就需要一个新的任务来处理它，都会添加一个新的任务到任务队列，
 	// 立即通知线程池,避免消费者线程空等。
 	// 任务的回调在MediaSource构造函数设置，读取一个AVFrame到队列
-	mEnv->threadPool()->addTask(mTask);
-}
-
-// 执行任务回调函数，其中任务回调函数会调用类的成员函数readFrame()
-void MediaSource::taskCallback(void *arg) {
-
-	MediaSource *source = (MediaSource *)arg;
-	// 多态调用H264FileMediaSource::readFrame，
-	// 读取一个AVFrame到mAVFrameOutputQueue中
-	source->readFrame();
+	// 这里传进来的threadPool是在main函数主线程创建的线程池。其他任务的时候也可以创建线程池
+	mEnv->threadPool()->addTask(std::bind(&MediaSource::readFrame, this));
 }

@@ -11,7 +11,9 @@ public:
 
 	~TcpSocket();
 
-	int fd() const { return mSockfd; }
+	int fd() const {
+		return mSockfd;
+	}
 	bool bind(Ipv4Address &addr);
 	bool listen(int backlog);
 	int accept();

@@ -3,6 +3,7 @@
 #include <string>
 
 #include "MediaSource.h"
+#include <mutex>
 
 class AACFileMeidaSource : public MediaSource {
 public:
@@ -17,18 +18,18 @@ protected:
 private:
 	struct AdtsHeader {
 		unsigned int syncword; // 12 bit 同步字 '1111 1111 1111'，说明一个ADTS帧的开始
-		unsigned int id;	   // 1 bit MPEG 标示符， 0 for MPEG-4，1 for MPEG-2
-		unsigned int layer;	   // 2 bit 总是'00'
-		unsigned int protectionAbsent;	// 1 bit 1表示没有crc，0表示有crc
-		unsigned int profile;			// 1 bit 表示使用哪个级别的AAC
+		unsigned int id; // 1 bit MPEG 标示符， 0 for MPEG-4，1 for MPEG-2
+		unsigned int layer; // 2 bit 总是'00'
+		unsigned int protectionAbsent; // 1 bit 1表示没有crc，0表示有crc
+		unsigned int profile; // 1 bit 表示使用哪个级别的AAC
 		unsigned int samplingFreqIndex; // 4 bit 表示使用的采样频率
-		unsigned int privateBit;		// 1 bit
-		unsigned int channelCfg;		// 3 bit 表示声道数
-		unsigned int originalCopy;		// 1 bit
-		unsigned int home;				// 1 bit
+		unsigned int privateBit; // 1 bit
+		unsigned int channelCfg; // 3 bit 表示声道数
+		unsigned int originalCopy; // 1 bit
+		unsigned int home; // 1 bit
 
 		/*下面的为改变的参数即每一帧都不同*/
-		unsigned int copyrightIdentificationBit;   // 1 bit
+		unsigned int copyrightIdentificationBit; // 1 bit
 		unsigned int copyrightIdentificationStart; // 1 bit
 		unsigned int aacFrameLength; // 13 bit 一个ADTS帧的长度包括ADTS头和AAC原始流
 		unsigned int adtsBufferFullness; // 11 bit 0x7FF 说明是码率可变的码流
@@ -47,6 +48,7 @@ private:
 private:
 	std::string mFile;
 	int mFd;
+	std::mutex m_mutex;
 	struct AdtsHeader mAdtsHeader;
 };
 

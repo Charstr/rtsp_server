@@ -9,7 +9,8 @@
 */
 
 // New类中定义了一些静态方法，用于分配内存和执行构造函数。allocate方法提供了多个重载，可以根据传入的参数个数来选择适当的构造函数。基本思想是使用Allocator类来分配内存，然后使用Construct类来执行构造函数。
-template <class T> class New {
+template <class T>
+class New {
 public:
 	// 分配内存并构造对象
 	static T *allocate() {
@@ -18,7 +19,8 @@ public:
 		return obj;
 	}
 	// 分配内存并构造对象，带有一个参数
-	template <class T1> static T *allocate(const T1 &a1) {
+	template <class T1>
+	static T *allocate(const T1 &a1) {
 		T *obj = (T *)Allocator::allocate(sizeof(T));
 		construct(obj, a1); //
 		return obj;
@@ -26,7 +28,8 @@ public:
 	// New<EventScheduler>::allocate(type, evtFd);
 	// 这个调用，将EventScheduler作为其类型参数，T 被实例化为 EventScheduler，T1 被实例化为 type
 	// 的类型，而 T2 被实例化为 evtFd 的类型。
-	template <class T1, class T2> static T *allocate(const T1 &a1, const T2 &a2) {
+	template <class T1, class T2>
+	static T *allocate(const T1 &a1, const T2 &a2) {
 
 		T *obj = (T *)Allocator::allocate(sizeof(T));
 		/*
@@ -64,7 +67,8 @@ public:
 class Delete {
 public:
 	// 静态方法release，用于释放内存。它首先调用destroy函数销毁对象，然后使用Allocator类来释放内存。
-	template <class T1> static void release(T1 *p) {
+	template <class T1>
+	static void release(T1 *p) {
 		destroy(p);
 		Allocator::deallocate(p, sizeof(T1));
 	}
