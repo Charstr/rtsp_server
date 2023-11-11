@@ -1,7 +1,7 @@
 #ifndef _EVENT_H_
 #define _EVENT_H_
 
-#include "base/Logging.h"
+// #include "base/Logging.h"
 
 typedef void (*EventCallback)(void *);
 
@@ -29,12 +29,16 @@ public:
 	TriggerEvent(void *arg);
 	~TriggerEvent(){};
 	// `void*`类型的参数和一个回调函数指针，可以自定义事件的处理逻辑。
-	void setArg(void *arg) { mArg = arg; }
-	void setTriggerCallback(EventCallback cb) { mTriggerCallback = cb; }
+	void setArg(void *arg) {
+		mArg = arg;
+	}
+	void setTriggerCallback(EventCallback cb) {
+		mTriggerCallback = cb;
+	}
 	void handleEvent();
 
 private:
-	void *mArg;						// 回调函数参数
+	void *mArg; // 回调函数参数
 	EventCallback mTriggerCallback; // 触发事件回调函数
 };
 
@@ -47,9 +51,13 @@ public:
 	TimerEvent(void *arg);
 	~TimerEvent() {}
 
-	void setArg(void *arg) { mArg = arg; }
+	void setArg(void *arg) {
+		mArg = arg;
+	}
 
-	void setTimeoutCallback(EventCallback cb) { mTimeoutCallback = cb; }
+	void setTimeoutCallback(EventCallback cb) {
+		mTimeoutCallback = cb;
+	}
 	void handleEvent();
 
 private:
@@ -62,7 +70,7 @@ class IOEvent {
 public:
 	enum IOEventType {
 		EVENT_NONE = 0,
-		EVENT_READ = 1,	 // 可读
+		EVENT_READ = 1, // 可读
 		EVENT_WRITE = 2, // 可写
 		EVENT_ERROR = 4, // 异常
 	};
@@ -74,26 +82,60 @@ public:
 	~IOEvent() {}
 
 	// 获取fd和events的值
-	int getFd() const { return mFd; }
-	int getEvent() const { return mEvent; }
-	void setREvent(int event) { mREvent = event; } // used by poller
-	void setArg(void *arg) { mArg = arg; }
+	int getFd() const {
+		return mFd;
+	}
+	int getEvent() const {
+		return mEvent;
+	}
+	void setREvent(int event) {
+		mREvent = event;
+	} // used by poller
+	void setArg(void *arg) {
+		mArg = arg;
+	}
 
-	void setReadCallback(EventCallback cb) { mReadCallback = cb; };
-	void setWriteCallback(EventCallback cb) { mWriteCallback = cb; };
-	void setErrorCallback(EventCallback cb) { mErrorCallback = cb; };
+	void setReadCallback(EventCallback cb) {
+		mReadCallback = cb;
+	};
+	void setWriteCallback(EventCallback cb) {
+		mWriteCallback = cb;
+	};
+	void setErrorCallback(EventCallback cb) {
+		mErrorCallback = cb;
+	};
 
-	void enableReadHandling() { mEvent |= EVENT_READ; }
-	void enableWriteHandling() { mEvent |= EVENT_WRITE; }
-	void enableErrorHandling() { mEvent |= EVENT_ERROR; }
-	void disableReadeHandling() { mEvent &= ~EVENT_READ; }
-	void disableWriteHandling() { mEvent &= ~EVENT_WRITE; }
-	void disableErrorHandling() { mEvent &= ~EVENT_ERROR; }
+	void enableReadHandling() {
+		mEvent |= EVENT_READ;
+	}
+	void enableWriteHandling() {
+		mEvent |= EVENT_WRITE;
+	}
+	void enableErrorHandling() {
+		mEvent |= EVENT_ERROR;
+	}
+	void disableReadeHandling() {
+		mEvent &= ~EVENT_READ;
+	}
+	void disableWriteHandling() {
+		mEvent &= ~EVENT_WRITE;
+	}
+	void disableErrorHandling() {
+		mEvent &= ~EVENT_ERROR;
+	}
 
-	bool isNoneHandling() const { return mEvent == EVENT_NONE; }
-	bool isReadHandling() const { return (mEvent & EVENT_READ) != 0; }
-	bool isWriteHandling() const { return (mEvent & EVENT_WRITE) != 0; }
-	bool isErrorHandling() const { return (mEvent & EVENT_ERROR) != 0; };
+	bool isNoneHandling() const {
+		return mEvent == EVENT_NONE;
+	}
+	bool isReadHandling() const {
+		return (mEvent & EVENT_READ) != 0;
+	}
+	bool isWriteHandling() const {
+		return (mEvent & EVENT_WRITE) != 0;
+	}
+	bool isErrorHandling() const {
+		return (mEvent & EVENT_ERROR) != 0;
+	};
 
 	// 分别对上边的三种事件调用各自的回调函数进行处理
 	void handleEvent();
@@ -105,7 +147,7 @@ private:
 	int mEvent; // 当前事件类型，通常设置为希望监听的事件类型，如可读（EPOLLIN）、可写（EPOLLOUT）等。
 	int mREvent; // poller返回的具体发生的事件
 
-	EventCallback mReadCallback;  // 可读事件回调函数
+	EventCallback mReadCallback; // 可读事件回调函数
 	EventCallback mWriteCallback; // 可写事件回调函数
 	EventCallback mErrorCallback; // 错误事件回调函数
 };

@@ -1,5 +1,7 @@
 #include <assert.h>
+#include <mutex>
 #include <stdio.h>
+#include <thread>
 
 #include "AsyncLogging.h"
 
@@ -13,21 +15,18 @@
 AsyncLogging *AsyncLogging::mAsyncLogging = NULL;
 
 AsyncLogging::AsyncLogging(std::string file) : mFile(file), mRun(true) {
-	mMutex = Mutex::createNew();
-	assert(mMutex);
-
-	mCond = Condition::createNew();
-	assert(mCond);
 
 	mFp = fopen(mFile.c_str(), "w");
 	if (!mFp)
 		return;
-	for (int i = 0; i < BUFFER_NUM; ++i)
-		mFreeBuffer.push(&mBuffer[i]);
+	for (int i = 0; i < BUFFER_NUM; ++i) mFreeBuffer.push(&mBuffer[i]);
 
 	mCurBuffer = mFreeBuffer.front();
 
-	start(NULL);
+	// 这个线程是干什么的？
+	m_thread = std::thread([this] {
+		this->run(nullptr);
+	});
 }
 
 AsyncLogging::~AsyncLogging() {
@@ -41,14 +40,13 @@ AsyncLogging::~AsyncLogging() {
 
 	fflush(mFp);
 	fclose(mFp);
+	if (mAsyncLogging) {
+		delete mAsyncLogging;
+		mAsyncLogging = nullptr;
+	}
 
 	mRun = false;
-	mCond->broadcast();
-
-	// delete mMutex;
-	// delete mCond;
-	Delete::release(mMutex);
-	Delete::release(mCond);
+	m_condv.notify_all();
 }
 
 AsyncLogging *AsyncLogging::instance() {
@@ -61,7 +59,7 @@ AsyncLogging *AsyncLogging::instance() {
 void AsyncLogging::append(const char *logline, int len)
 
 {
-	MutexLockGuard mutexLockGuard(mMutex);
+	std::unique_lock<std::mutex> lock(m_mutex);
 	if (mCurBuffer->avail() > len) {
 		mCurBuffer->append(logline, len);
 	} else {
@@ -70,26 +68,27 @@ void AsyncLogging::append(const char *logline, int len)
 
 		/* 如果缓存区已经用完，那么就睡眠等待 */
 		while (mFreeBuffer.empty()) {
-			mCond->signal();
-			mCond->wait(mMutex);
+			m_condv.notify_one();
+			m_condv.wait(lock);
 		}
 
 		mCurBuffer = mFreeBuffer.front();
 		mCurBuffer->append(logline, len);
-		mCond->signal();
+		m_condv.notify_one();
 	}
 }
 
 void AsyncLogging::run(void *arg) {
 	while (mRun) {
-		MutexLockGuard mutexLockGuard(mMutex);
-		bool ret = mCond->waitTimeout(mMutex, 3000);
+		std::unique_lock<std::mutex> lock(m_mutex);
+		bool ret = m_condv.wait_for(lock, std::chrono::milliseconds(3000), [this] {
+			return !mFlushBuffer.empty() || !mRun;
+		});
 
-		if (mRun == false)
+		if (!mRun)
 			break;
-
-		if (ret == true) // signal
-		{
+		// signal
+		if (ret == true) {
 			bool empty = mFreeBuffer.empty();
 			int bufferSize = mFlushBuffer.size();
 			for (int i = 0; i < bufferSize; ++i) {
@@ -100,11 +99,10 @@ void AsyncLogging::run(void *arg) {
 				mFreeBuffer.push(buffer);
 				fflush(mFp);
 			}
-
 			if (empty)
-				mCond->signal();
-		} else // timeout
-		{
+				m_condv.notify_one();
+		} else {
+			// timeout
 			if (mCurBuffer->length() == 0)
 				continue;
 			fwrite(mCurBuffer->data(), 1, mCurBuffer->length(), mFp);

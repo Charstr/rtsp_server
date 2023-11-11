@@ -5,15 +5,17 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
-static int timerFdCreate(int clockid, int flags) { return timerfd_create(clockid, flags); }
+static int timerFdCreate(int clockid, int flags) {
+	return timerfd_create(clockid, flags);
+}
 
 // 设置超时时间，也就是下次触发的时间
 static bool timerFdSetTime(int fd, Timer::Timestamp when, Timer::TimeInterval period) {
 	struct itimerspec newVal;
 
-	newVal.it_value.tv_sec = when / 1000;					  // ms转换为s
-	newVal.it_value.tv_nsec = when % 1000 * 1000 * 1000;	  // ms->ns
-	newVal.it_interval.tv_sec = period / 1000;				  // ms转换为s
+	newVal.it_value.tv_sec = when / 1000; // ms转换为s
+	newVal.it_value.tv_nsec = when % 1000 * 1000 * 1000; // ms->ns
+	newVal.it_interval.tv_sec = period / 1000; // ms转换为s
 	newVal.it_interval.tv_nsec = period % 1000 * 1000 * 1000; // ms转换为ns
 	// 系统调用设置定时器的超时时间和间隔时间。
 	if (timerfd_settime(fd, TFD_TIMER_ABSTIME, &newVal, NULL) < 0)
@@ -111,7 +113,7 @@ void TimerManager::handleTimerEvent() {
 		while (!mTimers.empty() && mEvents.begin()->first.first <= timePoint) {
 
 			Timer::TimerId timerId = mEvents.begin()->first.second; // 定时器ID
-			Timer timer = mEvents.begin()->second;					// 定时器
+			Timer timer = mEvents.begin()->second; // 定时器
 			// 通过设置的定时事件回调函数处理事件
 			timer.handleEvent();
 			mEvents.erase(mEvents.begin()); // 执行完之后从事件队列删除该事件

@@ -2,12 +2,13 @@
 #include <string.h>
 
 #include "H264RtpSink.h"
-#include "base/Logging.h"
+// #include "base/Logging.h"
 #include "base/New.h"
 #include "media/RtpSink.h"
 
 H264RtpSink *H264RtpSink::createNew(UsageEnvironment *env, MediaSource *mediaSource) {
-	if (!mediaSource) return nullptr;
+	if (!mediaSource)
+		return nullptr;
 	return New<H264RtpSink>::allocate(env, mediaSource);
 }
 

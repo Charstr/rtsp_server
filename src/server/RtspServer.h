@@ -9,8 +9,7 @@
 #include "media/MediaSession.h"
 #include "schedule/Event.h"
 #include "schedule/UsageEnvironment.h"
-
-#include "schedule/threadPool/Mutex.h"
+#include <mutex>
 
 class RtspConnection;
 
@@ -23,7 +22,9 @@ public:
 	RtspServer(UsageEnvironment *env, const Ipv4Address &addr);
 	virtual ~RtspServer();
 	// 获取UsageEnvironment实例
-	UsageEnvironment *envir() const { return mEnv; }
+	UsageEnvironment *envir() const {
+		return mEnv;
+	}
 	// 向RtspServer添加媒体会话
 	bool addMeidaSession(MediaSession *mediaSession);
 	// 根据名称查找媒体会话
@@ -45,10 +46,10 @@ protected:
 
 private:
 	std::map<std::string, MediaSession *> mMediaSessions; // 存储媒体会话的容器
-	std::map<int, RtspConnection *> mConnections;		  // 存储RtspConnection的容器
-	std::vector<int> mDisconnectionlist;				  // 存储断开连接的描述符的队列
-	TriggerEvent *mTriggerEvent;						  // 触发事件
-	Mutex *mMutex;										  // 互斥锁，用于线程安全
+	std::map<int, RtspConnection *> mConnections; // 存储RtspConnection的容器
+	std::vector<int> mDisconnectionlist; // 存储断开连接的描述符的队列
+	TriggerEvent *mTriggerEvent; // 触发事件
+	std::mutex m_mutex; // 互斥锁，用于线程安全
 };
 
 #endif //_RTSPSERVER_H_

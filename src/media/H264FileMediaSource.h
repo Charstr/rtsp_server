@@ -1,5 +1,6 @@
 #ifndef _H264FILE_MEDIA_SOURCE_H_
 #define _H264FILE_MEDIA_SOURCE_H_
+#include <mutex>
 #include <string>
 
 #include "MediaSource.h"
@@ -23,6 +24,7 @@ private:
 	int getFrameFromH264File(int fd, uint8_t *frame, int size);
 
 private:
+	std::mutex m_mutex;
 	std::string mFile;
 	int mFd; // 于存储文件描述符
 };

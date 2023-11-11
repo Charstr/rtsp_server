@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <fcntl.h>
+#include <mutex>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -22,13 +23,17 @@ AACFileMeidaSource::AACFileMeidaSource(UsageEnvironment *env, const std::string 
 	setFps(43);
 
 	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i)
-		mEnv->threadPool()->addTask(mTask);
+		mEnv->threadPool()->addTask([this] {
+			this->readFrame();
+		});
 }
 
-AACFileMeidaSource::~AACFileMeidaSource() { ::close(mFd); }
+AACFileMeidaSource::~AACFileMeidaSource() {
+	::close(mFd);
+}
 
 void AACFileMeidaSource::readFrame() {
-	MutexLockGuard mutexLockGuard(mMutex);
+	std::lock_guard<std::mutex> lguard(m_mutex);
 
 	if (mAVFrameInputQueue.empty())
 		return;
@@ -61,8 +66,8 @@ bool AACFileMeidaSource::parseAdtsHeader(uint8_t *in, struct AdtsHeader *res) {
 		res->copyrightIdentificationBit = ((unsigned int)in[3] & 0x08) >> 3;
 		res->copyrightIdentificationStart = (unsigned int)in[3] & 0x04 >> 2;
 		res->aacFrameLength =
-			(((((unsigned int)in[3]) & 0x03) << 11) | (((unsigned int)in[4] & 0xFF) << 3) |
-			 ((unsigned int)in[5] & 0xE0) >> 5);
+			(((((unsigned int)in[3]) & 0x03) << 11) | (((unsigned int)in[4] & 0xFF) << 3)
+			 | ((unsigned int)in[5] & 0xE0) >> 5);
 		res->adtsBufferFullness =
 			(((unsigned int)in[5] & 0x1f) << 6 | ((unsigned int)in[6] & 0xfc) >> 2);
 		res->numberOfRawDataBlockInFrame = ((unsigned int)in[6] & 0x03);

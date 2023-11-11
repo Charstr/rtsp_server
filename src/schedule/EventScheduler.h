@@ -1,11 +1,11 @@
 #ifndef _EVENT_SCHEDULER_H_
 #define _EVENT_SCHEDULER_H_
+#include <mutex>
 #include <queue>
 #include <vector>
 
 #include "Timer.h"
 #include "poller/PollPoller.h"
-#include "threadPool/Mutex.h"
 
 /*
 
@@ -80,11 +80,11 @@ private:
 
 	std::vector<TriggerEvent *> mTriggerEvents; // 存储触发事件的对象
 
-	int mWakeupFd;		   // 唤醒loop所在的线程的文件描述符
+	int mWakeupFd; // 唤醒loop所在的线程的文件描述符
 	IOEvent *mWakeIOEvent; // 唤醒后上边的描述符对应的事件
 
 	std::queue<std::pair<Callback, void *>> mCallBackQueue; // 存储loop需要执行的回调操作
-	Mutex *mMutex; // 互斥锁,用来保护上面queue的线程安全
+	std::mutex m_mutex;
 };
 
 #endif //_EVENT_SCHEDULER_H_

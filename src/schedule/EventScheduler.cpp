@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <mutex>
 #include <stdint.h>
 #include <sys/eventfd.h>
 #include <unistd.h>
@@ -70,8 +71,6 @@ EventScheduler::EventScheduler(PollerType type, int fd)
 	// 把唤醒事件添加到调度管理器，通过多态，调用的是epoll的addIOEvent函数
 
 	mPoller->addIOEvent(mWakeIOEvent);
-	// 创建一个互斥锁
-	mMutex = Mutex::createNew();
 }
 
 // 添加触发事件mTriggerEvent到
@@ -184,18 +183,20 @@ void EventScheduler::handleRead() {
 
 	uint64_t one;
 	// 读取所有的唤醒事件
-	while (::read(mWakeupFd, &one, sizeof(one)) > 0) {}
+	while (::read(mWakeupFd, &one, sizeof(one)) > 0) {
+	}
 }
 
 // 设置在本地线程处理的回调回调函数
 void EventScheduler::runInLocalThread(Callback callBack, void *arg) {
-	MutexLockGuard mutexLockGuard(mMutex);
+	std::lock_guard<std::mutex> lguard(m_mutex);
+
 	mCallBackQueue.push(std::make_pair(callBack, arg));
 }
 
 // 处理其他事件，如本地线程中添加的回调函数
 void EventScheduler::handleOtherEvent() {
-	MutexLockGuard mutexLockGuard(mMutex);
+	std::lock_guard<std::mutex> lguard(m_mutex);
 	while (!mCallBackQueue.empty()) {
 		std::pair<Callback, void *> event = mCallBackQueue.front();
 		event.first(event.second);
@@ -210,5 +211,4 @@ EventScheduler::~EventScheduler() {
 	Delete::release(mWakeIOEvent);
 	Delete::release(mTimerManager);
 	Delete::release(mPoller);
-	Delete::release(mMutex);
 }

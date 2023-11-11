@@ -26,7 +26,7 @@ acceptor 负责 accept 新连接，并将新连接分发到 subReactor。
 
 int main(int argc, char *argv[]) {
 
-	std::string fileanme = "/home/lcp/envPkg/rtsp_server/rtspExample/test1.264";
+	std::string fileanme = "/home/lcp/myProj/rtsp_server/rtspExample/test1.264";
 
 	// Logger::setLogFile("xxx.log");
 	Logger::setLogLevel(Logger::LogWarning);
