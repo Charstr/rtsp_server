@@ -1,3 +1,4 @@
+#include <memory>
 #include <stdio.h>
 #include <string.h>
 #include <string>
@@ -6,9 +7,9 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
-AACRtpSink *AACRtpSink::createNew(UsageEnvironment *env, MediaSource *mediaSource) {
+std::shared_ptr<AACRtpSink> AACRtpSink::createNew(UsageEnvironment *env, MediaSource *mediaSource) {
 	// return new AACRtpSink(env, mediaSource, RTP_PAYLOAD_TYPE_AAC);
-	return New<AACRtpSink>::allocate(env, mediaSource, RTP_PAYLOAD_TYPE_AAC);
+	return std::make_shared<AACRtpSink>(env, mediaSource, RTP_PAYLOAD_TYPE_AAC);
 }
 
 AACRtpSink::AACRtpSink(UsageEnvironment *env, MediaSource *mediaSource, int payloadType)
@@ -46,15 +47,17 @@ std::string AACRtpSink::getAttribute() {
 
 	uint8_t profile = 1;
 	char configStr[10] = {0};
-	sprintf(configStr, "%02x%02x", (uint8_t)((profile + 1) << 3) | (index >> 1),
-			(uint8_t)((index << 7) | (mChannels << 3)));
+	sprintf(
+		configStr, "%02x%02x", (uint8_t)((profile + 1) << 3) | (index >> 1),
+		(uint8_t)((index << 7) | (mChannels << 3)));
 
-	sprintf(buf + strlen(buf),
-			"a=fmtp:%d profile-level-id=1;"
-			"mode=AAC-hbr;"
-			"sizelength=13;indexlength=3;indexdeltalength=3;"
-			"config=%04u",
-			mPayloadType, atoi(configStr));
+	sprintf(
+		buf + strlen(buf),
+		"a=fmtp:%d profile-level-id=1;"
+		"mode=AAC-hbr;"
+		"sizelength=13;indexlength=3;indexdeltalength=3;"
+		"config=%04u",
+		mPayloadType, atoi(configStr));
 
 	return std::string(buf);
 }
@@ -66,7 +69,7 @@ void AACRtpSink::handleFrame(AVFrame *frame) {
 	rtpHeader->payload[0] = 0x00;
 	rtpHeader->payload[1] = 0x10;
 	rtpHeader->payload[2] = (frameSize & 0x1FE0) >> 5; // 高8位
-	rtpHeader->payload[3] = (frameSize & 0x1F) << 3;   // 低5位
+	rtpHeader->payload[3] = (frameSize & 0x1F) << 3; // 低5位
 
 	/* 去掉aac的头部 */
 	memcpy(rtpHeader->payload + 4, frame->mFrame + 7, frameSize);

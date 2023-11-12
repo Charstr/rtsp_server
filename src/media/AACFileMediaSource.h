@@ -7,7 +7,7 @@
 
 class AACFileMeidaSource : public MediaSource {
 public:
-	static AACFileMeidaSource *createNew(UsageEnvironment *env, std::string file);
+	static std::shared_ptr<AACFileMeidaSource> createNew(UsageEnvironment *env, std::string file);
 
 	AACFileMeidaSource(UsageEnvironment *env, const std::string &file);
 	virtual ~AACFileMeidaSource();

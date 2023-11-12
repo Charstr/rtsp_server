@@ -11,7 +11,7 @@
 // 生产者和消费者都来自于一个顶级父类,生产者父类是MediaSource
 class H264FileMediaSource : public MediaSource {
 public:
-	static H264FileMediaSource *createNew(UsageEnvironment *env, std::string file);
+	static std::shared_ptr<H264FileMediaSource> createNew(UsageEnvironment *env, std::string file);
 
 	H264FileMediaSource(UsageEnvironment *env, const std::string &file);
 	~H264FileMediaSource();

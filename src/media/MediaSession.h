@@ -20,12 +20,14 @@ public:
 		TrackId1 = 1,
 	};
 	// 创建一个新的媒体会话
-	static MediaSession *createNew(std::string sessionName);
+	static std::shared_ptr<MediaSession> createNew(std::string sessionName);
 
 	MediaSession(const std::string &sessionName);
 	~MediaSession();
 	// 获取会话名称
-	std::string name() const { return mSessionName; }
+	std::string name() const {
+		return mSessionName;
+	}
 	// 生成SDP描述,通常用于媒体会话的初始化和协商,包含会话的基本信息、媒体轨道的描述以及其他会话参数。
 	std::string generateSDPDescription();
 	// 添加RtpSink用于发送媒体数据
@@ -37,16 +39,18 @@ public:
 	// 多播
 	bool startMulticast();
 	bool isStartMulticast();
-	std::string getMulticastDestAddr() const { return mMulticastAddr; }
+	std::string getMulticastDestAddr() const {
+		return mMulticastAddr;
+	}
 	uint16_t getMulticastDestRtpPort(TrackId trackId);
 
 private:
 	// 媒体会话中的单个媒体轨道由Track类表示，包括一个RtpSink（用于发送媒体数据）和一个RtpInstance列表（用于接收媒体数据）
 	class Track {
 	public:
-		RtpSink *mRtpSink;						// 指向`RtpSink`的指针。
-		int mTrackId;							// 轨道ID
-		bool mIsAlive;							// 是否活动
+		RtpSink *mRtpSink; // 指向`RtpSink`的指针。
+		int mTrackId; // 轨道ID
+		bool mIsAlive; // 是否活动
 		std::list<RtpInstance *> mRtpInstances; // 用于接收媒体数据的RtpInstance列表
 	};
 	// 获取指定轨道
@@ -57,8 +61,8 @@ private:
 	void sendPacket(MediaSession::Track *tarck, RtpPacket *rtpPacket);
 
 private:
-	std::string mSessionName;			// 会话名称
-	std::string mSdp;					// SDP描述
+	std::string mSessionName; // 会话名称
+	std::string mSdp; // SDP描述
 	Track mTracks[MEDIA_MAX_TRACK_NUM]; // 媒体轨道数组
 	bool mIsStartMulticast;
 	std::string mMulticastAddr;

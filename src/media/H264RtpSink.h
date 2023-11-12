@@ -8,7 +8,7 @@
 // 生产者和消费者都来自于一个顶级父类,消费者父类是MediaSource
 class H264RtpSink : public RtpSink {
 public:
-	static H264RtpSink *createNew(UsageEnvironment *env, MediaSource *mediaSource);
+	static std::shared_ptr<H264RtpSink> createNew(UsageEnvironment *env, MediaSource *mediaSource);
 
 	H264RtpSink(UsageEnvironment *env, MediaSource *mediaSource);
 	virtual ~H264RtpSink();

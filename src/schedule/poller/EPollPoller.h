@@ -20,7 +20,6 @@ public:
 	virtual bool updateIOEvent(IOEvent *event);
 	virtual bool removeIOEvent(IOEvent *event);
 
-	// 对应muduo的poll函数，epoll_wait轮询得到当前要处理的事件数目进行处理。
 	virtual void handleEvent();
 
 private:

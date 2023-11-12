@@ -1,32 +1,25 @@
 #ifndef _EVENT_SCHEDULER_H_
 #define _EVENT_SCHEDULER_H_
+
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <vector>
 
 #include "Timer.h"
 #include "poller/PollPoller.h"
-
-/*
-
-EventScheduler主要包含了Events和Poller(epoll)两大模块
-
-用于添加、更新和删除不同类型的事件，包括触发事件和定时器事件。它还有一个循环函数用于处理事件，并且可以在本地线程中执行回调函数。
-
-EventScheduler是一个事件调度器，用于管理触发事件和定时事件，以及处理I/
-O事件。使用了不同的底层事件轮询机制（POLLER_SELECT、POLLER_POLL、POLLER_EPOLL），并提供了接口来添加和删除事件，以及运行事件循环。此外，它还支持唤醒事件调度器以处理其他事件。在事件处理的过程中，使用了TimerManager来管理定时事件，并使用IOEvent来处理唤醒事件。
-
-在事件处理的过程中，EventScheduler会不断检查是否有触发事件需要处理，然后使用底层的事件轮询机制来处理I/O事件。同时，也可以通过TimerManager添加定时事件，定时事件的处理会在事件循环中定期触发。最后，在事件调度器的线程中，可以使用runInLocalThread来添加需要在事件循环线程中执行的回调函数，这些回调函数会在事件循环中被调用。
-*/
-
 class EventScheduler {
 public:
 	typedef void (*Callback)(void *);
 
-	enum PollerType { POLLER_SELECT, POLLER_POLL, POLLER_EPOLL };
+	enum PollerType {
+		POLLER_SELECT,
+		POLLER_POLL,
+		POLLER_EPOLL
+	};
 
-	// 工厂模式
-	static EventScheduler *createNew(PollerType type);
+	// 确保能退出
+	static std::shared_ptr<EventScheduler> createNew(PollerType type);
 	// 构造函数
 	EventScheduler(PollerType type, int fd);
 	virtual ~EventScheduler();
@@ -73,8 +66,8 @@ private:
 
 private:
 	bool mQuit; // 标志是否退出loop
-	Poller
-		*mPoller; // 基于epoll,监听多个文件描述符上的IO事件，并将就绪的事件通知给相应的事件处理器。
+	// 基于epoll,监听多个文件描述符上的IO事件，并将就绪的事件通知给相应的事件处理器。
+	Poller *mPoller;
 
 	TimerManager *mTimerManager; // 定时器管理器，负责管理定时事件的触发和处理。
 

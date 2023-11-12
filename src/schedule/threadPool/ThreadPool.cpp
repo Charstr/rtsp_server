@@ -2,9 +2,10 @@
 #include "ThreadPool.h"
 #include "base/New.h"
 #include <cstdint>
+#include <memory>
 
-ThreadPool *ThreadPool::createNew(int numThreads) {
-	return New<ThreadPool>::allocate(numThreads);
+std::shared_ptr<ThreadPool> ThreadPool::createNew(int numThreads) {
+	return std::make_shared<ThreadPool>(numThreads);
 }
 
 // 设置线程的大小

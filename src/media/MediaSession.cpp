@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <assert.h>
+#include <memory>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -9,8 +10,8 @@
 #include "base/New.h"
 #include "server/SocketsOps.h"
 
-MediaSession *MediaSession::createNew(std::string sessionName) {
-	return New<MediaSession>::allocate(sessionName);
+std::shared_ptr<MediaSession> MediaSession::createNew(std::string sessionName) {
+	return std::make_shared<MediaSession>(sessionName);
 }
 
 MediaSession::MediaSession(const std::string &sessionName)
@@ -30,17 +31,17 @@ MediaSession::MediaSession(const std::string &sessionName)
 }
 
 MediaSession::~MediaSession() {
-	// 销毁多播RtpInstance和RtcpInstance
 	for (int i = 0; i < MEDIA_MAX_TRACK_NUM; ++i) {
 		if (mMulticastRtpInstances[i]) {
 			this->removeRtpInstance(mMulticastRtpInstances[i]);
-			// delete mMulticastRtpInstances[i];
 			Delete::release(mMulticastRtpInstances[i]);
+			mMulticastRtpInstances[i] = nullptr;
 		}
 
-		if (mMulticastRtcpInstances[i])
+		if (mMulticastRtcpInstances[i]) {
 			Delete::release(mMulticastRtcpInstances[i]);
-		// delete mMulticastRtcpInstances[i];
+			mMulticastRtcpInstances[i] = nullptr;
+		}
 	}
 }
 
@@ -51,13 +52,14 @@ std::string MediaSession::generateSDPDescription() {
 	std::string ip = sockets::getLocalIp();
 	char buf[2048] = {0};
 
-	snprintf(buf, sizeof(buf),
-			 "v=0\r\n"
-			 "o=- 9%ld 1 IN IP4 %s\r\n"
-			 "t=0 0\r\n"
-			 "a=control:*\r\n"
-			 "a=type:broadcast\r\n",
-			 (long)time(NULL), ip.c_str());
+	snprintf(
+		buf, sizeof(buf),
+		"v=0\r\n"
+		"o=- 9%ld 1 IN IP4 %s\r\n"
+		"t=0 0\r\n"
+		"a=control:*\r\n"
+		"a=type:broadcast\r\n",
+		(long)time(NULL), ip.c_str());
 
 	if (isStartMulticast()) {
 		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "a=rtcp-unicast: reflection\r\n");
@@ -72,20 +74,24 @@ std::string MediaSession::generateSDPDescription() {
 		if (isStartMulticast())
 			port = getMulticastDestRtpPort((TrackId)i);
 
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%s\r\n",
-				 mTracks[i].mRtpSink->getMediaDescription(port).c_str());
+		snprintf(
+			buf + strlen(buf), sizeof(buf) - strlen(buf), "%s\r\n",
+			mTracks[i].mRtpSink->getMediaDescription(port).c_str());
 
 		if (isStartMulticast())
-			snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "c=IN IP4 %s/255\r\n",
-					 getMulticastDestAddr().c_str());
+			snprintf(
+				buf + strlen(buf), sizeof(buf) - strlen(buf), "c=IN IP4 %s/255\r\n",
+				getMulticastDestAddr().c_str());
 		else
 			snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "c=IN IP4 0.0.0.0\r\n");
 
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%s\r\n",
-				 mTracks[i].mRtpSink->getAttribute().c_str());
+		snprintf(
+			buf + strlen(buf), sizeof(buf) - strlen(buf), "%s\r\n",
+			mTracks[i].mRtpSink->getAttribute().c_str());
 
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "a=control:track%d\r\n",
-				 mTracks[i].mTrackId);
+		snprintf(
+			buf + strlen(buf), sizeof(buf) - strlen(buf), "a=control:track%d\r\n",
+			mTracks[i].mTrackId);
 	}
 
 	mSdp = buf;
@@ -126,7 +132,7 @@ bool MediaSession::addRtpSink(MediaSession::TrackId trackId, RtpSink *rtpSink) {
 
 // 某个MediaSession的某个Track发送某个RtpPacket
 void MediaSession::sendPacketCallback(void *arg1, void *arg2, RtpPacket *rtpPacket) {
-	MediaSession *mediaSession = (MediaSession *)arg1;		  //
+	MediaSession *mediaSession = (MediaSession *)arg1; //
 	MediaSession::Track *track = (MediaSession::Track *)arg2; // 音视频的某个track
 
 	mediaSession->sendPacket(track, rtpPacket);
@@ -222,7 +228,9 @@ bool MediaSession::startMulticast() {
 	return true;
 }
 
-bool MediaSession::isStartMulticast() { return mIsStartMulticast; }
+bool MediaSession::isStartMulticast() {
+	return mIsStartMulticast;
+}
 
 uint16_t MediaSession::getMulticastDestRtpPort(TrackId trackId) {
 	if (trackId > TrackId1 || !mMulticastRtpInstances[trackId])

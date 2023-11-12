@@ -65,7 +65,6 @@ private:
 	EventCallback mTimeoutCallback;
 };
 
-// 这个IOEvent对应于muduo的channel
 class IOEvent {
 public:
 	enum IOEventType {

@@ -21,9 +21,13 @@ EPollPoller::EPollPoller() : mEPollEventList(InitEventListSize) {
 	mEPollFd = ::epoll_create1(EPOLL_CLOEXEC);
 }
 
-EPollPoller::~EPollPoller() { ::close(mEPollFd); }
+EPollPoller::~EPollPoller() {
+	::close(mEPollFd);
+}
 
-bool EPollPoller::addIOEvent(IOEvent *event) { return updateIOEvent(event); }
+bool EPollPoller::addIOEvent(IOEvent *event) {
+	return updateIOEvent(event);
+}
 
 // epoll_ctl具体操作 添加epoll_event到mEPollEventList
 bool EPollPoller::updateIOEvent(IOEvent *event) {
@@ -74,7 +78,6 @@ bool EPollPoller::removeIOEvent(IOEvent *event) {
 	return true;
 }
 
-// 处理事件，对应于muduo的EPollPoller::poll函数
 void EPollPoller::handleEvent() {
 
 	int nums, fd, event, revent;

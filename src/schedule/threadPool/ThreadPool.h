@@ -13,7 +13,7 @@
 
 class ThreadPool {
 public:
-	static ThreadPool *createNew(int numThreads);
+	static std::shared_ptr<ThreadPool> createNew(int numThreads);
 
 	ThreadPool(uint16_t numThreads);
 	// 模板的实现一般都需要放在头文件中，以便在实例化模板的地方能够看到完整的模板定义。

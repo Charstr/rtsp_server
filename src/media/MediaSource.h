@@ -30,8 +30,8 @@ public:
 	~AVFrame() {
 		delete[] mBuffer;
 	}
-
-	uint8_t *mBuffer; // 视频帧数据缓冲区
+	// 视频帧数据缓冲区，读取数据到里边，然后去除startcode之后指针偏移为mFrame的位置
+	uint8_t *mBuffer;
 	uint8_t *mFrame; // 视频帧数据指针
 	int mFrameSize; // AVFrame大小
 };

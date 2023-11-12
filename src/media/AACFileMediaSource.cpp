@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <fcntl.h>
+#include <memory>
 #include <mutex>
 #include <string.h>
 #include <sys/stat.h>
@@ -10,9 +11,10 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
-AACFileMeidaSource *AACFileMeidaSource::createNew(UsageEnvironment *env, std::string file) {
+std::shared_ptr<AACFileMeidaSource>
+AACFileMeidaSource::createNew(UsageEnvironment *env, std::string file) {
 	// return new AACFileMeidaSource(env, file);
-	return New<AACFileMeidaSource>::allocate(env, file);
+	return std::make_shared<AACFileMeidaSource>(env, file);
 }
 
 AACFileMeidaSource::AACFileMeidaSource(UsageEnvironment *env, const std::string &file)

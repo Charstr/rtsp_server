@@ -1,3 +1,4 @@
+#include <memory>
 #include <stdio.h>
 #include <string.h>
 
@@ -6,10 +7,11 @@
 #include "base/New.h"
 #include "media/RtpSink.h"
 
-H264RtpSink *H264RtpSink::createNew(UsageEnvironment *env, MediaSource *mediaSource) {
+std::shared_ptr<H264RtpSink>
+H264RtpSink::createNew(UsageEnvironment *env, MediaSource *mediaSource) {
 	if (!mediaSource)
 		return nullptr;
-	return New<H264RtpSink>::allocate(env, mediaSource);
+	return std::make_shared<H264RtpSink>(env, mediaSource);
 }
 
 H264RtpSink::H264RtpSink(UsageEnvironment *env, MediaSource *mediaSource)

@@ -32,6 +32,10 @@ void TcpServer::newConnectionCallback(void *arg, int connfd) {
 }
 
 // server->start();实际调用这个父类的函数，开启对mSocket的监听，同时把mAcceptIOEvent注册到EventScheduler
-void TcpServer::start() { mAcceptor->listen(); }
+void TcpServer::start() {
+	mAcceptor->listen();
+}
 
-TcpServer::~TcpServer() { Delete::release(mAcceptor); }
+TcpServer::~TcpServer() {
+	Delete::release(mAcceptor);
+}

@@ -20,11 +20,9 @@ protected:
 	Poller();
 
 protected:
-	// 对应muduo的ChannelMap，key为sockfd
 	typedef std::map<int, IOEvent *> IOEventMap;
-
-	IOEventMap
-		mEventMap; // 维护文件描述符与IOEvent对象的映射关系,保管所有注册在这个poller上的IOEvent
+	// 维护文件描述符与IOEvent对象的映射关系,保管所有注册在这个poller上的IOEvent
+	IOEventMap mEventMap;
 };
 
 #endif //_POLLER_H_

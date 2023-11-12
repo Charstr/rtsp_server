@@ -1,13 +1,14 @@
 #include <algorithm>
 #include <assert.h>
+#include <memory>
 #include <mutex>
 #include <stdio.h>
 
 #include "RtspServer.h"
 #include "base/New.h"
 
-RtspServer *RtspServer::createNew(UsageEnvironment *env, Ipv4Address &addr) {
-	return New<RtspServer>::allocate(env, addr);
+std::shared_ptr<RtspServer> RtspServer::createNew(UsageEnvironment *env, Ipv4Address &addr) {
+	return std::make_shared<RtspServer>(env, addr);
 }
 
 RtspServer::RtspServer(UsageEnvironment *env, const Ipv4Address &addr) : TcpServer(env, addr) {
@@ -129,7 +130,7 @@ bool RtspServer::addMeidaSession(MediaSession *mediaSession) {
 
 MediaSession *RtspServer::loopupMediaSession(std::string name) {
 	// 根据名称查找媒体会话
-	std::map<std::string, MediaSession *>::iterator it = mMediaSessions.find(name);
+	auto it = mMediaSessions.find(name);
 	if (it == mMediaSessions.end())
 		return nullptr;
 
@@ -140,8 +141,9 @@ MediaSession *RtspServer::loopupMediaSession(std::string name) {
 std::string RtspServer::getUrl(MediaSession *session) {
 	char url[200];
 
-	snprintf(url, sizeof(url), "rtsp://%s:%d/%s", sockets::getLocalIp().c_str(), mAddr.getPort(),
-			 session->name().c_str());
+	snprintf(
+		url, sizeof(url), "rtsp://%s:%d/%s", sockets::getLocalIp().c_str(), mAddr.getPort(),
+		session->name().c_str());
 
 	return std::string(url);
 }
