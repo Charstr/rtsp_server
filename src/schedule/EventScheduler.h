@@ -8,6 +8,7 @@
 
 #include "Timer.h"
 #include "poller/PollPoller.h"
+
 class EventScheduler {
 public:
 	typedef void (*Callback)(void *);
@@ -18,9 +19,7 @@ public:
 		POLLER_EPOLL
 	};
 
-	// 确保能退出
 	static std::shared_ptr<EventScheduler> createNew(PollerType type);
-	// 构造函数
 	EventScheduler(PollerType type, int fd);
 	virtual ~EventScheduler();
 

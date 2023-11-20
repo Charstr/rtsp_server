@@ -12,7 +12,7 @@
 #include "SocketsOps.h"
 
 int sockets::createTcpSock() {
-	// non block
+	// 非阻塞
 	int sockfd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
 
 	return sockfd;
@@ -59,7 +59,9 @@ int sockets::readv(int sockfd, const struct iovec *iov, int iovcnt) {
 	return ::readv(sockfd, iov, iovcnt);
 }
 
-int sockets::write(int sockfd, const void *buf, int size) { return ::write(sockfd, buf, size); }
+int sockets::write(int sockfd, const void *buf, int size) {
+	return ::write(sockfd, buf, size);
+}
 
 int sockets::sendto(int sockfd, const void *buf, int len, const struct sockaddr *destAddr) {
 	socklen_t addrLen = sizeof(struct sockaddr);
@@ -162,7 +164,9 @@ int sockets::getPeerAddr(int sockfd, struct sockaddr_in *addr) {
 	return getpeername(sockfd, (struct sockaddr *)addr, &addrlen);
 }
 
-void sockets::close(int sockfd) { int ret = ::close(sockfd); }
+void sockets::close(int sockfd) {
+	int ret = ::close(sockfd);
+}
 
 bool sockets::connect(int sockfd, std::string ip, uint16_t port, int timeout) {
 	bool isConnected = true;

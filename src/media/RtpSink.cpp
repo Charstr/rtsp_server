@@ -8,7 +8,7 @@
 RtpSink::RtpSink(UsageEnvironment *env, MediaSource *mediaSource, int payloadType)
 	: mMediaSource(mediaSource), mSendPacketCallback(NULL), mEnv(env), mCsrcLen(0), mExtension(0),
 	  mPadding(0), mVersion(RTP_VESION), mPayloadType(payloadType), mMarker(0), mSeq(0),
-	  mTimestamp(0), mTimerId(0) {
+	  mTimestamp(0), mTimerId(0), mSSRC(rand()) {
 
 	// sink是消费者，创建一个定时器事件，用于定时器触发的
 	mTimerEvent = TimerEvent::createNew(this);
@@ -16,8 +16,6 @@ RtpSink::RtpSink(UsageEnvironment *env, MediaSource *mediaSource, int payloadTyp
 	// 设置超时回调函数RtpSink::timeoutCallback，达到定时触发的时候从mAVFrameOutputQueue帧输出队列取出来一帧，通过多态调用H264RtpSink::handleFrame函数发送一个rtp
 	// packet
 	mTimerEvent->setTimeoutCallback(RtpSink::timeoutCallback);
-
-	mSSRC = rand();
 }
 
 RtpSink::~RtpSink() {
@@ -44,7 +42,7 @@ void RtpSink::sendRtpPacket(RtpPacket *packet) {
 		RtpSink::mSendPacketCallback(mArg1, mArg2, packet);
 }
 
-// 超时回调函数，用于处理帧数据并发送到目标位置。
+// 超时回调函数，从唤醒队列取出来一帧发送然后再重复利用
 void RtpSink::timeoutCallback(void *arg) {
 	RtpSink *rtpSink = (RtpSink *)arg;
 	// 超时从输出队列mAVFrameOutputQueue取出一个AVFrame
@@ -54,7 +52,7 @@ void RtpSink::timeoutCallback(void *arg) {
 
 	// 多态发送一个AVFrame，调用H264RtpSink::handleFrame
 	rtpSink->handleFrame(frame);
-	// 循环队列，重复利用
+	// 循环队列，重复利用，此时会向线程池的任务队列添加一个任务
 	rtpSink->mMediaSource->putFrame(frame);
 }
 

@@ -11,8 +11,6 @@
 #include "poller/PollPoller.h"
 #include "poller/SelectPoller.h"
 
-// EventScheduler类是一个事件调度器，用于管理和触发各种事件。用不同的轮询器(Poller)来处理IO事件和定时事件。一些辅助函数和回调函数，用于处理触发事件和其他事件的逻辑。
-
 static int createEventFd() {
 	// 当一个进程调用 exec()
 	// 启动一个新程序时，所有已打开的文件描述符都会被关闭，除非文件描述符被设置为 FD_CLOEXEC
@@ -35,8 +33,6 @@ std::shared_ptr<EventScheduler> EventScheduler::createNew(PollerType type) {
 		return nullptr;
 	return std::make_shared<EventScheduler>(type, evtFd);
 }
-
-// EventScheduler构造函数，传进来EventScheduler::createNew的PollerType type和创建的evtFd
 
 EventScheduler::EventScheduler(PollerType type, int fd)
 	: mQuit(false), mWakeupFd(fd) // 用于唤醒等待中的线程的文件描述符 evtfd
@@ -62,10 +58,6 @@ EventScheduler::EventScheduler(PollerType type, int fd)
 		break;
 	}
 
-	// 定时器管理器，负责管理定时事件的触发和处理,维护了一个定时器队列，用于存储各种定时任务，如定时发送数据、定时任务执行等。当定时事件到达时，TimerManager
-	// 调用注册的回调函数，执行相应的操作。
-
-	// 传进去mPoller是为了把事件mTimerIOEvent注册到多路复用上
 	// 执行mPoller->addIOEvent(mTimerIOEvent);
 	mTimerManager = TimerManager::createNew(mPoller);
 
@@ -75,8 +67,6 @@ EventScheduler::EventScheduler(PollerType type, int fd)
 	// 读取 mWakeupFd 中的数据唤醒等待在EventScheduler上的线程
 	mWakeIOEvent->setReadCallback(EventScheduler::handleReadCallback);
 	mWakeIOEvent->enableReadHandling();
-
-	// 把唤醒事件添加到调度管理器，通过多态，调用的是epoll的addIOEvent函数
 
 	mPoller->addIOEvent(mWakeIOEvent);
 }
@@ -107,7 +97,7 @@ Timer::TimerId
 EventScheduler::addTimedEventRunEvery(TimerEvent *event, Timer::TimeInterval interval) {
 	Timer::Timestamp when = Timer::getCurTime();
 	when += interval;
-
+	// 设置定时器触发的间隔
 	return mTimerManager->addTimer(event, when, interval);
 }
 
@@ -133,6 +123,7 @@ bool EventScheduler::removeIOEvent(IOEvent *event) {
 
 // 工作线程
 void EventScheduler::loop() {
+
 	while (mQuit != true) {
 
 		// 处理触发事件，调用的回调函数指针mTriggerCallback设置的是RtspServer::triggerCallback函数，遍历需要断开连接的mDisconnectionlist，根据映射关系从mConnections取出要断开的连接对应的RtspConnection，释放内存并从mConnections移除对应的连接描述符

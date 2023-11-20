@@ -34,8 +34,7 @@ private:
 	void handleEvent(); // 处理超时回调定时器事件
 
 private:
-	// 定时器事件，handleEvent时候执行的是设置的mTimerEvent的回调处理函数mTimeoutCallback
-	TimerEvent *mTimerEvent;
+	TimerEvent *mTimerEvent; // 这是一个IO事件，定时器触发的时候执行这个事件的回调函数
 	Timestamp mTimestamp; // 定时器触发时间戳
 	TimeInterval mTimeInterval; // 定时器触发时间间隔
 	bool mRepeat; // 定时器是否重复触发
@@ -50,8 +49,8 @@ public:
 	TimerManager(int timerFd, Poller *poller);
 	~TimerManager();
 	// 添加一个定时器，返回定时器ID
-	Timer::TimerId addTimer(TimerEvent *event, Timer::Timestamp timestamp,
-							Timer::TimeInterval timeInterval);
+	Timer::TimerId
+	addTimer(TimerEvent *event, Timer::Timestamp timestamp, Timer::TimeInterval timeInterval);
 	// 移除指定ID的定时器
 	bool removeTimer(Timer::TimerId timerId);
 

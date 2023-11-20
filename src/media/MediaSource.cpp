@@ -18,16 +18,8 @@ MediaSource::MediaSource(UsageEnvironment *env) : mEnv(env) {
 	这样就构成了一个环形队列
 	*/
 
-	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i) mAVFrameInputQueue.push(&mAVFrames[i]);
-
-	// 设置线程池任务的回调函数MediaSource::taskCallback。
-
-	// 线程池任务回调函数。线程池中的每个线程运行的时候，调用ThreadPool::MThread::run
-	// 从任务队列mTaskQueue中取出一个mTask运行，设置mTask的回调函数MediaSource::taskCallback
-	// 通过多态读取调用从h264文件读取一个AVFrame
-
-	// 确保当有新的视频帧需要处理时，可以立即分配线程来处理这个任务，而不是等待线程池中的线程执行完当前任务后再去获取新的任务。
-	// 这里确保了给的任务
+	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i)
+		mAVFrameInputQueue.push(&mAVFrames[i]);
 }
 
 MediaSource::~MediaSource() {}
@@ -41,7 +33,7 @@ AVFrame *MediaSource::getFrame() {
 		return nullptr;
 
 	// 从输出队列中取出一个视频帧
-	AVFrame *frame = mAVFrameOutputQueue.front();
+	AVFrame *frame = std::move(mAVFrameOutputQueue.front());
 	mAVFrameOutputQueue.pop();
 
 	return frame;
@@ -63,12 +55,3 @@ void MediaSource::putFrame(AVFrame *frame) {
 	// 任务的回调在MediaSource构造函数设置，读取一个AVFrame到队列
 	mEnv->threadPool()->addTask(std::bind(&MediaSource::readFrame, this));
 }
-
-// // 执行任务回调函数，其中任务回调函数会调用类的成员函数readFrame()
-// void MediaSource::taskCallback(void *arg) {
-
-// 	MediaSource *source = (MediaSource *)arg;
-// 	// 多态调用H264FileMediaSource::readFrame，
-// 	// 读取一个AVFrame到mAVFrameOutputQueue中
-// 	source->readFrame();
-// }

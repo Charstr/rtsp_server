@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <assert.h>
 #include <fcntl.h>
 #include <memory>
@@ -48,7 +49,7 @@ void H264FileMediaSource::readFrame() {
 		return;
 
 	// 取出队首的指针
-	AVFrame *frame = mAVFrameInputQueue.front();
+	AVFrame *frame = std::move(mAVFrameInputQueue.front());
 
 	// 生产者从mFd文件描述符读取最大FRAME_MAX_SIZE大小到frame->mBuffer的buf中存储，并返回读取的大小
 	// mFd确定了文件要读取的位置

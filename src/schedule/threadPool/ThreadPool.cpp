@@ -23,11 +23,13 @@ ThreadPool::ThreadPool(uint16_t numThreads) : m_stop(false) {
 				std::function<void()> task;
 				{
 					std::unique_lock<std::mutex> lock(this->m_mutex);
+					// 不为空且没有停止那就可以继续运行
 					this->m_cond.wait(lock, [this] {
 						return this->m_stop.load() || !this->m_tasks.empty();
 					});
 					if (this->m_stop && this->m_tasks.empty())
 						return;
+					// 取出来一个任务执行
 					task = std::move(this->m_tasks.front());
 					this->m_tasks.pop();
 				}

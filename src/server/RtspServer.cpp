@@ -87,10 +87,9 @@ void RtspServer::disconnectionCallback(void *arg, int sockfd) {
 void RtspServer::handleDisconnection(int sockfd) {
 	std::lock_guard<std::mutex> lguard(m_mutex);
 
-	// 要取消连接的描述符加入到队列mDisconnectionlist，建立连接的时候是存在map<int, RtspConnection*>
-	// mConnections
+	// 加入取消队列，并添加触发事件mTriggerEvent到队列
 	mDisconnectionlist.push_back(sockfd);
-	// 添加触发事件mTriggerEvent到std::vector<TriggerEvent*> mTriggerEvents，稍后处理断开连接
+	// 当mTriggerEvent触发的时候会遍历队列进行删除
 	mEnv->scheduler()->addTriggerEvent(mTriggerEvent);
 }
 
@@ -98,12 +97,12 @@ void RtspServer::handleDisconnection(int sockfd) {
 
 void RtspServer::triggerCallback(void *arg) {
 	RtspServer *rtspServer = (RtspServer *)arg;
-	// printf("triggerCallback回调\n");
 	rtspServer->handleDisconnectionList();
 }
 
 void RtspServer::handleDisconnectionList() {
 	std::lock_guard<std::mutex> lguard(m_mutex);
+
 	// 遍历mDisconnectionlist所有要关闭的连接描述符，从存储连接描述符和RtspConnection的map
 	// mConnections中找到对应的RtspConnection进行释放，然后删除对应的fd
 	for (std::vector<int>::iterator it = mDisconnectionlist.begin(); it != mDisconnectionlist.end();

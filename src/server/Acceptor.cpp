@@ -24,6 +24,7 @@ Acceptor::Acceptor(UsageEnvironment *env, const Ipv4Address &addr)
 	// 当mAcceptIOEvent发生后，用回调函数accept连接返回的connfd是接下来进行数据传输的fd
 	// 这里创建IOEvent用的是listenfd，而mTcpConnIOEvent连接传输数据用的是connfd
 	mAcceptIOEvent = IOEvent::createNew(mSocket.fd(), this);
+
 	/*
 	4.
 	设置mAcceptIOEvent接受连接的回调函数Acceptor::readCallback。回调函数用socket的accept用函数接受连接返回一个已建立连接的server和客户端通信的connfd，然后调用处理用这个connfd处理连接的回调函数Acceptor::mNewConnectionCallback进行处理。
@@ -51,9 +52,8 @@ Acceptor::~Acceptor() {
 }
 
 // server->start
-// 调用listen(),开启对mSocket的监听，同时把mAcceptIOEvent注册到EventScheduler
+// 调用listen(),开启对mSocket的监听，同时把接受连接的mAcceptIOEvent加入到EventScheduler调度
 void Acceptor::listen() {
-	// 开始监听连接请求，这个时候才会有连接过来的事件mAcceptIOEvent，所以这时候加入到调度器
 	mSocket.listen(1024);
 	mListenning = true;
 	mEnv->scheduler()->addIOEvent(mAcceptIOEvent);
@@ -63,8 +63,6 @@ void Acceptor::listen() {
 
 void Acceptor::readCallback(void *arg) {
 	Acceptor *acceptor = (Acceptor *)arg;
-	// 调用处理函数
-	// printf("mAcceptIOEvent回调\n");
 	acceptor->handleRead();
 }
 

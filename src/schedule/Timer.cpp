@@ -56,7 +56,6 @@ TimerManager *TimerManager::createNew(Poller *poller) {
 	表示非阻塞模式（即read() 操作不会阻塞），TFD_CLOEXEC 表示在执行exec()函数时关闭该文件描述符。
 	2.
 	定时器文件描述符作为一个事件交给Reactor。定时器队列采用管理超时时间，消费者有一个定时器，间隔一定时间就会向生产者取数据，并将数据RTP打包再传输
-
 	*/
 
 	int timerFd = timerFdCreate(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
@@ -77,6 +76,7 @@ TimerManager::TimerManager(int timerFd, Poller *poller)
 	// 描述符有事件了，对应的是定时器IO事件，会处理多个不同的定时器事件，分别调用各自的处理函数
 	// 这里指的是定时发送rtp包
 	mTimerIOEvent = IOEvent::createNew(mTimerFd, this);
+	// 定时器IO事件的回调函数
 	mTimerIOEvent->setReadCallback(TimerManager::handleRead);
 	mTimerIOEvent->enableReadHandling();
 	// 这里是文件描述符mTimerFd的超时时间修正
@@ -94,7 +94,6 @@ void TimerManager::handleRead(void *arg) {
 	if (!arg)
 		return;
 	TimerManager *timerManager = (TimerManager *)arg;
-	// printf("mTimerIOEvent回调\n");
 	timerManager->handleTimerEvent();
 }
 
@@ -138,8 +137,8 @@ void TimerManager::handleTimerEvent() {
 
 /*---------------管理定时事件----------------------*/
 
-Timer::TimerId TimerManager::addTimer(TimerEvent *event, Timer::Timestamp timestamp,
-									  Timer::TimeInterval timeInterval) {
+Timer::TimerId TimerManager::addTimer(
+	TimerEvent *event, Timer::Timestamp timestamp, Timer::TimeInterval timeInterval) {
 	// event是mTimerEvent，定时触发的事件，
 	Timer timer(event, timestamp, timeInterval); // 创建定时器
 

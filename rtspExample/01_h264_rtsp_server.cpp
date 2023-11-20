@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
 	std::shared_ptr<MediaSource> audioSource = AACFileMeidaSource::createNew(env.get(), audiofile);
 	std::shared_ptr<RtpSink> audioRtpSink = AACRtpSink::createNew(env.get(), audioSource.get());
 
+	// 资源消费者
 	session->addRtpSink(MediaSession::TrackId0, videoRtpSink.get());
 	session->addRtpSink(MediaSession::TrackId1, audioRtpSink.get());
 
@@ -66,7 +67,7 @@ int main(int argc, char *argv[]) {
 	std::cout << "Play the media using the URL \"" << server->getUrl(session.get()) << "\""
 			  << std::endl;
 
-	// 到这里，程序完成了对socket的监听，调用EventScheduler::loop
+	// 程序完成了对socket的监听，调用EventScheduler::loop
 	// 后程序开始循环监听socket的可读事件。 当新连接请求建立时，可读事件触发，此时该事件对应的
 	// callback 在 EventScheduler::loop 中被调用。该事件的 callback 实际上就是
 	// Acceptor::handleRead() 方法。调用accept函数返回实现了连接的建立，得到一个已连接用于通信的

@@ -5,13 +5,9 @@
 
 #include "Poller.h"
 
-// epoll实现的多路事件分发器，内部实现依赖epoll相关的系统调用(epoll_create,epoll_ctl,epoll_wait)
-
 class EPollPoller : public Poller {
 public:
-	// 工厂函数用于实现默认的poller
 	static EPollPoller *createNew();
-
 	EPollPoller();
 	virtual ~EPollPoller();
 

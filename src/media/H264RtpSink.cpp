@@ -17,9 +17,9 @@ H264RtpSink::createNew(UsageEnvironment *env, MediaSource *mediaSource) {
 H264RtpSink::H264RtpSink(UsageEnvironment *env, MediaSource *mediaSource)
 	: RtpSink(env, mediaSource, RTP_PAYLOAD_TYPE_H264), mClockRate(90000),
 	  mFps(mediaSource->getFps()) {
+
 	// 在 RtpSink构造函数创建了定时器事件mTimerEvent，start时候加入到定时器的列表中
-	// 1秒/帧率得到多少ms触发一次
-	// 设置定时器
+	// 1秒/帧率得到定时器的触发间隔
 	start(1000 / mFps);
 }
 
