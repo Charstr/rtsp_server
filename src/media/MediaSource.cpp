@@ -45,13 +45,6 @@ void MediaSource::putFrame(AVFrame *frame) {
 
 	mAVFrameInputQueue.push(frame); // 将视频帧放入待处理队列
 
-	/*
-	添加到线程池的任务队列，创建线程的时候设置有处理任务的函数
-	Thread::threadRun，通过多态调用ThreadPool::MThread::run处理任务，调用线程池的ThreadPool::handleTask函数，从任务队列mTaskQueue取出来任务并调用对应任务的回调函数（这里设置的是MediaSource::taskCallback，通过多态调用H264FileMediaSource::readFrame从h264文件读取一个AVFrame到mAVFrameOutputQueue）执行任务
-	*/
-
 	// 每当一个新的帧被放入输入队列时，就需要一个新的任务来处理它，都会添加一个新的任务到任务队列，
-	// 立即通知线程池,避免消费者线程空等。
-	// 任务的回调在MediaSource构造函数设置，读取一个AVFrame到队列
 	mEnv->threadPool()->addTask(std::bind(&MediaSource::readFrame, this));
 }

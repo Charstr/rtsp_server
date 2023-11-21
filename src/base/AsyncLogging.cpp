@@ -8,10 +8,6 @@
 #include "base/Logging.h"
 #include "base/New.h"
 
-/*
-日志记录系统的头文件
-
-*/
 AsyncLogging *AsyncLogging::mAsyncLogging = NULL;
 
 AsyncLogging::AsyncLogging(std::string file) : mFile(file), mRun(true) {
@@ -19,11 +15,11 @@ AsyncLogging::AsyncLogging(std::string file) : mFile(file), mRun(true) {
 	mFp = fopen(mFile.c_str(), "w");
 	if (!mFp)
 		return;
-	for (int i = 0; i < BUFFER_NUM; ++i) mFreeBuffer.push(&mBuffer[i]);
+	for (int i = 0; i < BUFFER_NUM; ++i)
+		mFreeBuffer.push(&mBuffer[i]);
 
 	mCurBuffer = mFreeBuffer.front();
 
-	// 这个线程是干什么的？
 	m_thread = std::thread([this] {
 		this->run(nullptr);
 	});
@@ -47,6 +43,8 @@ AsyncLogging::~AsyncLogging() {
 
 	mRun = false;
 	m_condv.notify_all();
+	if (m_thread.joinable())
+		m_thread.join();
 }
 
 AsyncLogging *AsyncLogging::instance() {
@@ -56,9 +54,7 @@ AsyncLogging *AsyncLogging::instance() {
 
 	return mAsyncLogging;
 }
-void AsyncLogging::append(const char *logline, int len)
-
-{
+void AsyncLogging::append(const char *logline, int len) {
 	std::unique_lock<std::mutex> lock(m_mutex);
 	if (mCurBuffer->avail() > len) {
 		mCurBuffer->append(logline, len);

@@ -6,25 +6,20 @@
 
 #include <mutex>
 
-/*
-Allocator实现了一个内存池的分配器,
-1. 使用单例模式,保证全局只有一个Allocator实例
-2. 使用预分配的内存池来管理小块内存,避免频繁调用malloc/free
-3. 使用自由链表(free list)管理内存块,根据大小分类管理不同的链表
-4. 使用缓存内存块来避免频繁向系统申请释放内存
-5. 加锁保证多线程安全
-6. 节省内存碎片,提高内存利用率
-
-
-*/
 class Allocator {
 public:
-	enum { ALIGN = 8 }; // 内存对齐边界
-	enum { MAX_BYTES = 128 }; // 最大分配的内存块
-	enum { NFREELISTS = MAX_BYTES / ALIGN }; // 自由链表的数量
+	enum {
+		ALIGN = 8
+	}; // 内存对齐边界
+	enum {
+		MAX_BYTES = 128
+	}; // 最大分配的内存块
+	enum {
+		NFREELISTS = MAX_BYTES / ALIGN
+	}; // 自由链表的数量
 
 	union Obj { // 内存块
-		union Obj *next;
+		Obj *next;
 		char data[1];
 	};
 

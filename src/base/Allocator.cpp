@@ -67,15 +67,14 @@ void Allocator::dealloc(void *p, uint32_t size) {
 
 /* 重新分配内存 */
 void *Allocator::refill(uint32_t bytes) {
-	int nobjs = 20; // 一次申请20个obj
-	char *chunk = chunkAlloc(bytes, nobjs); // 分配内存块
+	int nobjs = 20;
+	char *chunk = chunkAlloc(bytes, nobjs);
 	Obj *result;
 	Obj *currentObj;
 	Obj *nextObj;
 	int i;
 	uint32_t index;
 
-	/* 如果只有一个节点，那么直接放回，不需要处理剩余内存 */
 	if (1 == nobjs)
 		return chunk;
 
@@ -104,25 +103,23 @@ char *Allocator::chunkAlloc(uint32_t size, int &nobjs) {
 	char *result;
 	uint32_t totalBytes = size * nobjs; // 总字节数
 	uint32_t bytesLeft = mEndFree - mStartFree; // 缓存块剩余空间大小
-
-	if (bytesLeft > totalBytes) // 如果缓存块空间充足，则直接从缓存块中获取内存
-	{
+	// 如果缓存块空间充足，则直接从缓存块中获取内存
+	if (bytesLeft > totalBytes) {
 		result = mStartFree;
 		mStartFree += totalBytes;
 		return result;
-	} else if (bytesLeft > size) // 缓存块不能完全满足,但可以分配部分
-	{
+	} else if (bytesLeft > size) {
+		// 缓存块不能完全满足,但可以分配部分
 		nobjs = bytesLeft / size;
 		totalBytes = size * nobjs;
 		result = mStartFree;
 		mStartFree += totalBytes;
 		return result;
-	} else // 缓存块剩余空间不足以分配任何对象
-	{
+	} else {
+		// 缓存块剩余空间不足以分配任何对象
 		uint32_t bytesToGet = 2 * totalBytes + roundup(mHeapSize >> 4); // 至少两倍增长
-
-		if (bytesLeft > 0) // 缓存块还有碎片,放入free list
-		{
+		// 缓存块还有碎片,放入free list
+		if (bytesLeft > 0) {
 			uint32_t index = freelistIndex(bytesLeft);
 			((Obj *)(mStartFree))->next = mFreeList[index];
 			mFreeList[index] = (Obj *)mStartFree;

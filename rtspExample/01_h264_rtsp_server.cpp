@@ -14,7 +14,6 @@
 #include "server/InetAddress.h"
 #include "server/RtspServer.h"
 
-// 工厂模式内存可能没有释放
 int main(int argc, char *argv[]) {
 
 	std::string videofile = "/home/lcp/myProj/rtsp_server/rtspExample/test1.264";

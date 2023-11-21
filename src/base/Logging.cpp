@@ -28,14 +28,20 @@ void Logger::setLogFile(std::string file) {
 		Logger::mIsStdout = false;
 }
 
-std::string Logger::getLogFile() { return Logger::mLogFile; }
+std::string Logger::getLogFile() {
+	return Logger::mLogFile;
+}
 
-void Logger::setLogLevel(LogLevel level) { Logger::mLogLevel = level; }
+void Logger::setLogLevel(LogLevel level) {
+	Logger::mLogLevel = level;
+}
 
-Logger::LogLevel Logger::getLogLevel() { return Logger::mLogLevel; }
+Logger::LogLevel Logger::getLogLevel() {
+	return Logger::mLogLevel;
+}
 
-void Logger::write(Logger::LogLevel level, const char *file, const char *func, int line,
-				   const char *format, ...) {
+void Logger::write(
+	Logger::LogLevel level, const char *file, const char *func, int line, const char *format, ...) {
 	if (level > Logger::mLogLevel)
 		return;
 
@@ -45,8 +51,9 @@ void Logger::write(Logger::LogLevel level, const char *file, const char *func, i
 
 	mThisLogLevel = level;
 	// 构造日志的时间戳
-	sprintf(mCurPtr, "%d-%02d-%02d %02d:%02d:%02d", sysTime->tm_year + 1900, sysTime->tm_mon + 1,
-			sysTime->tm_mday, sysTime->tm_hour, sysTime->tm_min, sysTime->tm_sec);
+	sprintf(
+		mCurPtr, "%d-%02d-%02d %02d:%02d:%02d", sysTime->tm_year + 1900, sysTime->tm_mon + 1,
+		sysTime->tm_mday, sysTime->tm_hour, sysTime->tm_min, sysTime->tm_sec);
 	mCurPtr += strlen(mCurPtr);
 	// 根据日志级别设置标签
 	if (level == Logger::LogDebug) {

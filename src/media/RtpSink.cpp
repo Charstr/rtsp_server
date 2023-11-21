@@ -13,8 +13,8 @@ RtpSink::RtpSink(UsageEnvironment *env, MediaSource *mediaSource, int payloadTyp
 	// sink是消费者，创建一个定时器事件，用于定时器触发的
 	mTimerEvent = TimerEvent::createNew(this);
 
-	// 设置超时回调函数RtpSink::timeoutCallback，达到定时触发的时候从mAVFrameOutputQueue帧输出队列取出来一帧，通过多态调用H264RtpSink::handleFrame函数发送一个rtp
-	// packet
+	// 设置超时回调函数RtpSink::timeoutCallback，达到定时触发的时候从mAVFrameOutputQueue帧输出队列取出来一帧，
+	// 通过多态调用H264RtpSink::handleFrame函数发送一个rtp packet
 	mTimerEvent->setTimeoutCallback(RtpSink::timeoutCallback);
 }
 

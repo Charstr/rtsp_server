@@ -7,11 +7,6 @@
 #include <string>
 #include <thread>
 
-/*
-
-日志记录系统的头文件，LogBuffer类用于缓冲日志数据，而AsyncLogging类是一个线程，用于异步记录日志。
-
-*/
 class LogBuffer {
 public:
 	LogBuffer() : mCurPtr(mData) {}

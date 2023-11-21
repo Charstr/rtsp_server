@@ -23,7 +23,11 @@ class Logger {
 	*/
 public:
 	// 定义日志级别的枚举类型
-	enum LogLevel { LogError, LogWarning, LogDebug };
+	enum LogLevel {
+		LogError,
+		LogWarning,
+		LogDebug
+	};
 
 	Logger();
 	~Logger();
@@ -33,17 +37,17 @@ public:
 	static void setLogLevel(LogLevel level);
 	static LogLevel getLogLevel();
 	// 将日志信息写入文件或标准输出
-	void write(LogLevel level, const char *file, const char *func, int line, const char *format,
-			   ...);
+	void
+	write(LogLevel level, const char *file, const char *func, int line, const char *format, ...);
 
 private:
-	char mData[4096];		// 存储日志数据的缓冲区
-	char *mCurPtr;			// 当前可写入位置的指针
+	char mData[4096]; // 存储日志数据的缓冲区
+	char *mCurPtr; // 当前可写入位置的指针
 	LogLevel mThisLogLevel; // 当前日志级别
 
-	static LogLevel mLogLevel;	 // 静态成员变量，用于记录全局日志级别
+	static LogLevel mLogLevel; // 静态成员变量，用于记录全局日志级别
 	static std::string mLogFile; // 静态成员变量，用于记录全局日志文件路径
-	static bool mIsStdout;		 // 静态成员变量，标志是否输出到标准输出
+	static bool mIsStdout; // 静态成员变量，标志是否输出到标准输出
 };
 
 #endif //_LOGING_H_

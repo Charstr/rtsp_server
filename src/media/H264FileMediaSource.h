@@ -7,8 +7,6 @@
 #include "schedule/UsageEnvironment.h"
 #include "schedule/threadPool/ThreadPool.h"
 
-// source 生产者从本地读取文件模拟资源
-// 生产者和消费者都来自于一个顶级父类,生产者父类是MediaSource
 class H264FileMediaSource : public MediaSource {
 public:
 	static std::shared_ptr<H264FileMediaSource> createNew(UsageEnvironment *env, std::string file);
