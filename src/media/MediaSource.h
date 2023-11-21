@@ -70,7 +70,7 @@ protected:
 	std::queue<AVFrame *> mAVFrameInputQueue; // 视频帧输入队列
 	std::queue<AVFrame *> mAVFrameOutputQueue; // 视频帧输出队列
 	std::mutex m_mutex;
-	std::function<void()> mTask; // 线程池任务
+	// std::function<void()> mTask; // 线程池任务
 	int mFps;
 };
 

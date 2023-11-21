@@ -37,15 +37,16 @@ protected:
 	virtual void handleFrame(AVFrame *frame) = 0;
 	void sendRtpPacket(RtpPacket *packet); // 发送RTP数据包
 	void start(int ms); // 启动RTP发送定时器，以指定的毫秒间隔发送数据
-	void stop();		// 停止RTP发送定时器
+	void stop(); // 停止RTP发送定时器
 
 private:
-	// 静态定时器回调函数，当定时器超时时调用
+	// 静态定时器回调函数，当定时器超时时调用，不能调用非静态成员变量
+	// 改成非静态
 	static void timeoutCallback(void *);
 
 protected:
-	UsageEnvironment *mEnv;					// 使用的环境
-	MediaSource *mMediaSource;				// 媒体源,多态
+	UsageEnvironment *mEnv; // 使用的环境
+	MediaSource *mMediaSource; // 媒体源,多态
 	SendPacketCallback mSendPacketCallback; // 发送帧回调函数
 	void *mArg1;
 	void *mArg2;

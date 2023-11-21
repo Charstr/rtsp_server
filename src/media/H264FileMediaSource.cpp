@@ -50,6 +50,8 @@ void H264FileMediaSource::readFrame() {
 
 	// 取出队首的指针
 	AVFrame *frame = std::move(mAVFrameInputQueue.front());
+	// 循环队列，进行数据生产
+	mAVFrameInputQueue.pop();
 
 	// 生产者从mFd文件描述符读取最大FRAME_MAX_SIZE大小到frame->mBuffer的buf中存储，并返回读取的大小
 	// mFd确定了文件要读取的位置
@@ -66,10 +68,8 @@ void H264FileMediaSource::readFrame() {
 		frame->mFrameSize -= 4;
 	}
 
-	// 循环队列，进行数据生产
-	mAVFrameInputQueue.pop();
 	// 输出队列由定时器完成回调
-	mAVFrameOutputQueue.push(frame);
+	mAVFrameOutputQueue.emplace(frame);
 }
 
 static inline bool startCode3(uint8_t *buf) {

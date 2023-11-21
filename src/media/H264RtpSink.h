@@ -1,5 +1,6 @@
 #ifndef _H264_MEDIA_SINK_H_
 #define _H264_MEDIA_SINK_H_
+#include <mutex>
 #include <stdint.h>
 
 #include "RtpSink.h"

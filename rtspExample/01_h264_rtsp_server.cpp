@@ -17,8 +17,8 @@
 // 工厂模式内存可能没有释放
 int main(int argc, char *argv[]) {
 
-	std::string videofile = "/home/lcp/myProj/rtsp_server/rtspExample/test1.264";
-	std::string audiofile = "/home/lcp/myProj/rtsp_server/rtspExample/test.aac";
+	std::string videofile = "/home/lcp/myProj/rtsp_server/rtspExample/output.h264";
+	std::string audiofile = "/home/lcp/myProj/rtsp_server/rtspExample/output.aac";
 
 	// Logger::setLogFile("xxx.log");
 	Logger::setLogLevel(Logger::LogWarning);
@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 	std::shared_ptr<EventScheduler> scheduler =
 		EventScheduler::createNew(EventScheduler::POLLER_EPOLL);
 
-	std::shared_ptr<ThreadPool> threadPool = ThreadPool::createNew(2);
+	std::shared_ptr<ThreadPool> threadPool = ThreadPool::createNew(4);
 
 	// UsageEnvironment封装了EventScheduler和ThreadPool方便对调度和线程池的调用
 	std::shared_ptr<UsageEnvironment> env =
