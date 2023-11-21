@@ -64,6 +64,12 @@ std::string AACRtpSink::getAttribute() {
 }
 
 void AACRtpSink::handleFrame(AVFrame *frame) {
+	// 添加锁
+	std::lock_guard<std::mutex> lock(m_mutex);
+	mEnv->threadPool()->addTask(std::bind(&AACRtpSink::sendFrame, this, frame));
+}
+
+void AACRtpSink::sendFrame(AVFrame *frame) {
 	RtpHeader *rtpHeader = mRtpPacket.mRtpHeadr;
 	int frameSize = frame->mFrameSize - 7; // 去掉aac头部
 

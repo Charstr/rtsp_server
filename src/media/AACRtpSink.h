@@ -4,6 +4,7 @@
 #include "MediaSource.h"
 #include "RtpSink.h"
 #include "schedule/UsageEnvironment.h"
+#include <mutex>
 
 // 继承自RtpSink，提供了一些方法和成员变量来处理AAC（Advanced Audio Coding）格式的音频数据。
 class AACRtpSink : public RtpSink {
@@ -18,8 +19,10 @@ public:
 protected:
 	// 用于处理帧。
 	virtual void handleFrame(AVFrame *frame);
+	void sendFrame(AVFrame *frame);
 
 private:
+	std::mutex m_mutex;
 	RtpPacket mRtpPacket; // 存储RTP（Real-time Transport Protocol）数据包。
 	uint32_t mSampleRate; // 采样频率
 	uint32_t mChannels; // 通道数

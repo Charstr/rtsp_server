@@ -16,9 +16,11 @@ public:
 
 	virtual std::string getMediaDescription(uint16_t port);
 	virtual std::string getAttribute();
+	void sendFrame(AVFrame *frame);
 	virtual void handleFrame(AVFrame *frame);
 
 private:
+	std::mutex m_mutex;
 	RtpPacket mRtpPacket;
 	int mClockRate;
 	int mFps;

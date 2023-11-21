@@ -1,5 +1,6 @@
 #ifndef _MEDIA_SINK_H_
 #define _MEDIA_SINK_H_
+#include <mutex>
 #include <stdint.h>
 #include <string>
 
@@ -43,6 +44,7 @@ private:
 	// 静态定时器回调函数，当定时器超时时调用，不能调用非静态成员变量
 	// 改成非静态
 	static void timeoutCallback(void *);
+	int timeoutWarp(void *);
 
 protected:
 	UsageEnvironment *mEnv; // 使用的环境

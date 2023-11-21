@@ -1,4 +1,6 @@
+#include <functional>
 #include <memory>
+#include <mutex>
 #include <stdio.h>
 #include <string.h>
 
@@ -41,8 +43,16 @@ std::string H264RtpSink::getAttribute() {
 	return std::string(buf);
 }
 
-// 根据帧的大小和类型发送RTP包，传进来的帧是mAVFrameOutputQueue取出的AVFrame
 void H264RtpSink::handleFrame(AVFrame *frame) {
+	// 添加锁
+	std::lock_guard<std::mutex> lock(m_mutex);
+
+	mEnv->threadPool()->addTask(std::bind(&H264RtpSink::sendFrame, this, frame));
+}
+
+// 根据帧的大小和类型发送RTP包，传进来的帧是mAVFrameOutputQueue取出的AVFrame
+
+void H264RtpSink::sendFrame(AVFrame *frame) {
 	RtpHeader *rtpHeader = mRtpPacket.mRtpHeadr;
 	uint8_t naluType = frame->mFrame[0];
 

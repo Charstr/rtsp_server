@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <functional>
+#include <mutex>
 
 #include "RtpSink.h"
 #include "base/Logging.h"
@@ -16,12 +17,14 @@ RtpSink::RtpSink(UsageEnvironment *env, MediaSource *mediaSource, int payloadTyp
 	mTimerEvent = TimerEvent::createNew(this);
 
 	// 这里也考虑加入到线程池？
-	// 设置超时回调函数RtpSink::timeoutCallback，达到定时触发的时候从mAVFrameOutputQueue帧输出队列取出来一帧，通过多态调用H264RtpSink::handleFrame函数发送一个rtp
-	// packet
-	// 		RtpSink::timeoutCallback);
+	// 设置超时回调函数RtpSink::timeoutCallback，达到定时触发的时候从mAVFrameOutputQueue帧输出队列取出来一帧，
+	// 通过多态调用H264RtpSink::handleFrame函数发送一个rtp packet
+
+	// mTimerEvent->setTimeoutCallback([env](void *arg) {
+	// 	RtpSink::timeoutCallback(arg, env);
+	// });
 	mTimerEvent->setTimeoutCallback(RtpSink::timeoutCallback);
 }
-
 RtpSink::~RtpSink() {
 	mEnv->scheduler()->removeTimedEvent(mTimerId);
 	Delete::release(mTimerEvent);
@@ -48,20 +51,25 @@ void RtpSink::sendRtpPacket(RtpPacket *packet) {
 
 // 超时回调函数，从唤醒队列取出来一帧发送然后再重复利用
 // 这时候加锁，取出来一个然后发送
+std::mutex mmutex;
 void RtpSink::timeoutCallback(void *arg) {
-
 	// 发生超时的时候，加入到线程池
 	RtpSink *rtpSink = (RtpSink *)arg;
 	// 超时从输出队列mAVFrameOutputQueue取出一个AVFrame
 	AVFrame *frame = rtpSink->mMediaSource->getFrame();
 	if (!frame)
 		return;
+
 	// 这是在主线程完成的，现在想加入到线程池
 	// 多态发送一个AVFrame，调用H264RtpSink::handleFrame
+	// 多线程的分别完成
 	rtpSink->handleFrame(frame);
 	// 尝试往线程池添加任务
-
-	// env->threadPool()->addTask(std::bind(&RtpSink::handleFrame, rtpSink, frame));
+	// 是否能行？
+	// {
+	// 	std::unique_lock<std::mutex> lock(mmutex);
+	// 	env->threadPool()->addTask(std::bind(&RtpSink::handleFrame, rtpSink, frame));
+	// }
 
 	// 循环队列，重复利用，此时会向线程池的任务队列添加一个任务
 	rtpSink->mMediaSource->putFrame(frame);

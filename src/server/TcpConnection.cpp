@@ -82,8 +82,6 @@ void TcpConnection::disableErrorHandling() {
 /*-------------读写错误的回调函数-----------------*/
 void TcpConnection::readCallback(void *arg) {
 	TcpConnection *tcpConnection = (TcpConnection *)arg;
-
-	// printf("mTcpConnIOEvent回调\n");
 	tcpConnection->handleRead();
 }
 
@@ -135,7 +133,9 @@ void TcpConnection::handleWrite() {
 	mOutBuffer.retrieveAll();
 }
 
-void TcpConnection::handleError() { LOG_DEBUG("default error handle\n"); }
+void TcpConnection::handleError() {
+	LOG_DEBUG("default error handle\n");
+}
 
 // 处理断开连接
 void TcpConnection::handleDisconnection() {
