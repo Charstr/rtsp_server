@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <functional>
 
 #include "RtpSink.h"
 #include "base/Logging.h"
@@ -15,8 +16,8 @@ RtpSink::RtpSink(UsageEnvironment *env, MediaSource *mediaSource, int payloadTyp
 
 	// 设置超时回调函数RtpSink::timeoutCallback，达到定时触发的时候从mAVFrameOutputQueue帧输出队列取出来一帧，通过多态调用H264RtpSink::handleFrame函数发送一个rtp
 	// packet
-	mTimerEvent->setTimeoutCallback(RtpSink::timeoutCallback);
 
+	mTimerEvent->setTimeoutCallback(std::bind(&RtpSink::timeoutCallback, this, env));
 	mSSRC = rand();
 }
 
@@ -45,17 +46,25 @@ void RtpSink::sendRtpPacket(RtpPacket *packet) {
 }
 
 // 超时回调函数，用于处理帧数据并发送到目标位置。
-void RtpSink::timeoutCallback(void *arg) {
+void RtpSink::timeoutCallback(void *arg, UsageEnvironment *env) {
 	RtpSink *rtpSink = (RtpSink *)arg;
 	// 超时从输出队列mAVFrameOutputQueue取出一个AVFrame
 	AVFrame *frame = rtpSink->mMediaSource->getFrame();
 	if (!frame)
 		return;
-
 	// 多态发送一个AVFrame，调用H264RtpSink::handleFrame
-	rtpSink->handleFrame(frame);
-	// 循环队列，重复利用
-	rtpSink->mMediaSource->putFrame(frame);
+	// rtpSink->handleFrame(frame);
+	// rtpSink->mMediaSource->putFrame(frame);
+
+	// 尝试多线程，但是有问题
+	// env->threadPool()->addTask(std::bind(&RtpSink::handleFrame, rtpSink, frame));
+	// rtpSink->mMediaSource->putFrame(frame);
+
+	// 将任务和后续操作绑定到一个lambda函数中
+	env->threadPool()->addTask([rtpSink, frame]() {
+		rtpSink->handleFrame(frame);
+		rtpSink->mMediaSource->putFrame(frame);
+	});
 }
 
 // 添加定时器，timeoutCallback是定时器处理的回调函数

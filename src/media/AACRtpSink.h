@@ -21,6 +21,7 @@ protected:
 	virtual void handleFrame(AVFrame *frame);
 
 private:
+	std::mutex m_mutex;
 	RtpPacket mRtpPacket; // 存储RTP（Real-time Transport Protocol）数据包。
 	uint32_t mSampleRate; // 采样频率
 	uint32_t mChannels; // 通道数

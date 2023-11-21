@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 		EventScheduler::createNew(EventScheduler::POLLER_EPOLL);
 
 	// 创建2个线程的线程池
-	ThreadPool *threadPool = ThreadPool::createNew(2);
+	ThreadPool *threadPool = ThreadPool::createNew(4);
 
 	UsageEnvironment *env = UsageEnvironment::createNew(scheduler.get(), threadPool);
 

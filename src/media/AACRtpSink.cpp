@@ -46,27 +46,32 @@ std::string AACRtpSink::getAttribute() {
 
 	uint8_t profile = 1;
 	char configStr[10] = {0};
-	sprintf(configStr, "%02x%02x", (uint8_t)((profile + 1) << 3) | (index >> 1),
-			(uint8_t)((index << 7) | (mChannels << 3)));
+	sprintf(
+		configStr, "%02x%02x", (uint8_t)((profile + 1) << 3) | (index >> 1),
+		(uint8_t)((index << 7) | (mChannels << 3)));
 
-	sprintf(buf + strlen(buf),
-			"a=fmtp:%d profile-level-id=1;"
-			"mode=AAC-hbr;"
-			"sizelength=13;indexlength=3;indexdeltalength=3;"
-			"config=%04u",
-			mPayloadType, atoi(configStr));
+	sprintf(
+		buf + strlen(buf),
+		"a=fmtp:%d profile-level-id=1;"
+		"mode=AAC-hbr;"
+		"sizelength=13;indexlength=3;indexdeltalength=3;"
+		"config=%04u",
+		mPayloadType, atoi(configStr));
 
 	return std::string(buf);
 }
 
 void AACRtpSink::handleFrame(AVFrame *frame) {
+
+	std::lock_guard<std::mutex> lock(m_mutex);
+
 	RtpHeader *rtpHeader = mRtpPacket.mRtpHeadr;
 	int frameSize = frame->mFrameSize - 7; // 去掉aac头部
 
 	rtpHeader->payload[0] = 0x00;
 	rtpHeader->payload[1] = 0x10;
 	rtpHeader->payload[2] = (frameSize & 0x1FE0) >> 5; // 高8位
-	rtpHeader->payload[3] = (frameSize & 0x1F) << 3;   // 低5位
+	rtpHeader->payload[3] = (frameSize & 0x1F) << 3; // 低5位
 
 	/* 去掉aac的头部 */
 	memcpy(rtpHeader->payload + 4, frame->mFrame + 7, frameSize);

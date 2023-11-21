@@ -41,7 +41,7 @@ protected:
 
 private:
 	// 静态定时器回调函数，当定时器超时时调用
-	static void timeoutCallback(void *);
+	static void timeoutCallback(void *, UsageEnvironment *);
 
 protected:
 	UsageEnvironment *mEnv; // 使用的环境

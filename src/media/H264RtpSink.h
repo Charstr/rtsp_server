@@ -1,5 +1,6 @@
 #ifndef _H264_MEDIA_SINK_H_
 #define _H264_MEDIA_SINK_H_
+#include <mutex>
 #include <stdint.h>
 
 #include "RtpSink.h"
@@ -18,6 +19,7 @@ public:
 	virtual void handleFrame(AVFrame *frame);
 
 private:
+	std::mutex m_mutex;
 	RtpPacket mRtpPacket;
 	int mClockRate;
 	int mFps;
