@@ -22,7 +22,7 @@ public:
 	template <class... Args>
 	static T *allocate(Args &&...args) {
 		T *obj = static_cast<T *>(Allocator::allocate(sizeof(T)));
-		construct(obj, std::forward<Args>(args)...);
+		construct(obj, std::forward<Args>(args)...); // 构造
 		return obj;
 	}
 };
@@ -32,7 +32,7 @@ public:
 	// 静态方法release，用于释放内存。它首先调用destroy函数销毁对象，然后使用Allocator类来释放内存。
 	template <class T1>
 	static void release(T1 *p) {
-		destroy(p);
+		destroy(p); // 析构
 		Allocator::deallocate(p, sizeof(T1));
 	}
 };

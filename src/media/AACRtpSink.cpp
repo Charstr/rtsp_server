@@ -8,7 +8,6 @@
 #include "base/New.h"
 
 std::shared_ptr<AACRtpSink> AACRtpSink::createNew(UsageEnvironment *env, MediaSource *mediaSource) {
-	// return new AACRtpSink(env, mediaSource, RTP_PAYLOAD_TYPE_AAC);
 	return std::make_shared<AACRtpSink>(env, mediaSource, RTP_PAYLOAD_TYPE_AAC);
 }
 

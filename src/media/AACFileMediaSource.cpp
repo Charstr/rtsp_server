@@ -12,8 +12,7 @@
 #include "base/New.h"
 
 std::shared_ptr<AACFileMeidaSource>
-AACFileMeidaSource::createNew(UsageEnvironment *env, std::string file) {
-	// return new AACFileMeidaSource(env, file);
+AACFileMeidaSource::createNew(UsageEnvironment *env, std::string &file) {
 	return std::make_shared<AACFileMeidaSource>(env, file);
 }
 
@@ -24,10 +23,11 @@ AACFileMeidaSource::AACFileMeidaSource(UsageEnvironment *env, const std::string 
 
 	setFps(43);
 
-	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i)
+	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i) {
 		mEnv->threadPool()->addTask([this] {
 			this->readFrame();
 		});
+	}
 }
 
 AACFileMeidaSource::~AACFileMeidaSource() {
@@ -54,6 +54,7 @@ void AACFileMeidaSource::readFrame() {
 bool AACFileMeidaSource::parseAdtsHeader(uint8_t *in, struct AdtsHeader *res) {
 	memset(res, 0, sizeof(*res));
 
+	// 解析aac的头
 	if ((in[0] == 0xFF) && ((in[1] & 0xF0) == 0xF0)) {
 		res->id = ((unsigned int)in[1] & 0x08) >> 3;
 		res->layer = ((unsigned int)in[1] & 0x06) >> 1;
@@ -92,7 +93,7 @@ int AACFileMeidaSource::getFrameFromAACFile(int fd, uint8_t *buf, int size) {
 		if (ret <= 0)
 			return -1;
 	}
-
+	// 7字节的aac头部进行解析，然后开始读取
 	if (parseAdtsHeader(tmpBuf, &mAdtsHeader) != true) {
 		LOG_WARNING("parse err\n");
 		return -1;

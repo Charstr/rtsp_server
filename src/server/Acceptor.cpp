@@ -3,6 +3,7 @@
 #include "base/New.h"
 #include "server/SocketsOps.h"
 #include <cstdio>
+#include <functional>
 
 Acceptor *Acceptor::createNew(UsageEnvironment *env, const Ipv4Address &addr) {
 	return New<Acceptor>::allocate(env, addr);
@@ -40,7 +41,7 @@ Acceptor::Acceptor(UsageEnvironment *env, const Ipv4Address &addr)
 	// 设置有连接过来处理的回调函数。连接过来应该accept然后处理这个已建立连接
 	// 这里没有把这个接受连接的回调函数加入到调度器中,而是在开始监听的时候加入
 
-	mAcceptIOEvent->setReadCallback(Acceptor::readCallback);
+	mAcceptIOEvent->setReadCallback(std::bind(&Acceptor::readCallback, this));
 	mAcceptIOEvent->enableReadHandling();
 }
 
@@ -69,7 +70,7 @@ void Acceptor::readCallback(void *arg) {
 void Acceptor::handleRead() {
 
 	// 接受连接请求，返回和外界通信的套接字描述符
-	int connfd = mSocket.accept();
+	int connfd = mSocket.accept(); // LOG_DEBUG就会调用一下析构函数
 	LOG_DEBUG("client connect: %d\n", connfd);
 
 	// 接受连接之后具体的处理函数，这个函数在TcpServer的构造函数设置mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback,

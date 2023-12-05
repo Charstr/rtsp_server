@@ -10,8 +10,11 @@
 
 class RtpSink {
 public:
+	using SendPacketCallback = std::function<void(void *, void *, RtpPacket *)>;
+
 	// 回调函数类型定义，用于发送RTP数据包
-	typedef void (*SendPacketCallback)(void *arg1, void *arg2, RtpPacket *mediaPacket);
+	// typedef void (*SendPacketCallback)(void *arg1, void *arg2, RtpPacket *mediaPacket);
+
 	// 构造函数
 	RtpSink(UsageEnvironment *env, MediaSource *mediaSource, int payloadType);
 	virtual ~RtpSink();
@@ -35,7 +38,7 @@ protected:
 
 private:
 	// 静态定时器回调函数，当定时器超时时调用
-	static void timeoutCallback(void *);
+	static void timeoutCallback(void *, UsageEnvironment *);
 
 protected:
 	UsageEnvironment *mEnv; // 使用的环境

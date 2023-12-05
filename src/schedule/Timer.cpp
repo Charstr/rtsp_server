@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <functional>
 #include <sys/timerfd.h>
 
 #include "Timer.h"
@@ -17,7 +18,7 @@ static bool timerFdSetTime(int fd, Timer::Timestamp when, Timer::TimeInterval pe
 	newVal.it_value.tv_nsec = when % 1000 * 1000 * 1000; // ms->ns
 	newVal.it_interval.tv_sec = period / 1000; // ms转换为s
 	newVal.it_interval.tv_nsec = period % 1000 * 1000 * 1000; // ms转换为ns
-	// 系统调用设置定时器的超时时间和间隔时间。
+	// 根据间隔事件设置系统调用设置定时器的超时时间
 	if (timerfd_settime(fd, TFD_TIMER_ABSTIME, &newVal, NULL) < 0)
 		return false;
 
@@ -42,7 +43,6 @@ Timer::Timestamp Timer::getCurTime() {
 void Timer::handleEvent() {
 	if (!mTimerEvent)
 		return;
-
 	mTimerEvent->handleEvent(); // 调用TimerEvent对象的事件处理函数
 }
 
@@ -63,7 +63,6 @@ TimerManager *TimerManager::createNew(Poller *poller) {
 		LOG_ERROR("failed to create timer fd\n");
 		return nullptr;
 	}
-
 	// return new TimerManager(timerFd, poller);
 	return New<TimerManager>::allocate(timerFd, poller);
 }
@@ -72,12 +71,12 @@ TimerManager::TimerManager(int timerFd, Poller *poller)
 	: mTimerFd(timerFd), // 定时器文件描述符
 	  mPoller(poller), mLastTimerId(0) {
 
-	// 根据定时器文件描述符fd创建定时器IO事件，多路复用监听mTimerFd，
-	// 描述符有事件了，对应的是定时器IO事件，会处理多个不同的定时器事件，分别调用各自的处理函数
+	// 根定时器文件描述符fd创建定时器IO事件，多路复用监听mTimerFd
+	// 当检测到描述符有事件了，对应的是定时器IO事件，会处理多个不同的定时器事件，分别调用各自的处理函数
 	// 这里指的是定时发送rtp包
 	mTimerIOEvent = IOEvent::createNew(mTimerFd, this);
-	// 定时器IO事件的回调函数
-	mTimerIOEvent->setReadCallback(TimerManager::handleRead);
+	mTimerIOEvent->setReadCallback(std::bind(&TimerManager::handleRead, this));
+
 	mTimerIOEvent->enableReadHandling();
 	// 这里是文件描述符mTimerFd的超时时间修正
 
@@ -169,8 +168,8 @@ bool TimerManager::removeTimer(Timer::TimerId timerId) {
 	return true;
 }
 
-// 修改 mTimerFd
-// 的超时时间为下一个最早触发的事件的时间戳，当计时器到达这个时间戳的时候，mTimerFd相关的IO事件mTimerIOEvent就要被触发，调用相应的回调函数执行定时器任务。
+// 修改 mTimerFd的超时时间为下一个最早触发的事件的时间戳，当计时器到达这个时间戳的时候，
+// mTimerFd相关的IO事件mTimerIOEvent就要被触发，调用相应的回调函数执行定时器任务。
 // 很多地方函数调用后都需要修正触发事件
 void TimerManager::modifyTimeout() {
 
@@ -181,7 +180,7 @@ void TimerManager::modifyTimeout() {
 		Timer timer = it->second; // 定时器
 		timerFdSetTime(mTimerFd, timer.mTimestamp, timer.mTimeInterval);
 	} else
-		timerFdSetTime(mTimerFd, 0, 0); // 定时器队列为空，取消定时器，将超时时间设置为0
+		timerFdSetTime(mTimerFd, 0, 0); // 第一次过来的时候，定时器队列为空，将超时时间设置为0
 }
 
 TimerManager::~TimerManager() {

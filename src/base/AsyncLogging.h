@@ -78,16 +78,19 @@ private:
 
 	std::mutex m_mutex;
 	std::condition_variable m_condv;
+	std::thread m_thread;
+
 	std::string mFile;
 	FILE *mFp;
 	bool mRun;
 	// 缓冲区
 	LogBuffer mBuffer[BUFFER_NUM];
+	// 指针指向的是mBuffer这个地址的位置
 	LogBuffer *mCurBuffer;
-	// 两个队列,当需要记录日志时，AsyncLogging类会从空闲缓冲区中获取一个缓冲区，并将日志数据写入其中。当缓冲区满时，它将缓冲区添加到需要写入文件的缓冲区队列中，并触发写入文件的操作。
+
 	std::queue<LogBuffer *> mFreeBuffer;
 	std::queue<LogBuffer *> mFlushBuffer;
-	std::thread m_thread;
+
 	static AsyncLogging *mAsyncLogging;
 };
 

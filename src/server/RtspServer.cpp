@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <assert.h>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <stdio.h>
@@ -41,7 +42,7 @@ RtspServer::RtspServer(UsageEnvironment *env, const Ipv4Address &addr) : TcpServ
 	// 上边完成了接受连接并进行处理的函数
 	// 这里设置触发事件，处理mDisconnectionlist中所有要断开的连接
 	mTriggerEvent = TriggerEvent::createNew(this);
-	mTriggerEvent->setTriggerCallback(RtspServer::triggerCallback);
+	mTriggerEvent->setTriggerCallback(std::bind(&RtspServer::triggerCallback, this));
 }
 
 /*
@@ -67,9 +68,16 @@ void RtspServer::handleNewConnection(int connfd) {
 	2.
 	设置单个RtspConnection关闭连接的回调函数，在TcpConnection::handleRead处理读事件客户端关闭连接或读取失败及RtspConnection::handleReadBytes进行option解析错误的时候调用，把要断开连接的connfd加入到要断开连接的队列中，并添加断开连接的触发事件mTriggerEvent。
 	*/
-	conn->setDisconnectionCallback(RtspServer::disconnectionCallback, this);
 
-	// 3. 这里把新连接的connfd和对应的RtspConnection* conn加入到已建立连接的map中mConnections
+	// mTcpConnIOEvent发生断开连接的操作
+	conn->setDisconnectionCallback(
+		std::bind(&RtspServer::disconnectionCallback, std::placeholders::_1, std::placeholders::_2),
+		this);
+
+	// 暂时不知道怎么设置bind
+	// conn->setDisconnectionCallback(RtspServer::disconnectionCallback, this);
+
+	// 3.把新连接的connfd和对应的RtspConnection* conn加入到已建立连接的map中mConnections
 	mConnections.insert(std::make_pair(connfd, conn));
 }
 
@@ -148,5 +156,6 @@ std::string RtspServer::getUrl(MediaSession *session) {
 }
 
 RtspServer::~RtspServer() {
+
 	Delete::release(mTriggerEvent);
 }

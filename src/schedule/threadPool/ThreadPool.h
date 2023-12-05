@@ -13,7 +13,7 @@
 
 class ThreadPool {
 public:
-	static std::shared_ptr<ThreadPool> createNew(int numThreads);
+	static std::shared_ptr<ThreadPool> createNew(uint16_t numThreads);
 
 	ThreadPool(uint16_t numThreads);
 	// 模板的实现一般都需要放在头文件中，以便在实例化模板的地方能够看到完整的模板定义。
@@ -36,9 +36,11 @@ private:
 template <class F, class... Args>
 auto ThreadPool::addTask(F &&f, Args &&...args) -> std::future<decltype(f(args...))> {
 	using retType = decltype(f(args...)); // 返回值类型
+	// 如果已经停止了，就添加一个空的
 	if (m_stop.load())
 		return std::future<retType>{};
 
+	// 添加任务
 	auto task = std::make_shared<std::packaged_task<retType()>>(
 		std::bind(std::forward<F>(f), std::forward<Args>(args)...));
 	// 获取任务的返回值

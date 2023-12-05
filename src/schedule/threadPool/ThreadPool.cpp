@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-std::shared_ptr<ThreadPool> ThreadPool::createNew(int numThreads) {
+std::shared_ptr<ThreadPool> ThreadPool::createNew(uint16_t numThreads) {
 	return std::make_shared<ThreadPool>(numThreads);
 }
 
@@ -16,8 +16,11 @@ ThreadPool::ThreadPool(uint16_t numThreads) : m_stop(false) {
 		else
 			m_threads = numThreads;
 	}
-	// 启动指定数量的线程
+
+	// 启动指定数量的线程，只要不停止就
 	for (int i = 0; i < numThreads; ++i) {
+		// 向线程池添加线程，添加的函数是
+		//
 		m_threadPool.emplace_back([this] {
 			while (!this->m_stop.load()) { // 不停止的话，一直在运行
 				std::function<void()> task;
@@ -29,7 +32,7 @@ ThreadPool::ThreadPool(uint16_t numThreads) : m_stop(false) {
 					});
 					if (this->m_stop && this->m_tasks.empty())
 						return;
-					// 取出来一个任务执行
+					// 从任务队列取出来一个任务执行
 					task = std::move(this->m_tasks.front());
 					this->m_tasks.pop();
 				}

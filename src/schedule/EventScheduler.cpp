@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <functional>
 #include <mutex>
 #include <stdint.h>
 #include <sys/eventfd.h>
@@ -34,10 +35,9 @@ std::shared_ptr<EventScheduler> EventScheduler::createNew(PollerType type) {
 	return std::make_shared<EventScheduler>(type, evtFd);
 }
 
-EventScheduler::EventScheduler(PollerType type, int fd)
-	: mQuit(false), mWakeupFd(fd) // 用于唤醒等待中的线程的文件描述符 evtfd
-{
+EventScheduler::EventScheduler(PollerType type, int fd) : mQuit(false), mWakeupFd(fd) {
 
+	// 用于唤醒等待中的线程的文件描述符 evtfd
 	// mPoller 负责监听多个文件描述符上的事件，并将就绪的事件通知给相应的事件处理器
 	// 构造函数创建描述符mEPollFd
 	switch (type) {
@@ -65,7 +65,8 @@ EventScheduler::EventScheduler(PollerType type, int fd)
 	mWakeIOEvent = IOEvent::createNew(mWakeupFd, this);
 
 	// 读取 mWakeupFd 中的数据唤醒等待在EventScheduler上的线程
-	mWakeIOEvent->setReadCallback(EventScheduler::handleReadCallback);
+	mWakeIOEvent->setReadCallback(std::bind(&EventScheduler::handleReadCallback, this));
+
 	mWakeIOEvent->enableReadHandling();
 
 	mPoller->addIOEvent(mWakeIOEvent);
@@ -74,11 +75,10 @@ EventScheduler::EventScheduler(PollerType type, int fd)
 // 添加触发事件mTriggerEvent到
 bool EventScheduler::addTriggerEvent(TriggerEvent *event) {
 	mTriggerEvents.push_back(event);
-
 	return true;
 }
 
-// 添加定时事件，在一定时间后执行
+// 添加定时事件，在当前时间点多久后运行
 Timer::TimerId
 EventScheduler::addTimedEventRunAfater(TimerEvent *event, Timer::TimeInterval delay) {
 	Timer::Timestamp when = Timer::getCurTime();
@@ -127,6 +127,7 @@ void EventScheduler::loop() {
 	while (mQuit != true) {
 
 		// 处理触发事件，调用的回调函数指针mTriggerCallback设置的是RtspServer::triggerCallback函数，遍历需要断开连接的mDisconnectionlist，根据映射关系从mConnections取出要断开的连接对应的RtspConnection，释放内存并从mConnections移除对应的连接描述符
+		// 关闭连接
 		this->handleTriggerEvents();
 
 		// 处理IO事件，epoll_wait把发生的事件赋值到事件数组中（vector<epoll_event>
@@ -146,7 +147,7 @@ mWakeupFd已经注册到这个EventScheduler的事件监听器上,此时事件�
 // EventScheduler既然阻塞在事件监听上,就通过mWakeupFd给EventScheduler对象一个事件,结束阻塞
 
 */
-// 这个在哪用？
+// 比如说multi-reactor模型的时候会用到
 void EventScheduler::wakeup() {
 	uint64_t one = 1;
 	ssize_t ret = ::write(mWakeupFd, &one, sizeof(one));

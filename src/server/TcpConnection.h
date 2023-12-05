@@ -19,7 +19,9 @@ Acceptor和TcpConnection应该是兄弟关系,Acceptor对服务器监听套接�
 */
 class TcpConnection {
 public:
-	typedef void (*DisconnectionCallback)(void *, int);
+	using DisconnectionCallback = std::function<void(void *, int)>;
+
+	// typedef void (*DisconnectionCallback)(void *, int);
 	// 构造函数，接受一个UsageEnvironment实例和一个套接字文件描述符
 	TcpConnection(UsageEnvironment *env, int sockfd);
 	virtual ~TcpConnection();
@@ -42,7 +44,7 @@ protected:
 	// 负责处理TCP连接的可读事件,把客户端发来的数据拷贝到用户缓冲区
 	// 也就是mInputBuffer,接着调用connectionCallback_[连接建立后的处理函数]
 	void handleRead();
-	virtual void handleReadBytes(); // 处理读字节
+	virtual void handleReadBytes(); // 解析读取到的字节
 	virtual void handleWrite();
 	virtual void handleError();
 
@@ -56,7 +58,7 @@ private:
 
 protected:
 	UsageEnvironment *mEnv;
-	TcpSocket mSocket; // 用于保存已建立连接的客户端fd
+	TcpSocket mSocket; // 保存已连接套接字文件描述符
 
 	IOEvent *mTcpConnIOEvent; // 上边fd对应的IO事件，在构造函数中创建并注册到事件调度中
 
@@ -64,9 +66,9 @@ protected:
 	DisconnectionCallback mDisconnectionCallback;
 
 	void *mArg;
-	// 缓冲区
+	// 缓冲区，输入输出buffer
 	Buffer mInputBuffer; // 从用户侧接收到的数据缓存
-	Buffer mOutBuffer;	 // 输出数据的缓存
+	Buffer mOutBuffer; // 输出数据的缓存
 
 	char mBuffer[2048]; // 临时的缓冲区，作用是暂存一下然后拷贝到mOutBuffer中
 };

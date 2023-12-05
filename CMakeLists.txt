@@ -10,7 +10,7 @@ set(SRC_DIR ${TOR_DIR}/src)
 set(CXX_FLAGS -O0 -g)
 add_definitions(${CXX_FLAGS})
 
-set(LD_FLAGS -lpthread -lrt)
+# set(LD_FLAGS -lpthread -lrt)
 
 include_directories(${SRC_DIR})
 
@@ -30,7 +30,7 @@ add_executable(h264_rtsp_server
         ${SRC_SCHEDULE}
         ${SRC_SERVER})
         
-target_link_libraries(h264_rtsp_server ${LD_FLAGS})
+# target_link_libraries(h264_rtsp_server ${LD_FLAGS})
 
 # add_executable(rtsp_h264_server rtspExample/rtsp_h264_server.cpp  ${SRC_NET})
 # target_link_libraries(rtsp_h264_server ${LD_FLAGS})

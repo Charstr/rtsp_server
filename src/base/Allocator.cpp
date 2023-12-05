@@ -34,7 +34,8 @@ void *Allocator::alloc(uint32_t size) {
 	index = freelistIndex(size); // 获取索引
 	result = mFreeList[index];
 
-	/* 如果没有找到则重新分配内存 */
+	// 最开始的时候，是没有分配内存会走到这里，同时没有找到合适的也会重新分配内存
+	// 分配时候考虑内存对齐
 	if (!result) {
 		void *r = refill(roundup(size));
 		return r;
@@ -82,13 +83,13 @@ void *Allocator::refill(uint32_t bytes) {
 	index = freelistIndex(bytes);
 	mFreeList[index] = nextObj = (Obj *)(chunk + bytes);
 
-	/* 将剩余内存连成链表 */
+	// 将剩余内存连成链表
 	for (i = 1;; ++i) {
 		currentObj = nextObj;
 		nextObj = (Obj *)((char *)nextObj + bytes);
 
-		if (nobjs - 1 == i) // 最后一个节点
-		{
+		// 最后一个节点
+		if (nobjs - 1 == i) {
 			currentObj->next = 0;
 			break;
 		} else {
@@ -100,16 +101,19 @@ void *Allocator::refill(uint32_t bytes) {
 }
 
 char *Allocator::chunkAlloc(uint32_t size, int &nobjs) {
-	char *result;
-	uint32_t totalBytes = size * nobjs; // 总字节数
+	// 对于每一片内存，都预想的是先分配20块
+	char *result; // 给这块分配的内存
+	uint32_t totalBytes = size * nobjs; // 总字节数申请这么多个
 	uint32_t bytesLeft = mEndFree - mStartFree; // 缓存块剩余空间大小
-	// 如果缓存块空间充足，则直接从缓存块中获取内存
+
+	// 如果缓存块空间充足，则直接从缓存块中获取内存20块这个内存
 	if (bytesLeft > totalBytes) {
-		result = mStartFree;
-		mStartFree += totalBytes;
+		result = mStartFree; // 分配的起始
+		mStartFree += totalBytes; // 剩余的起始
 		return result;
 	} else if (bytesLeft > size) {
-		// 缓存块不能完全满足,但可以分配部分
+
+		// 缓存块不能完全满足，分配少于20块的内存块
 		nobjs = bytesLeft / size;
 		totalBytes = size * nobjs;
 		result = mStartFree;
@@ -117,8 +121,10 @@ char *Allocator::chunkAlloc(uint32_t size, int &nobjs) {
 		return result;
 	} else {
 		// 缓存块剩余空间不足以分配任何对象
+		// 重新分配内存
 		uint32_t bytesToGet = 2 * totalBytes + roundup(mHeapSize >> 4); // 至少两倍增长
-		// 缓存块还有碎片,放入free list
+
+		// 缓存块还有碎片，放入free list
 		if (bytesLeft > 0) {
 			uint32_t index = freelistIndex(bytesLeft);
 			((Obj *)(mStartFree))->next = mFreeList[index];

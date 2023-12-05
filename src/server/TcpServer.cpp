@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <functional>
 
 #include "TcpServer.h"
 #include "base/Logging.h"
@@ -20,8 +21,10 @@ TcpServer::TcpServer(UsageEnvironment *env, const Ipv4Address &addr) : mEnv(env)
 	当mAcceptIOEvent事件触发也就是有新的连接过来的时候，调用回调函数Acceptor::readCallback，使用处理函数acceptor->handleRead接受这个连接然后返回通信的connfd。调用回调函数TcpServer::newConnectionCallback处理这个连接（connfd），通过多态RtspServer::handleNewConnection进行处理，进入到了RtspServer相关处理过程中
 	*/
 
-	// Acceptor有接收连接的accpet了,这里设置已经建立连接后处理连接的函数，在Acceptor::handleRead中调用，通过多态调用rtsp的。
-	mAcceptor->setNewConnectionCallback(TcpServer::newConnectionCallback, this);
+	// 绑定的是静态函数，所以不需要this指针
+	mAcceptor->setNewConnectionCallback(
+		std::bind(&TcpServer::newConnectionCallback, std::placeholders::_1, std::placeholders::_2),
+		this);
 }
 
 void TcpServer::newConnectionCallback(void *arg, int connfd) {
@@ -37,5 +40,6 @@ void TcpServer::start() {
 }
 
 TcpServer::~TcpServer() {
+	// 要不要关闭？
 	Delete::release(mAcceptor);
 }

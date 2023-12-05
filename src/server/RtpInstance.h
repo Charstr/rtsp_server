@@ -12,11 +12,14 @@
 // 发送RTP数据包，可以通过UDP或TCP发送
 class RtpInstance {
 public:
-	enum RtpType { RTP_OVER_UDP, RTP_OVER_TCP };
+	enum RtpType {
+		RTP_OVER_UDP,
+		RTP_OVER_TCP
+	};
 
 	// 创建RTP数据流的实例
-	static RtpInstance *createNewOverUdp(int localSockfd, uint16_t localPort, std::string destIp,
-										 uint16_t destPort) {
+	static RtpInstance *
+	createNewOverUdp(int localSockfd, uint16_t localPort, std::string destIp, uint16_t destPort) {
 		return New<RtpInstance>::allocate(localSockfd, localPort, destIp, destPort);
 	}
 	static RtpInstance *createNewOverTcp(int clientSockfd, uint8_t rtpChannel) {
@@ -35,12 +38,18 @@ public:
 		: mRtpType(RTP_OVER_TCP), mSockfd(clientSockfd), mIsAlive(false), mSessionId(0),
 		  mRtpChannel(rtpChannel) {}
 
-	~RtpInstance() { sockets::close(mSockfd); }
+	~RtpInstance() {
+		sockets::close(mSockfd);
+	}
 
 	// 获取本地端口号
-	uint16_t getLocalPort() const { return mLocalPort; }
+	uint16_t getLocalPort() const {
+		return mLocalPort;
+	}
 	// 获取远程端口号
-	uint16_t getPeerPort() { return mDestAddr.getPort(); }
+	uint16_t getPeerPort() {
+		return mDestAddr.getPort();
+	}
 
 	// 发送RTP数据包
 	int send(RtpPacket *rtpPacket) {
@@ -48,6 +57,7 @@ public:
 			return sendOverUdp(rtpPacket->mBuffer, rtpPacket->mSize);
 		} else {
 			// tcp要加4字节
+			// mBuffer是_mBuffer向后偏移4字节是要添加的tcp区分
 			uint8_t *rtpPktPtr = rtpPacket->_mBuffer;
 			rtpPktPtr[0] = '$';
 			rtpPktPtr[1] = (uint8_t)mRtpChannel;
@@ -59,10 +69,18 @@ public:
 	}
 
 	// 检查连接是否存活
-	bool alive() const { return mIsAlive; }
-	void setAlive(bool alive) { mIsAlive = alive; }					  // 设置连接是否存活
-	void setSessionId(uint16_t sessionId) { mSessionId = sessionId; } // 设置会话ID
-	uint16_t sessionId() const { return mSessionId; }				  // 获取会话ID
+	bool alive() const {
+		return mIsAlive;
+	}
+	void setAlive(bool alive) {
+		mIsAlive = alive;
+	} // 设置连接是否存活
+	void setSessionId(uint16_t sessionId) {
+		mSessionId = sessionId;
+	} // 设置会话ID
+	uint16_t sessionId() const {
+		return mSessionId;
+	} // 获取会话ID
 
 private:
 	// 发送UDP/TCP数据包
@@ -70,11 +88,13 @@ private:
 		return sockets::sendto(mSockfd, buf, size, mDestAddr.getAddr());
 	}
 	// TCP包要指定发送多少
-	int sendOverTcp(void *buf, int size) { return sockets::write(mSockfd, buf, size); }
+	int sendOverTcp(void *buf, int size) {
+		return sockets::write(mSockfd, buf, size);
+	}
 
 	RtpType mRtpType;
 	int mSockfd;
-	uint16_t mLocalPort;   // for udp
+	uint16_t mLocalPort; // for udp
 	Ipv4Address mDestAddr; // for udp
 	bool mIsAlive;
 	uint16_t mSessionId;
@@ -84,26 +104,40 @@ private:
 // 发送RTCP数据包。
 class RtcpInstance {
 public:
-	static RtcpInstance *createNew(int localSockfd, uint16_t localPort, std::string destIp,
-								   uint16_t destPort) {
+	static RtcpInstance *
+	createNew(int localSockfd, uint16_t localPort, std::string destIp, uint16_t destPort) {
 		// return new RtcpInstance(localSockfd, localPort, destIp, destPort);
 		return New<RtcpInstance>::allocate(localSockfd, localPort, destIp, destPort);
 	}
 
-	~RtcpInstance() { sockets::close(mLocalSockfd); }
+	~RtcpInstance() {
+		sockets::close(mLocalSockfd);
+	}
 
 	int send(void *buf, int size) {
 		return sockets::sendto(mLocalSockfd, buf, size, mDestAddr.getAddr());
 	}
 
-	int recv(void *buf, int size, Ipv4Address *addr) { return 0; }
+	int recv(void *buf, int size, Ipv4Address *addr) {
+		return 0;
+	}
 
-	uint16_t getLocalPort() const { return mLocalPort; }
+	uint16_t getLocalPort() const {
+		return mLocalPort;
+	}
 
-	int alive() const { return mIsAlive; }
-	void setAlive(bool alive) { mIsAlive = alive; }
-	void setSessionId(uint16_t sessionId) { mSessionId = sessionId; }
-	uint16_t sessionId() const { return mSessionId; }
+	int alive() const {
+		return mIsAlive;
+	}
+	void setAlive(bool alive) {
+		mIsAlive = alive;
+	}
+	void setSessionId(uint16_t sessionId) {
+		mSessionId = sessionId;
+	}
+	uint16_t sessionId() const {
+		return mSessionId;
+	}
 
 public:
 	RtcpInstance(int localSockfd, uint16_t localPort, std::string destIp, uint16_t destPort)

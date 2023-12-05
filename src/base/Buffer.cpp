@@ -19,15 +19,16 @@ int Buffer::read(int fd) {
 
 	// iovec指定读取数据的缓冲区，结构体就是一个数据起始的指针和数据的长度
 	struct iovec vec[2];
-	// mBufferSize - mWriteIndex也就是mBuffer缓冲区还可以再写的字节数。
+
+	// mBufferSize - mWriteIndex 就是mBuffer缓冲区还可写的字节数
 	const int writable = writableBytes();
 
 	// begin()就是mBuffer开始的指针
-	vec[0].iov_base = begin() + mWriteIndex; // mBuffer缓冲区起始地址
-	vec[0].iov_len = writable;				 // mBuffer缓冲区还可以再写的字节数
+	vec[0].iov_base = begin() + mWriteIndex; // 第一块可写的起始地址
+	vec[0].iov_len = writable; // mBuffer缓冲区可写的长度
 
 	// mBuffer缓冲区写不下，就用第二块临时的缓冲区来写
-	vec[1].iov_base = extrabuf;
+	vec[1].iov_base = extrabuf; // 第二块起始地址
 	vec[1].iov_len = sizeof(extrabuf); // 额外栈空间大小
 
 	// 基于经验和应用场景考虑的
@@ -38,15 +39,18 @@ int Buffer::read(int fd) {
 	// extrabuf。读取的数据会被分散存储在两个缓冲区中，确保不会丢失任何数据。
 
 	const int iovcnt = (writable < sizeof(extrabuf)) ? 2 : 1;
-	// 从connfd读取数据，先直接保存到mBuffer，不够的再保存到extrabuf
+
+	// 调用Linux的函数readv,从connfd读取数据，先直接保存到mBuffer，不够的先保存到extrabuf
 	const int n = sockets::readv(fd, vec, iovcnt);
+
 	if (n < 0) {
 		return -1; // 出错了
 	} else if (n <= writable) {
 		mWriteIndex += n; // 说明buffer空间够用
 	} else {
-		// buffer空间不够,extrabuf上也有数据,用append把这部分数据拷贝过来
-		// append不够会进行扩容
+		// buffer空间不够,extrabuf上也有数据,
+		// 就把extrabuf上的数据拷贝过来
+		// append会进行扩容
 		mWriteIndex = mBufferSize;
 		append(extrabuf, n - writable);
 	}
@@ -54,4 +58,6 @@ int Buffer::read(int fd) {
 }
 
 // 发送数据给客户端
-int Buffer::write(int fd) { return sockets::write(fd, peek(), readableBytes()); }
+int Buffer::write(int fd) {
+	return sockets::write(fd, peek(), readableBytes());
+}

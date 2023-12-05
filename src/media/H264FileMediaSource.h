@@ -9,7 +9,7 @@
 
 class H264FileMediaSource : public MediaSource {
 public:
-	static std::shared_ptr<H264FileMediaSource> createNew(UsageEnvironment *env, std::string file);
+	static std::shared_ptr<H264FileMediaSource> createNew(UsageEnvironment *env, std::string &file);
 
 	H264FileMediaSource(UsageEnvironment *env, const std::string &file);
 	~H264FileMediaSource();

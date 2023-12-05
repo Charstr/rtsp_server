@@ -1,0 +1,24 @@
+2023-11-29 17:13:22 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp:handleRead:74 client connect: 9
+2023-11-29 17:13:22 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp:handleRead:74 client connect: 11
+2023-11-29 17:13:22 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp:handleRead:74 client connect: 12
+2023-11-29 17:13:22 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp:handleRead:74 client connect: 13
+2023-11-29 17:13:22 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp:handleRead:74 client connect: 14
+2023-11-29 17:13:22 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp:handleRead:74 client connect: 15
+2023-11-29 17:13:22 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp:handleRead:74 client connect: 16
+2023-11-29 17:13:22 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/Acceptor.cpp:handleRead:74 client connect: 17
+2023-11-29 17:13:54 <ERROR> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleRead:121 read err
+2023-11-29 17:13:54 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleError:144 default error handle
+2023-11-29 17:13:54 <ERROR> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleRead:121 read err
+2023-11-29 17:13:54 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleError:144 default error handle
+2023-11-29 17:13:54 <ERROR> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleRead:121 read err
+2023-11-29 17:13:54 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleError:144 default error handle
+2023-11-29 17:13:54 <ERROR> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleRead:121 read err
+2023-11-29 17:13:54 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleError:144 default error handle
+2023-11-29 17:13:54 <ERROR> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleRead:121 read err
+2023-11-29 17:13:54 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleError:144 default error handle
+2023-11-29 17:13:54 <ERROR> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleRead:121 read err
+2023-11-29 17:13:54 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleError:144 default error handle
+2023-11-29 17:13:54 <ERROR> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleRead:121 read err
+2023-11-29 17:13:54 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleError:144 default error handle
+2023-11-29 17:13:54 <ERROR> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleRead:121 read err
+2023-11-29 17:13:54 <DEBUG> /home/lcp/myProj/rtsp_server/src/server/TcpConnection.cpp:handleError:144 default error handle

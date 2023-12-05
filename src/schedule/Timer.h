@@ -34,7 +34,7 @@ private:
 	void handleEvent(); // 处理超时回调定时器事件
 
 private:
-	TimerEvent *mTimerEvent; // 这是一个IO事件，定时器触发的时候执行这个事件的回调函数
+	TimerEvent *mTimerEvent; // 这是一个定时事件，定时器触发的时候执行这个事件的回调函数
 	Timestamp mTimestamp; // 定时器触发时间戳
 	TimeInterval mTimeInterval; // 定时器触发时间间隔
 	bool mRepeat; // 定时器是否重复触发
@@ -62,10 +62,14 @@ private:
 private:
 	Poller *mPoller; // 事件管理器
 	int mTimerFd; // 定时器文件描述符
-	// map容器存储定时器的TimerId和Timer对象之间的映射关系
-	std::map<Timer::TimerId, Timer> mTimers; // 定时器事件
 
-	typedef std::pair<Timer::Timestamp, Timer::TimerId> TimerIndex;
+	// map容器存储定时器的TimerId和Timer对象之间的映射关系
+	// 使用底层使用红黑树
+	// 管理所有的定时器，每个定时器都有对应的定时器事件TimerEvent
+	std::map<Timer::TimerId, Timer> mTimers;
+
+	using TimerIndex = std::pair<Timer::Timestamp, Timer::TimerId>;
+
 	// 定时器事件队列,以按时间顺序管理定时器。根据最早触发的定时器来调整timerfd的触发时间。
 	std::multimap<TimerIndex, Timer> mEvents;
 

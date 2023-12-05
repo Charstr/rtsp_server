@@ -4,6 +4,7 @@
 #include "base/New.h"
 
 #include <cstdio>
+#include <functional>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -14,9 +15,12 @@ TcpConnection::TcpConnection(UsageEnvironment *env, int sockfd)
 
 	// mAcceptIOEvent用的是listenfd，只是接受连接，这里创建实际建立连接之后的用于传输的事件mTcpConnIOEvent，用的是connfd
 	mTcpConnIOEvent = IOEvent::createNew(sockfd, this);
-	mTcpConnIOEvent->setReadCallback(TcpConnection::readCallback);
-	mTcpConnIOEvent->setWriteCallback(TcpConnection::writeCallback);
-	mTcpConnIOEvent->setErrorCallback(TcpConnection::errorCallback);
+	// 已经建立的连接
+	mTcpConnIOEvent->setReadCallback(std::bind(&TcpConnection::readCallback, this));
+
+	mTcpConnIOEvent->setWriteCallback(std::bind(&TcpConnection::writeCallback, this));
+
+	mTcpConnIOEvent->setErrorCallback(std::bind(&TcpConnection::errorCallback, this));
 
 	// 默认只开启读事件，因为rtsp服务器一般只分发数据给客户端
 	mTcpConnIOEvent->enableReadHandling();
@@ -120,6 +124,7 @@ void TcpConnection::handleRead() {
 	}
 
 	// 正常接收到客户端的请求数据，就要进行解析处理，这里是多态实现，调用的是RtspConnection的函数
+	// 处理的时候
 	handleReadBytes();
 }
 
@@ -135,7 +140,9 @@ void TcpConnection::handleWrite() {
 	mOutBuffer.retrieveAll();
 }
 
-void TcpConnection::handleError() { LOG_DEBUG("default error handle\n"); }
+void TcpConnection::handleError() {
+	LOG_DEBUG("default error handle\n");
+}
 
 // 处理断开连接
 void TcpConnection::handleDisconnection() {

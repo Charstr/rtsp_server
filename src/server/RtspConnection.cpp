@@ -75,7 +75,7 @@ void RtspConnection::handleReadBytes() {
 	// 通过UDP传输rtp数据，这里开始根据客户端请求解析不同的信息，
 	// 分别解析method，url，version，CSeq，rtp和rtsp端口等
 	// 如果是SETUP，那么就再解析Transport,提取出客户端的rtp和rtcp端口
-
+	// 解析读取到mInputBuffer中的参数信息
 	ret = parseRequest();
 	if (ret != true) {
 		LOG_WARNING("failed to parse request\n"); // 错误解析的把连接加入到断开的列表
@@ -86,6 +86,7 @@ void RtspConnection::handleReadBytes() {
 	bool errOcc = false;
 
 	// 根据解析到的客户端的method回复消息
+	// 构造消息存到mOutBuffer中然后发送
 	// 每次发送消息后，mOutBuffer的mReadIndex，mWriteIndex都会置0
 	switch (mMethod) {
 	case OPTIONS: // OPTIONS 请求服务器可用方法
@@ -233,8 +234,6 @@ bool RtspConnection::parseRequest1(const char *begin, const char *end) {
 		return false;
 	}
 
-	// printf("method: %s\n", method);
-	// std::cout<<"method: "<<method<<std::endl;
 	if (!strcmp(method, "OPTIONS"))
 		mMethod = OPTIONS;
 	else if (!strcmp(method, "DESCRIBE"))
@@ -289,8 +288,8 @@ bool RtspConnection::parseCSeq(std::string &message) {
 
 // 解析Accept字段
 bool RtspConnection::parseAccept(std::string &message) {
-	if ((message.rfind("Accept") == std::string::npos) ||
-		(message.rfind("sdp") == std::string::npos)) {
+	if ((message.rfind("Accept") == std::string::npos)
+		|| (message.rfind("sdp") == std::string::npos)) {
 		return false;
 	}
 
@@ -306,8 +305,10 @@ bool RtspConnection::parseTransport(std::string &message) {
 			uint8_t rtpChannel, rtcpChannel;
 			mIsRtpOverTcp = true; // 通过TCP传输
 
-			if (sscanf(message.c_str() + pos, "%*[^;];%*[^;];%*[^=]=%hhu-%hhu", &rtpChannel,
-					   &rtcpChannel) != 2) {
+			if (sscanf(
+					message.c_str() + pos, "%*[^;];%*[^;];%*[^=]=%hhu-%hhu", &rtpChannel,
+					&rtcpChannel)
+				!= 2) {
 				return false;
 			}
 
@@ -319,8 +320,9 @@ bool RtspConnection::parseTransport(std::string &message) {
 
 			// 单播解析rtp和rtcp端口
 			if (((message.find("unicast", pos)) != std::string::npos)) {
-				if (sscanf(message.c_str() + pos, "%*[^;];%*[^;];%*[^=]=%hu-%hu", &rtpPort,
-						   &rtcpPort) != 2) {
+				if (sscanf(
+						message.c_str() + pos, "%*[^;];%*[^;];%*[^=]=%hu-%hu", &rtpPort, &rtcpPort)
+					!= 2) {
 					return false;
 				}
 			} else if ((message.find("multicast", pos)) != std::string::npos) {
@@ -437,12 +439,13 @@ bool RtspConnection::parseRequest2(const char *begin, const char *end) {
 // 处理OPTIONS命令
 bool RtspConnection::handleCmdOption() {
 	// 用一个临时缓冲区来接，然后再append到mOutBuffer，通过buffer的write发送
-	snprintf(mBuffer, sizeof(mBuffer),
-			 "RTSP/1.0 200 OK\r\n"
-			 "CSeq: %u\r\n"
-			 "Public: OPTIONS, DESCRIBE, SETUP, TEARDOWN, PLAY\r\n"
-			 "\r\n",
-			 mCSeq);
+	snprintf(
+		mBuffer, sizeof(mBuffer),
+		"RTSP/1.0 200 OK\r\n"
+		"CSeq: %u\r\n"
+		"Public: OPTIONS, DESCRIBE, SETUP, TEARDOWN, PLAY\r\n"
+		"\r\n",
+		mCSeq);
 	// 把mBuffer中的数据添加到mOutBuffer并发送出去
 	if (sendMessage(mBuffer, strlen(mBuffer)) < 0)
 		return false;
@@ -465,14 +468,15 @@ bool RtspConnection::handleCmdDescribe() {
 
 	memset((void *)mBuffer, 0, sizeof(mBuffer));
 	/* 返回结果 */
-	snprintf((char *)mBuffer, sizeof(mBuffer),
-			 "RTSP/1.0 200 OK\r\n"
-			 "CSeq: %u\r\n"
-			 "Content-Length: %u\r\n"
-			 "Content-Type: application/sdp\r\n"
-			 "\r\n"
-			 "%s",
-			 mCSeq, (unsigned int)sdp.size(), sdp.c_str());
+	snprintf(
+		(char *)mBuffer, sizeof(mBuffer),
+		"RTSP/1.0 200 OK\r\n"
+		"CSeq: %u\r\n"
+		"Content-Length: %u\r\n"
+		"Content-Type: application/sdp\r\n"
+		"\r\n"
+		"%s",
+		mCSeq, (unsigned int)sdp.size(), sdp.c_str());
 
 	if (sendMessage(mBuffer, strlen(mBuffer)) < 0)
 		return false;
@@ -496,16 +500,17 @@ bool RtspConnection::handleCmdSetup() {
 		return false;
 
 	if (session->isStartMulticast()) {
-		snprintf((char *)mBuffer, sizeof(mBuffer),
-				 "RTSP/1.0 200 OK\r\n"
-				 "CSeq: %d\r\n"
-				 "Transport: RTP/AVP;multicast;"
-				 "destination=%s;source=%s;port=%d-%d;ttl=255\r\n"
-				 "Session: %08x\r\n"
-				 "\r\n",
-				 mCSeq, session->getMulticastDestAddr().c_str(), sockets::getLocalIp().c_str(),
-				 session->getMulticastDestRtpPort(mTrackId),
-				 session->getMulticastDestRtpPort(mTrackId) + 1, mSessionId);
+		snprintf(
+			(char *)mBuffer, sizeof(mBuffer),
+			"RTSP/1.0 200 OK\r\n"
+			"CSeq: %d\r\n"
+			"Transport: RTP/AVP;multicast;"
+			"destination=%s;source=%s;port=%d-%d;ttl=255\r\n"
+			"Session: %08x\r\n"
+			"\r\n",
+			mCSeq, session->getMulticastDestAddr().c_str(), sockets::getLocalIp().c_str(),
+			session->getMulticastDestRtpPort(mTrackId),
+			session->getMulticastDestRtpPort(mTrackId) + 1, mSessionId);
 	} else {
 		// rtp over tcp
 		if (mIsRtpOverTcp) {
@@ -515,13 +520,14 @@ bool RtspConnection::handleCmdSetup() {
 			mRtpInstances[mTrackId]->setSessionId(mSessionId);
 			session->addRtpInstance(mTrackId, mRtpInstances[mTrackId]);
 
-			snprintf((char *)mBuffer, sizeof(mBuffer),
-					 "RTSP/1.0 200 OK\r\n"
-					 "CSeq: %d\r\n"
-					 "Transport: RTP/AVP/TCP;unicast;interleaved=%hhu-%hhu\r\n"
-					 "Session: %08x\r\n"
-					 "\r\n",
-					 mCSeq, mRtpChannel, mRtpChannel + 1, mSessionId);
+			snprintf(
+				(char *)mBuffer, sizeof(mBuffer),
+				"RTSP/1.0 200 OK\r\n"
+				"CSeq: %d\r\n"
+				"Transport: RTP/AVP/TCP;unicast;interleaved=%hhu-%hhu\r\n"
+				"Session: %08x\r\n"
+				"\r\n",
+				mCSeq, mRtpChannel, mRtpChannel + 1, mSessionId);
 		} else { // rtp over udp
 			// 默认都是通过udp传输的，创建UDP连接
 			if (createRtpRtcpOverUdp(mTrackId, mPeerIp, mPeerRtpPort, mPeerRtcpPort) != true) {
@@ -535,14 +541,15 @@ bool RtspConnection::handleCmdSetup() {
 			// RtpInstances添加到某个track的列表中
 			session->addRtpInstance(mTrackId, mRtpInstances[mTrackId]);
 
-			snprintf((char *)mBuffer, sizeof(mBuffer),
-					 "RTSP/1.0 200 OK\r\n"
-					 "CSeq: %u\r\n"
-					 "Transport: RTP/AVP;unicast;client_port=%hu-%hu;server_port=%hu-%hu\r\n"
-					 "Session: %08x\r\n"
-					 "\r\n",
-					 mCSeq, mPeerRtpPort, mPeerRtcpPort, mRtpInstances[mTrackId]->getLocalPort(),
-					 mRtcpInstances[mTrackId]->getLocalPort(), mSessionId);
+			snprintf(
+				(char *)mBuffer, sizeof(mBuffer),
+				"RTSP/1.0 200 OK\r\n"
+				"CSeq: %u\r\n"
+				"Transport: RTP/AVP;unicast;client_port=%hu-%hu;server_port=%hu-%hu\r\n"
+				"Session: %08x\r\n"
+				"\r\n",
+				mCSeq, mPeerRtpPort, mPeerRtcpPort, mRtpInstances[mTrackId]->getLocalPort(),
+				mRtcpInstances[mTrackId]->getLocalPort(), mSessionId);
 		}
 	}
 
@@ -553,13 +560,14 @@ bool RtspConnection::handleCmdSetup() {
 }
 // 处理PLAY命令
 bool RtspConnection::handleCmdPlay() {
-	snprintf((char *)mBuffer, sizeof(mBuffer),
-			 "RTSP/1.0 200 OK\r\n"
-			 "CSeq: %d\r\n"
-			 "Range: npt=0.000-\r\n"
-			 "Session: %08x; timeout=60\r\n"
-			 "\r\n",
-			 mCSeq, mSessionId);
+	snprintf(
+		(char *)mBuffer, sizeof(mBuffer),
+		"RTSP/1.0 200 OK\r\n"
+		"CSeq: %d\r\n"
+		"Range: npt=0.000-\r\n"
+		"Session: %08x; timeout=60\r\n"
+		"\r\n",
+		mCSeq, mSessionId);
 
 	if (sendMessage(mBuffer, strlen(mBuffer)) < 0)
 		return false;
@@ -576,11 +584,12 @@ bool RtspConnection::handleCmdPlay() {
 }
 // 处理TEARDOWN命令
 bool RtspConnection::handleCmdTeardown() {
-	snprintf((char *)mBuffer, sizeof(mBuffer),
-			 "RTSP/1.0 200 OK\r\n"
-			 "CSeq: %d\r\n"
-			 "\r\n",
-			 mCSeq);
+	snprintf(
+		(char *)mBuffer, sizeof(mBuffer),
+		"RTSP/1.0 200 OK\r\n"
+		"CSeq: %d\r\n"
+		"\r\n",
+		mCSeq);
 
 	if (sendMessage(mBuffer, strlen(mBuffer)) < 0) {
 		return false;
@@ -619,8 +628,9 @@ int RtspConnection::sendMessage() {
 }
 
 // 创建RTP和RTCP的UDP连接
-bool RtspConnection::createRtpRtcpOverUdp(MediaSession::TrackId trackId, std::string peerIp,
-										  uint16_t peerRtpPort, uint16_t peerRtcpPort) {
+bool RtspConnection::createRtpRtcpOverUdp(
+	MediaSession::TrackId trackId, std::string peerIp, uint16_t peerRtpPort,
+	uint16_t peerRtcpPort) {
 	int rtpSockfd, rtcpSockfd;
 	int16_t rtpPort, rtcpPort;
 	bool ret;
@@ -675,13 +685,13 @@ bool RtspConnection::createRtpRtcpOverUdp(MediaSession::TrackId trackId, std::st
 	return true;
 }
 // 创建RTP over TCP连接
-bool RtspConnection::createRtpOverTcp(MediaSession::TrackId trackId, int sockfd,
-									  uint8_t rtpChannel) {
+bool RtspConnection::createRtpOverTcp(
+	MediaSession::TrackId trackId, int sockfd, uint8_t rtpChannel) {
 	mRtpInstances[trackId] = RtpInstance::createNewOverTcp(sockfd, rtpChannel);
 
 	return true;
 }
-// 处理RTP over TCP数据
+// 处理RTP over TCP数据，头部的4字节
 void RtspConnection::handleRtpOverTcp() {
 	uint8_t *buf = (uint8_t *)mInputBuffer.peek();
 	uint16_t size;

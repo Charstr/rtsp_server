@@ -4,6 +4,7 @@
 #include "schedule/UsageEnvironment.h"
 #include "server/InetAddress.h"
 #include "server/TcpSocket.h"
+#include <functional>
 
 /*
 
@@ -15,7 +16,7 @@ Acceptor类是一个关键的组件，监听连接请求,处理新连接的接�
 
 class Acceptor {
 public:
-	typedef void (*NewConnectionCallback)(void *data, int connfd);
+	using NewConnectionCallback = std::function<void(void *, int)>;
 
 	// 创建一个新的Acceptor实例
 	static Acceptor *createNew(UsageEnvironment *env, const Ipv4Address &addr);
@@ -23,7 +24,9 @@ public:
 	Acceptor(UsageEnvironment *env, const Ipv4Address &addr);
 	~Acceptor();
 	// 检查是否正在监听
-	bool listenning() const { return mListenning; }
+	bool listenning() const {
+		return mListenning;
+	}
 	void listen(); // 开始监听连接
 
 	// 设置处理新连接的回调函数，原来在cpp文件实现
@@ -34,16 +37,16 @@ public:
 
 private:
 	static void readCallback(void *); // 静态函数，用作读取回调函数的指针。
-	void handleRead();				  // 处理读取操作。
+	void handleRead(); // 处理读取操作。
 
 private:
-	UsageEnvironment *mEnv;						  // UsageEnvironment对象，用于事件调度
-	Ipv4Address mAddr;							  // 监听地址
-	IOEvent *mAcceptIOEvent;					  // 指向IOEvent对象的指针。
-	TcpSocket mSocket;							  // 监听套接字
-	bool mListenning;							  // 是否正在监听连接
+	UsageEnvironment *mEnv; // UsageEnvironment对象，用于事件调度
+	Ipv4Address mAddr; // 监听地址
+	IOEvent *mAcceptIOEvent; // 指向IOEvent对象的指针。
+	TcpSocket mSocket; // 监听套接字
+	bool mListenning; // 是否正在监听连接
 	NewConnectionCallback mNewConnectionCallback; // 用于处理新连接的回调函数。
-	void *mArg;									  // 传递给回调函数的额外参数。
+	void *mArg; // 传递给回调函数的额外参数。
 };
 
 #endif //_ACCEPTOR_H_

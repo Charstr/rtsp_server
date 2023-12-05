@@ -15,7 +15,7 @@ static inline bool startCode3(uint8_t *buf);
 static inline bool startCode4(uint8_t *buf);
 
 std::shared_ptr<H264FileMediaSource>
-H264FileMediaSource::createNew(UsageEnvironment *env, std::string file) {
+H264FileMediaSource::createNew(UsageEnvironment *env, std::string &file) {
 	return std::make_shared<H264FileMediaSource>(env, file);
 }
 
@@ -27,7 +27,7 @@ H264FileMediaSource::H264FileMediaSource(UsageEnvironment *env, const std::strin
 	mFd = ::open(file.c_str(), O_RDONLY);
 	assert(mFd > 0);
 
-	setFps(30);
+	setFps(60);
 
 	// 生产者，添加任务readFrame到线程池的任务队列，并唤醒一个线程去执行
 	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i) {

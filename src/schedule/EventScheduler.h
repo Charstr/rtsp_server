@@ -1,6 +1,7 @@
 #ifndef _EVENT_SCHEDULER_H_
 #define _EVENT_SCHEDULER_H_
 
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -11,7 +12,8 @@
 
 class EventScheduler {
 public:
-	typedef void (*Callback)(void *);
+	using Callback = std::function<void(void *)>;
+	// typedef void (*Callback)(void *);
 
 	enum PollerType {
 		POLLER_SELECT,

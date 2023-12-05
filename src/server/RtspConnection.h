@@ -65,8 +65,9 @@ private:
 	int sendMessage();
 
 	// 创建RTP和RTCP的UDP连接，用于传输媒体数据。
-	bool createRtpRtcpOverUdp(MediaSession::TrackId trackId, std::string peerIp,
-							  uint16_t peerRtpPort, uint16_t peerRtcpPort);
+	bool createRtpRtcpOverUdp(
+		MediaSession::TrackId trackId, std::string peerIp, uint16_t peerRtpPort,
+		uint16_t peerRtcpPort);
 	// 创建RTP over TCP连接，用于传输媒体数据。
 	bool createRtpOverTcp(MediaSession::TrackId trackId, int sockfd, uint8_t rtpChannel);
 	// 处理RTP over TCP数据，根据通道号将数据分派给相应的RTP实例进行处理。

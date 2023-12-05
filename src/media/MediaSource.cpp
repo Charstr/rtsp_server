@@ -17,7 +17,6 @@ MediaSource::MediaSource(UsageEnvironment *env) : mEnv(env) {
 	当定时事件mTimerEvent触发的时候，会回调设置的mTimerEvent->setTimeoutCallback(RtpSink::timeoutCallback);RtpSink::timeoutCallback开始消费数据。getFrame从mAVFrameOutputQueue读取视频帧，然后rtpSink->handleFrame通过rtp包发送出去，再putFrame将读取的帧插入mAVFrameInputQueue。
 	这样就构成了一个环形队列
 	*/
-
 	for (int i = 0; i < DEFAULT_FRAME_NUM; ++i)
 		mAVFrameInputQueue.push(&mAVFrames[i]);
 }

@@ -42,7 +42,9 @@ public:
 		: _mBuffer(new uint8_t[RTP_MAX_PKT_SIZE + RTP_HEADER_SIZE + 100]), mBuffer(_mBuffer + 4),
 		  mRtpHeadr((RtpHeader *)mBuffer), mSize(0) {}
 
-	~RtpPacket() { delete[] _mBuffer; }
+	~RtpPacket() {
+		delete[] _mBuffer;
+	}
 
 	uint8_t *_mBuffer;
 	uint8_t *mBuffer;
